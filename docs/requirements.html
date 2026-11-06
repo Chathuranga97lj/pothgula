@@ -1,0 +1,955 @@
+<title>Pothgula Requirements</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F6F8F6; --surface:#FFFFFF; --surface-sunk:#EDF0EC;
+  --ink:#161D1A; --ink-soft:#3D4844; --muted:#6E7B75;
+  --rule:#DBE2DC; --rule-strong:#BFCBC2;
+  --accent:#1E5D4B; --accent-soft:#E3EFE9; --accent-ink:#164537;
+  --flag:#A03028; --flag-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(22,29,26,.05), 0 8px 24px -16px rgba(22,29,26,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101614; --surface:#18201D; --surface-sunk:#141A18;
+    --ink:#E7EDE8; --ink-soft:#BAC5BF; --muted:#8C9993;
+    --rule:#2A3531; --rule-strong:#3C4A45;
+    --accent:#63B79B; --accent-soft:#1B2E28; --accent-ink:#8ED3BB;
+    --flag:#E38278; --flag-soft:#33211F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101614; --surface:#18201D; --surface-sunk:#141A18;
+  --ink:#E7EDE8; --ink-soft:#BAC5BF; --muted:#8C9993;
+  --rule:#2A3531; --rule-strong:#3C4A45;
+  --accent:#63B79B; --accent-soft:#1B2E28; --accent-ink:#8ED3BB;
+  --flag:#E38278; --flag-soft:#33211F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+
+.shell{max-width:1180px; margin:0 auto; padding:0 24px 96px}
+.layout{display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; align-items:start}
+@media (max-width:900px){ .layout{grid-template-columns:minmax(0,1fr); gap:32px} }
+
+.masthead{padding:64px 0 40px; border-bottom:1px solid var(--rule-strong)}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 20px;
+}
+.wordmark{
+  font-family:"Newsreader",Georgia,serif; font-optical-sizing:auto; font-weight:500;
+  font-size:clamp(3rem,8vw,5.25rem); line-height:.96; letter-spacing:-.02em;
+  margin:0; text-wrap:balance;
+}
+.wordmark em{font-style:italic; color:var(--accent)}
+.standfirst{
+  font-family:"Newsreader",Georgia,serif; font-size:clamp(1.15rem,2.2vw,1.4rem);
+  line-height:1.5; color:var(--ink-soft); max-width:40ch; margin:22px 0 0;
+}
+.docmeta{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:20px 32px;
+  margin:44px 0 0; padding:24px 0 0; border-top:1px solid var(--rule);
+}
+.docmeta div{display:flex; flex-direction:column; gap:3px}
+.docmeta dt{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.docmeta dd{margin:0; font-size:14.5px; font-weight:500}
+
+.toc{position:sticky; top:24px; padding-top:56px}
+@media (max-width:900px){
+  .toc{position:static; padding:28px 22px; background:var(--surface); border:1px solid var(--rule); border-radius:4px}
+}
+.toc h2{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted); font-weight:500; margin:0 0 14px;
+}
+.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; counter-reset:toc}
+.toc a{
+  display:grid; grid-template-columns:26px 1fr; gap:6px; padding:5px 0;
+  color:var(--ink-soft); text-decoration:none; font-size:13.5px; line-height:1.35;
+}
+.toc a::before{
+  counter-increment:toc; content:counter(toc,decimal-leading-zero);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); padding-top:1px;
+}
+.toc a:hover{color:var(--accent)}
+.toc a:hover::before{color:var(--accent)}
+
+main{padding-top:56px; min-width:0}
+section{scroll-margin-top:24px; padding-bottom:52px}
+section + section{border-top:1px solid var(--rule); padding-top:52px}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500; letter-spacing:.14em;
+  color:var(--accent); display:block; margin-bottom:10px;
+}
+h2.sec{
+  font-family:"Newsreader",Georgia,serif; font-weight:500; font-size:clamp(1.75rem,3.4vw,2.35rem);
+  line-height:1.15; letter-spacing:-.015em; margin:0 0 18px; text-wrap:balance;
+}
+h3{
+  font-size:1rem; font-weight:600; letter-spacing:-.005em; margin:36px 0 12px;
+  padding-bottom:7px; border-bottom:1px solid var(--rule);
+}
+h4{font-size:14px; font-weight:600; margin:24px 0 8px}
+p{margin:0 0 15px; max-width:68ch}
+p.lead{font-size:17.5px; color:var(--ink-soft); max-width:62ch}
+ul.plain{margin:0 0 16px; padding-left:20px; max-width:68ch}
+ul.plain li{margin-bottom:7px}
+strong{font-weight:600}
+code{
+  font-family:"IBM Plex Mono",monospace; font-size:.86em; background:var(--surface-sunk);
+  padding:1px 5px; border-radius:3px; border:1px solid var(--rule);
+}
+
+.tablewrap{overflow-x:auto; margin:0 0 20px; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14px; min-width:560px}
+th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); font-weight:500; background:var(--surface-sunk); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td.id{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--accent); white-space:nowrap; font-weight:500}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+.mark{color:var(--accent); font-weight:600}
+.nomark{color:var(--rule-strong)}
+th.ctr,td.ctr{text-align:center}
+
+.chip{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; padding:2px 7px; border-radius:3px;
+  border:1px solid var(--rule-strong); color:var(--muted); white-space:nowrap;
+}
+.chip.must{background:var(--ink); border-color:var(--ink); color:var(--ground)}
+.chip.should{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.chip.high{border-color:var(--flag); color:var(--flag); background:var(--flag-soft)}
+
+.note{
+  background:var(--accent-soft); border:1px solid var(--rule); border-left:3px solid var(--accent);
+  padding:16px 18px; border-radius:0 4px 4px 0; margin:0 0 22px; font-size:14.5px;
+}
+.note p{margin:0; max-width:none; color:var(--ink-soft)}
+.note p + p{margin-top:9px}
+.note .tag{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent-ink); margin-bottom:6px; font-weight:500;
+}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:0 0 22px}
+.card{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:18px 20px; box-shadow:var(--shadow)}
+.card h4{margin:0 0 8px; font-size:14.5px}
+.card p{margin:0; font-size:14px; color:var(--ink-soft); max-width:none}
+.card .role{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); display:block; margin-bottom:9px;
+}
+.card ul{margin:10px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft)}
+.card ul li{margin-bottom:5px}
+
+.risk{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:16px 18px 16px 20px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.risk::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--rule-strong)}
+.risk.sev-high::before{background:var(--flag)}
+.risk.sev-med::before{background:var(--accent)}
+.risk-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:7px}
+.risk-head h4{margin:0; font-size:14.5px}
+.risk-id{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted)}
+.risk p{margin:0; font-size:13.5px; color:var(--ink-soft); max-width:none}
+.risk .fix{margin-top:9px; font-size:13px; color:var(--ink-soft); border-top:1px dotted var(--rule-strong); padding-top:8px}
+.risk .fix b{color:var(--ink); font-weight:600}
+
+.schema{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:0 0 22px}
+.tbl{background:var(--surface); border:1px solid var(--rule); border-radius:4px; overflow:hidden; box-shadow:var(--shadow)}
+.tbl-name{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:500; letter-spacing:.04em;
+  padding:9px 14px; background:var(--surface-sunk); border-bottom:1px solid var(--rule); color:var(--accent);
+}
+.tbl ul{list-style:none; margin:0; padding:10px 14px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; line-height:1.85}
+.tbl li{display:flex; justify-content:space-between; gap:12px; color:var(--ink-soft)}
+.tbl li span{color:var(--muted); font-size:10.5px; white-space:nowrap}
+.tbl li.new{color:var(--accent)}
+.tbl li.new span{color:var(--accent)}
+
+figure{margin:0 0 22px}
+.diagram{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:22px 18px; overflow-x:auto; box-shadow:var(--shadow);
+}
+.diagram svg{display:block; width:100%; min-width:640px; height:auto}
+.d-box{fill:var(--surface-sunk); stroke:var(--rule-strong); stroke-width:1.25}
+.d-box-flag{fill:var(--flag-soft); stroke:var(--flag); stroke-width:1.25}
+.d-label{fill:var(--ink); font-family:"IBM Plex Sans",sans-serif; font-size:14px; font-weight:500}
+.d-sub{fill:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.1em}
+.d-line{stroke:var(--rule-strong); stroke-width:1.25; fill:none}
+.d-edge{fill:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em}
+figcaption{font-size:12.5px; color:var(--muted); margin-top:10px; font-style:italic}
+
+.phase{display:grid; grid-template-columns:auto minmax(0,1fr); gap:20px; padding:20px 0; border-bottom:1px solid var(--rule)}
+.phase:last-child{border-bottom:none}
+.phase-n{
+  font-family:"Newsreader",Georgia,serif; font-size:2.4rem; line-height:1; color:var(--accent);
+  font-weight:500; font-variant-numeric:tabular-nums; padding-top:2px;
+}
+.phase h4{margin:0 0 4px; font-size:15px}
+.phase .when{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px}
+.phase p{margin:0; font-size:14px; color:var(--ink-soft); max-width:64ch}
+
+ol.q{list-style:none; counter-reset:q; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+ol.q li{
+  counter-increment:q; display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px;
+  padding:12px 0; border-bottom:1px solid var(--rule); font-size:14.5px; color:var(--ink-soft);
+}
+ol.q li::before{
+  content:"Q" counter(q); font-family:"IBM Plex Mono",monospace; font-size:11px;
+  color:var(--accent); padding-top:4px; font-weight:500;
+}
+ol.q li:last-child{border-bottom:none}
+
+.signoff{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:32px; margin-top:28px}
+.sig{border-top:1px solid var(--rule-strong); padding-top:10px}
+.sig .who{font-size:14px; font-weight:600}
+.sig .what{font-size:12.5px; color:var(--muted)}
+footer{margin-top:56px; padding-top:24px; border-top:1px solid var(--rule-strong); font-size:12.5px; color:var(--muted)}
+footer a{color:var(--muted)}
+
+.contact{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 24px;
+  margin:22px 0 0; padding:18px 0 0; border-top:1px solid var(--rule);
+}
+.contact-label{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.contact ul{list-style:none; display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; padding:0}
+.contact a{
+  color:var(--ink); text-decoration:none; font-size:14px; font-weight:500;
+  border-bottom:1px solid var(--rule-strong); padding-bottom:1px;
+}
+.contact a:hover{color:var(--accent); border-bottom-color:var(--accent)}
+.sig .reach{margin-top:7px; font-size:12.5px; color:var(--muted); line-height:1.55}
+.sig .reach a{color:var(--muted); text-decoration:none}
+.sig .reach a:hover{color:var(--accent)}
+
+@media print{
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]){
+    --ground:#FFFFFF; --surface:#FFFFFF; --surface-sunk:#F1F4F1;
+    --ink:#111815; --ink-soft:#333D39; --muted:#5C6763;
+    --rule:#D2DAD4; --rule-strong:#A9B5AE;
+    --accent:#154A3B; --accent-soft:#EAF2EE; --accent-ink:#123C31;
+    --flag:#8E2A22; --flag-soft:#F7E7E4;
+    --shadow:none;
+  }
+  @page{margin:15mm 14mm}
+  body{background:#fff; font-size:10pt; line-height:1.5}
+  .shell{max-width:none; padding:0}
+  .layout{display:block}
+  .masthead{padding:0 0 28px; break-after:page}
+  .wordmark{font-size:50pt}
+  .standfirst{font-size:14pt}
+  .toc{position:static; padding:0 0 18px; background:none; border:none; break-after:page}
+  .toc a{color:var(--ink-soft)}
+  main{padding-top:0}
+  section{padding-bottom:26px}
+  section + section{padding-top:26px}
+  h2.sec, h3, h4{break-after:avoid}
+  .tablewrap{overflow:visible; box-shadow:none}
+  table{min-width:0; font-size:8.5pt}
+  th,td{padding:6px 9px}
+  tr{break-inside:avoid}
+  .card,.risk,.tbl,.phase,.note,figure,.sig{break-inside:avoid; box-shadow:none}
+  .diagram{box-shadow:none; padding:14px 4px}
+  .diagram svg{min-width:0}
+  .grid2,.schema{gap:10px}
+  p, ul.plain li, ol.q li, p.lead{max-width:none}
+  a{color:inherit}
+  .contact a{border-bottom:none}
+  footer{break-inside:avoid; margin-top:32px}
+}
+</style>
+
+<div class="shell">
+
+<header class="masthead">
+  <p class="eyebrow">Software Requirements Specification &middot; Version 1.0</p>
+  <h1 class="wordmark">Poth<em>gula</em></h1>
+  <p class="standfirst">A web-based lending and membership system for a small library operating across several branches.</p>
+  <dl class="docmeta">
+    <div><dt>Prepared by</dt><dd>Chathuranga Jayawardhana</dd></div>
+    <div><dt>Role</dt><dd>Software Engineer, System Designer</dd></div>
+    <div><dt>Date</dt><dd>25 August 2026</dd></div>
+    <div><dt>Status</dt><dd>Draft for client review</dd></div>
+  </dl>
+  <div class="contact">
+    <span class="contact-label">Contact</span>
+    <ul>
+      <li><a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a></li>
+      <li><a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a></li>
+      <li><a href="https://linkedin.com/in/chathuranga97">linkedin.com/in/chathuranga97</a></li>
+    </ul>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#purpose">Purpose and scope</a></li>
+    <li><a href="#roles">Who uses the system</a></li>
+    <li><a href="#access">Accounts and access</a></li>
+    <li><a href="#catalogue">The book catalogue</a></li>
+    <li><a href="#circulation">Issuing and taking back</a></li>
+    <li><a href="#membership">Membership and annual fee</a></li>
+    <li><a href="#hours">Opening hours</a></li>
+    <li><a href="#alerts">Alerts and reminders</a></li>
+    <li><a href="#reports">Reports</a></li>
+    <li><a href="#nfr">Quality requirements</a></li>
+    <li><a href="#data">Information we store</a></li>
+    <li><a href="#advice">What we recommend changing</a></li>
+    <li><a href="#limits">Limitations and risks</a></li>
+    <li><a href="#phases">Delivery in three phases</a></li>
+    <li><a href="#questions">Decisions we need</a></li>
+    <li><a href="#signoff">Acceptance</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="purpose">
+  <span class="sec-num">01</span>
+  <h2 class="sec">Purpose and scope</h2>
+  <p class="lead">Pothgula replaces the paper register. It keeps one shared record of every book, every member and every loan across all of your branches, and it tells your staff what needs attention today.</p>
+
+  <h3>What the system does</h3>
+  <ul class="plain">
+    <li>Holds the <strong>catalogue</strong> of every book copy the library owns, with the branch that holds it and whether it is on the shelf.</li>
+    <li>Records <strong>who borrowed what and when it is due back</strong>, and shows overdue loans to staff.</li>
+    <li>Tracks <strong>membership</strong> — each member is valid for one year and is renewed when the annual fee is paid.</li>
+    <li>Publishes each branch's <strong>opening days and times</strong> to members.</li>
+    <li>Warns members before a book is due and before their membership runs out.</li>
+  </ul>
+
+  <h3>What it does not do</h3>
+  <p>This release is a lending and membership system, not a full library automation package. It does not do acquisitions and purchase orders, inter-library loans, digital or e-book lending, online fee payment, or a public catalogue open to non-members. Section&nbsp;13 explains the consequences of each of these; section&nbsp;14 shows where they could be added later.</p>
+
+  <div class="note">
+    <span class="tag">How to read this document</span>
+    <p>Every requirement has an identifier such as <code>FR-CIR-04</code> and a priority. <span class="chip must">Must</span> means the system is not accepted without it. <span class="chip should">Should</span> means it is planned and will be dropped only if we agree to drop it. <span class="chip">Could</span> means it is desirable and will be built if time allows. Please mark any requirement you disagree with before signing section&nbsp;16.</p>
+  </div>
+</section>
+
+<section id="roles">
+  <span class="sec-num">02</span>
+  <h2 class="sec">Who uses the system</h2>
+  <p>Three kinds of people use Pothgula. Everyone signs in with their phone number and a password.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="role">Member</span>
+      <h4>The person who borrows books</h4>
+      <p>Registers once, pays an annual fee, and belongs to one home branch.</p>
+      <ul>
+        <li>Browses the catalogue and sees what is on the shelf</li>
+        <li>Checks the books they currently hold and when they are due</li>
+        <li>Sees opening hours and their own membership expiry</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="role">Admin &middot; Librarian</span>
+      <h4>Runs the counter at one branch</h4>
+      <p>Day-to-day staff. Everything they do is limited to their own branch.</p>
+      <ul>
+        <li>Issues books and takes them back</li>
+        <li>Records annual fee payments and renews memberships</li>
+        <li>Sets that branch's opening days and times</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="role">Super admin</span>
+      <h4>Runs the library organisation</h4>
+      <p>Everything an admin can do, plus the setup that admins must not touch.</p>
+      <ul>
+        <li>Creates branches and staff accounts</li>
+        <li>Adds and edits books in the catalogue</li>
+        <li>Works across every branch, not just one</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Who can do what</h3>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Capability</th><th class="ctr">Member</th><th class="ctr">Admin</th><th class="ctr">Super admin</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Browse the catalogue</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>See other branches' books</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Issue a book to a member</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Take a book back</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Correct a loan record</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Record an annual fee payment</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Set opening days and times</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Add or edit a book</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Create a member account</td><td class="ctr nomark">Self only</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Create a staff account</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Create or edit a branch</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Admins cannot add books in this design, only super admins can. If your librarians are expected to catalogue new arrivals themselves, tell us — this is question Q3 in section&nbsp;15.</p>
+</section>
+
+<section id="access">
+  <span class="sec-num">03</span>
+  <h2 class="sec">Accounts and access</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-AUT-01</td><td>The landing page lets a visitor choose Member, Admin or Super admin, then choose to sign in or register.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-02</td><td>Sign-in uses phone number and password. Passwords are stored one-way hashed and can never be read back by anyone, including us.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-03</td><td>A member registers with their name, phone number, address and home branch. Their membership is dated one year ahead.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-04</td><td>Registering as a super admin requires the pre-shared super admin code. At most five super admin accounts may exist per branch.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-05</td><td>A super admin can create an account of any type directly, without the new person registering themselves.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-06</td><td>An account is locked for 15 minutes after five failed sign-in attempts. The same limit applies to attempts at the super admin code.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-AUT-07</td><td>A staff session ends after 30 minutes of inactivity, so a counter machine left unattended does not stay signed in.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-AUT-08</td><td>A member can reset a forgotten password using a code sent to their registered phone number.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-AUT-09</td><td>A super admin can deactivate a staff or member account. Accounts are never deleted, so their loan history stays intact.</td><td><span class="chip should">Should</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="tag">Please note</span>
+    <p>Requirement FR-AUT-04 means the super admin code is the single thing standing between the internet and full control of your library data. Recommendation R5 in section&nbsp;12 proposes a safer arrangement at no extra cost.</p>
+  </div>
+</section>
+
+<section id="catalogue">
+  <span class="sec-num">04</span>
+  <h2 class="sec">The book catalogue</h2>
+  <p>Every physical book on your shelves is one entry in the catalogue, identified by a number written or stuck on the book itself.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-CAT-01</td><td>A super admin registers a book with its title, accession number, category letter, writer, publisher, and how the library obtained it (purchase, donation, or the donor's name).</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-02</td><td>The accession number is one capital letter followed by five digits, for example <code>A12345</code>. The system rejects any other format and refuses a number already in use anywhere in the library.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-03</td><td>Each book belongs to exactly one branch, and its condition is recorded as Useable, Missing or Not useable.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-04</td><td>Each book shows as On the shelf or On loan. A book that is missing or not useable can never be issued.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-05</td><td>A member sees their home branch's catalogue by default and can filter it by category, writer and availability.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-06</td><td>A member can switch the view to any other branch and see which branch holds a copy of a book.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-07</td><td>A search box finds books by title, writer or accession number, across one branch or all branches.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-08</td><td>A super admin can edit any detail of a book, including moving it to a different branch.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-09</td><td>Category letters A to Z can each be given a readable name, so members see "Sinhala fiction" rather than "F".</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CAT-10</td><td>The system can print a spine label carrying the accession number as a scannable barcode.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="tag">Addition to your original design</span>
+    <p>FR-CAT-01 adds a <strong>book title</strong>, which the original table list did not include. A catalogue that a member can search by writer and category but not by title is not usable at the counter, so we have treated the title as essential rather than optional. Recommendation R1 goes further and explains why the title should be separated from the physical copy.</p>
+  </div>
+</section>
+
+<section id="circulation">
+  <span class="sec-num">05</span>
+  <h2 class="sec">Issuing and taking back</h2>
+  <p>This is the part of the system your staff will use every day, so it is designed around the counter: find the member, find the book, confirm.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 880 226" role="img" aria-label="Flow of a book from on the shelf, to on loan, to overdue, to declared lost; loans return to the shelf when taken back.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g color="var(--rule-strong)">
+          <rect class="d-box" x="14" y="44" width="170" height="58" rx="3"/>
+          <text class="d-label" x="99" y="69" text-anchor="middle">On the shelf</text>
+          <text class="d-sub" x="99" y="87" text-anchor="middle">AVAILABLE</text>
+
+          <rect class="d-box" x="248" y="44" width="170" height="58" rx="3"/>
+          <text class="d-label" x="333" y="69" text-anchor="middle">On loan</text>
+          <text class="d-sub" x="333" y="87" text-anchor="middle">DUE IN 14 DAYS</text>
+
+          <rect class="d-box" x="482" y="44" width="170" height="58" rx="3"/>
+          <text class="d-label" x="567" y="69" text-anchor="middle">Overdue</text>
+          <text class="d-sub" x="567" y="87" text-anchor="middle">FLAGGED TO STAFF</text>
+
+          <rect class="d-box-flag" x="716" y="44" width="150" height="58" rx="3"/>
+          <text class="d-label" x="791" y="69" text-anchor="middle">Missing</text>
+          <text class="d-sub" x="791" y="87" text-anchor="middle">OUT OF CIRCULATION</text>
+
+          <path class="d-line" d="M184 73 H240" marker-end="url(#ar)"/>
+          <text class="d-edge" x="212" y="34" text-anchor="middle">issue</text>
+
+          <path class="d-line" d="M418 73 H474" marker-end="url(#ar)"/>
+          <text class="d-edge" x="446" y="34" text-anchor="middle">due date passes</text>
+
+          <path class="d-line" d="M652 73 H708" marker-end="url(#ar)"/>
+          <text class="d-edge" x="680" y="34" text-anchor="middle">declared lost</text>
+
+          <path class="d-line" d="M333 102 V158"/>
+          <path class="d-line" d="M567 102 V158"/>
+          <path class="d-line" d="M567 158 H99 V110" marker-end="url(#ar)"/>
+          <text class="d-edge" x="333" y="180" text-anchor="middle">take back</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>The life of one book copy. Every arrow is an action a staff member takes or a date passing; nothing changes state on its own except the move to Overdue.</figcaption>
+  </figure>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-CIR-01</td><td>Staff issue a book by selecting a member and a book. The system records today as the borrow date and sets the due date 14 days later.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-02</td><td>The system refuses to issue a book and states the reason if it is already on loan, missing, not useable, the member's membership has expired, or the member is already holding the maximum number of books.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-03</td><td>Staff take a book back in one action. The return date is recorded and the book returns to the shelf immediately.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-04</td><td>If a book comes back after its due date, the system shows how many days late it was and keeps that on the loan record.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-05</td><td>Staff can correct a loan record — wrong book, wrong member, wrong date. Every correction records who made it and when.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-06</td><td>The maximum number of books one member may hold at a time is a setting, defaulting to two.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-07</td><td>The loan period is a setting per branch, defaulting to 14 days, so a branch can run a longer or shorter period without new software.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CIR-08</td><td>At take-back, staff can mark a book as damaged or lost instead of returning it to the shelf. Its condition changes and the loan stays open against the member until it is settled.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CIR-09</td><td>A member's page shows their complete borrowing history, most recent first.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CIR-10</td><td>A loan can be renewed once for a further loan period, provided it is not already overdue.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="membership">
+  <span class="sec-num">06</span>
+  <h2 class="sec">Membership and annual fee</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-MEM-01</td><td>A membership is valid for one year. The first year runs from the date the member registers.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-02</td><td>Staff record an annual fee payment against a member. The membership is extended by one year from its previous expiry date, so a member who pays late does not gain extra time.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-03</td><td>Staff see three lists on one screen: paid in the last 30 days, expiring in the next 30 days, and already expired.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-04</td><td>An expired member can still sign in and browse the catalogue but cannot be issued a book until the fee is paid.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-05</td><td>Each payment is kept as its own record with the amount, the date, a receipt number and the staff member who collected it. Payments are never overwritten.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-MEM-06</td><td>The annual fee amount is a setting per branch rather than a fixed number in the software.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-MEM-07</td><td>The system can print or export a receipt for a payment.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="hours">
+  <span class="sec-num">07</span>
+  <h2 class="sec">Opening hours</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-SCH-01</td><td>Staff set a weekly pattern for their branch: for each day of the week, an opening and closing time, or closed.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-SCH-02</td><td>Staff can mark specific dates as closed with a reason, for Poya days, public holidays and stock-taking. These override the weekly pattern.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-SCH-03</td><td>A member sees their home branch's hours on their dashboard and can look up any other branch's hours.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-SCH-04</td><td>Today's status is stated plainly: Open until 5.00 pm, Opens at 9.00 am, or Closed today, with the reason where one is recorded.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-SCH-05</td><td>A closure can be set for a date range in one action rather than day by day.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="alerts">
+  <span class="sec-num">08</span>
+  <h2 class="sec">Alerts and reminders</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-NOT-01</td><td>A member's dashboard warns them three days before a book is due, and shows a stronger warning every day it stays overdue.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-02</td><td>A member is warned 30 days before their membership expires, and told clearly once it has expired.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-03</td><td>The staff dashboard opens on today's work: books due back today, books already overdue, and memberships expiring this month.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-04</td><td>Staff can produce a call list of overdue members with their phone numbers, for following up by telephone.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-NOT-05</td><td>The system sends an SMS reminder for a due book and an expiring membership.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="tag">Cost note</span>
+    <p>FR-NOT-05 needs a paid SMS gateway account, billed per message by a Sri Lankan provider. That is an ongoing cost you would carry directly, not part of the software price. Until it is enabled, a member only sees a warning when they sign in — which the members you most need to reach are the least likely to do.</p>
+  </div>
+</section>
+
+<section id="reports">
+  <span class="sec-num">09</span>
+  <h2 class="sec">Reports</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-RPT-01</td><td>Stock summary for a branch: how many books in each category, and how many are useable, missing or not useable.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-02</td><td>Currently issued and overdue lists, downloadable as a spreadsheet file.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-03</td><td>Fee collection summary for a chosen date range, per branch and in total.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-04</td><td>Membership count over time: new members, renewals and lapsed members per month.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-05</td><td>Most borrowed books and least borrowed books over a chosen period, to guide what you buy next.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="nfr">
+  <span class="sec-num">10</span>
+  <h2 class="sec">Quality requirements</h2>
+  <p>These apply to the whole system rather than to one feature, and they are as much a part of acceptance as the features above.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Area</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="id">NFR-01</td><td>Speed</td><td>Any counter action — search, issue, take back — completes in under two seconds with 50 people using the system at once.</td></tr>
+        <tr><td class="id">NFR-02</td><td>Devices</td><td>Works on a desktop browser at 1366&times;768 and on a phone. Members will mostly use phones; staff will mostly use the counter machine.</td></tr>
+        <tr><td class="id">NFR-03</td><td>Browsers</td><td>Current versions of Chrome, Edge, Firefox and Safari.</td></tr>
+        <tr><td class="id">NFR-04</td><td>Language</td><td>Sinhala, Tamil and English text can be entered and displayed correctly in every field, including names and book titles.</td></tr>
+        <tr><td class="id">NFR-05</td><td>Time</td><td>All dates and times are shown in Sri Lanka time. Due dates are calculated by date, not by hour, so a book issued at 4.55 pm is due on the same day of the fortnight as one issued at 9.05 am.</td></tr>
+        <tr><td class="id">NFR-06</td><td>Security</td><td>All traffic over HTTPS. Passwords hashed with a modern algorithm. Staff pages unreachable without a valid staff session, checked on the server for every request.</td></tr>
+        <tr><td class="id">NFR-07</td><td>Audit</td><td>Every staff action that changes data records who did it and when, and that record cannot be edited from within the application.</td></tr>
+        <tr><td class="id">NFR-08</td><td>Backup</td><td>The database is backed up daily and a restore is tested before handover. Recovery point: at most 24 hours of data.</td></tr>
+        <tr><td class="id">NFR-09</td><td>Privacy</td><td>Member names, phone numbers and addresses are personal data under Sri Lanka's Personal Data Protection Act No. 9 of 2022. Access is limited to staff of the member's own branch and to super admins.</td></tr>
+        <tr><td class="id">NFR-10</td><td>Correctness</td><td>The same book cannot be issued twice at the same moment, even if two staff members act at once. The system enforces this in the database, not only in the screen.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="data">
+  <span class="sec-num">11</span>
+  <h2 class="sec">Information we store</h2>
+  <p>This is the record structure behind the system. It is included so you can confirm nothing you need is missing before we build. Fields shown in green are additions to your original list that this document proposes.</p>
+
+  <div class="schema">
+    <div class="tbl">
+      <div class="tbl-name">branch</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>library_name <span>text</span></li>
+        <li>branch_name <span>text</span></li>
+        <li class="new">address <span>text</span></li>
+        <li class="new">phone <span>text</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">book</div>
+      <ul>
+        <li>id <span>A12345</span></li>
+        <li class="new">title <span>text</span></li>
+        <li>category <span>A&ndash;Z</span></li>
+        <li>writer <span>text, optional</span></li>
+        <li>publisher <span>text, optional</span></li>
+        <li>source <span>text, optional</span></li>
+        <li>status <span>useable / missing / not useable</span></li>
+        <li>availability <span>on shelf / on loan</span></li>
+        <li>branch_id <span>branch</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">user</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li class="new">full_name <span>text</span></li>
+        <li>user_type <span>member / admin / super admin</span></li>
+        <li>phone <span>text, unique</span></li>
+        <li>password <span>hashed</span></li>
+        <li>address <span>text</span></li>
+        <li>branch_id <span>branch</span></li>
+        <li>expire_at <span>date</span></li>
+        <li class="new">is_active <span>yes / no</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">borrow</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>book_id <span>book</span></li>
+        <li>user_id <span>member</span></li>
+        <li>branch_id <span>branch</span></li>
+        <li>borrow_date <span>date</span></li>
+        <li class="new">due_date <span>borrow + 14 days</span></li>
+        <li class="new">returned_at <span>date, empty while on loan</span></li>
+        <li class="new">issued_by <span>staff user</span></li>
+        <li class="new">received_by <span>staff user</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">membership_payment</div>
+      <ul>
+        <li class="new">id <span>number</span></li>
+        <li class="new">user_id <span>member</span></li>
+        <li class="new">amount <span>LKR</span></li>
+        <li class="new">paid_on <span>date</span></li>
+        <li class="new">receipt_no <span>text</span></li>
+        <li class="new">collected_by <span>staff user</span></li>
+        <li class="new">extends_to <span>new expiry</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">branch_schedule</div>
+      <ul>
+        <li class="new">branch_id <span>branch</span></li>
+        <li class="new">weekday <span>Mon&ndash;Sun</span></li>
+        <li class="new">open_time <span>time, empty = closed</span></li>
+        <li class="new">close_time <span>time</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">branch_closure</div>
+      <ul>
+        <li class="new">branch_id <span>branch</span></li>
+        <li class="new">closed_on <span>date</span></li>
+        <li class="new">reason <span>text</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">audit_log</div>
+      <ul>
+        <li class="new">actor_id <span>staff user</span></li>
+        <li class="new">action <span>issued / returned / edited</span></li>
+        <li class="new">target <span>record affected</span></li>
+        <li class="new">before / after <span>values changed</span></li>
+        <li class="new">at <span>date and time</span></li>
+      </ul>
+    </div>
+  </div>
+  <p>Four of these tables — payments, opening hours, closures and the audit log — do not exist in the original design but are required by features you asked for. Without <code>branch_schedule</code> there is nowhere to put opening times; without <code>membership_payment</code> a renewal overwrites the previous expiry date and the payment history is lost.</p>
+</section>
+
+<section id="advice">
+  <span class="sec-num">12</span>
+  <h2 class="sec">What we recommend changing</h2>
+  <p class="lead">These are our professional recommendations on the design as it stands. None of them is a defect in your thinking — they are the places where a decision that is reasonable today becomes expensive in two years. Each shows the effort to do it now.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Recommendation</th><th>Why it matters</th><th>Effort now</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="id">R1</td>
+          <td>Separate the <strong>title</strong> from the <strong>copy</strong>.</td>
+          <td>Today, five copies of the same book mean typing the writer, publisher and title five times, and a typo in one of them splits the book into two entries in search results. Storing the title once and the five accession numbers against it fixes this and makes "3 of 5 copies available" possible.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R2</td>
+          <td>Work out availability from the loans rather than storing it as a separate yes/no field.</td>
+          <td>Two places recording the same fact will eventually disagree — a crash mid-transaction leaves a book marked on loan with no loan against it, and staff cannot issue a book that is physically in their hand. One source of truth removes the whole class of problem.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R3</td>
+          <td>Store phone numbers as <strong>text</strong>, not as numbers, and require them to be unique.</td>
+          <td>Stored as a number, <code>0771234567</code> loses its leading zero and becomes <code>771234567</code>. Since the phone number is also the sign-in name, duplicates must be impossible.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R4</td>
+          <td>Drop the Member / Admin / Super admin choice from the <strong>sign-in</strong> screen; keep it only for registration.</td>
+          <td>The password already determines who someone is. Asking first only creates a way to fail — a librarian who picks Member gets told their password is wrong. It also confirms to a stranger that a given phone number belongs to an admin.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R5</td>
+          <td>Make the super admin code <strong>single-use</strong>. After the first super admin exists, further staff are created by an existing super admin, not by self-registration.</td>
+          <td>A fixed code shared among staff spreads by WhatsApp and never expires. Anyone who ever sees it can create a super admin account for themselves, at any time, from anywhere. A single-use bootstrap code closes the door permanently after setup.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R6</td>
+          <td>Have staff <strong>approve</strong> a member's self-registration at the counter before the membership becomes active, and start the year from that approval.</td>
+          <td>Otherwise anyone on the internet can create an account, and you cannot tell a real member from a name typed into a form. Approving at the counter is also the natural moment to check identity and collect the first fee.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R7</td>
+          <td>Record a <strong>due date</strong> and a separate <strong>returned date</strong> on each loan.</td>
+          <td>The original design has one date field whose meaning changes depending on whether the book is back. That makes "which books are overdue right now" impossible to answer reliably, which is the single most important question the system exists to answer.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R8</td>
+          <td>Decide the <strong>rule for other branches</strong>: can a member borrow a book held elsewhere, or only see it?</td>
+          <td>The design lets members search other branches but never says what happens next. If they can only look, members will travel to a branch expecting a book; if they can borrow, we need transfer requests and a way to track a book in transit. Either is fine, but it must be decided before build.</td>
+          <td>Low to decide, medium to build</td>
+        </tr>
+        <tr>
+          <td class="id">R9</td>
+          <td>Make super admin an <strong>organisation-wide</strong> role, and admin the branch-scoped one.</td>
+          <td>As written, super admins are capped at five per branch yet their job is to create branches — so the first one has no branch to belong to. Organisation-wide super admins with branch-scoped librarians matches how the library actually works, and three or four super admins in total is safer than five per branch.</td>
+          <td>Low, before build</td>
+        </tr>
+        <tr>
+          <td class="id">R10</td>
+          <td>Add <strong>barcode scanning</strong> at the counter once the basics are live.</td>
+          <td>The accession number format is already ideal for a barcode. A USB scanner costs little, and issuing a book becomes scan-scan-done instead of two searches. This is the single biggest improvement to daily staff experience.</td>
+          <td>Medium, phase 3</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="limits">
+  <span class="sec-num">13</span>
+  <h2 class="sec">Limitations and risks</h2>
+  <p class="lead">What this system will not do for you, and what could go wrong. We would rather you know now than discover it after handover.</p>
+
+  <h3>Serious &mdash; please decide on these before we build</h3>
+  <div class="grid2">
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Anyone with the code becomes an owner</h4><span class="risk-id">D1</span></div>
+      <p>The super admin registration code is a single shared secret with no expiry. A staff member who leaves keeps the ability to create a super admin account and read every member's phone number and address.</p>
+      <p class="fix"><b>Mitigation:</b> adopt R5. Otherwise, rotate the code whenever anyone leaves and accept the risk in writing.</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Unverified members can borrow real books</h4><span class="risk-id">D2</span></div>
+      <p>Self-registration creates an active member instantly. There is no check that the person exists, that the address is real, or that the fee was paid — but the books they take away are physical and unrecoverable.</p>
+      <p class="fix"><b>Mitigation:</b> adopt R6, so registration online only produces an application that a librarian activates in person.</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Overdue books have no consequence</h4><span class="risk-id">D3</span></div>
+      <p>The system will tell you a book is 40 days late, and that is all it does. There is no fine calculation, no borrowing block after a threshold, and no record of what was eventually recovered.</p>
+      <p class="fix"><b>Mitigation:</b> tell us your fine policy and we will cost it. At minimum, blocking further borrowing while a book is overdue costs almost nothing to add.</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>The counter stops when the internet does</h4><span class="risk-id">D4</span></div>
+      <p>This is a web system with no offline mode. During an outage at a branch, staff cannot issue or take back books and must record transactions on paper, then enter them later — which is when mistakes happen.</p>
+      <p class="fix"><b>Mitigation:</b> a printed daily loans sheet as a fallback, plus an agreed procedure for entering a backlog. Offline-capable software is a much larger project.</p>
+    </div>
+  </div>
+
+  <h3>Worth knowing</h3>
+  <div class="grid2">
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>No reservations or holds</h4><span class="risk-id">D5</span></div>
+      <p>A member who wants a book that is on loan has no way to queue for it. They must keep checking the catalogue, and whoever happens to arrive first gets it.</p>
+      <p class="fix"><b>Option:</b> phase 3 feature, moderate effort.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Reminders only reach people who sign in</h4><span class="risk-id">D6</span></div>
+      <p>Due-date and expiry warnings appear on the member's dashboard. A member who never signs in never sees them, and those are exactly the members who go overdue.</p>
+      <p class="fix"><b>Option:</b> SMS reminders, FR-NOT-05, with a per-message cost you carry.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Books cannot move between branches</h4><span class="risk-id">D7</span></div>
+      <p>A super admin can reassign a book to another branch, but there is no request, no approval and no in-transit state. A book being carried between branches simply appears to be on the shelf at its destination.</p>
+      <p class="fix"><b>Option:</b> depends on the answer to R8.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Personal data brings legal duties</h4><span class="risk-id">D8</span></div>
+      <p>Holding names, phone numbers and addresses makes the library a data controller under the Personal Data Protection Act No.&nbsp;9 of 2022. You will need a stated purpose, a retention period and a way to respond if a member asks for their data.</p>
+      <p class="fix"><b>Mitigation:</b> we will supply a privacy notice for the registration page; the policy decisions are yours.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>The catalogue is local, not standard</h4><span class="risk-id">D9</span></div>
+      <p>Books are catalogued with your own letter categories rather than ISBN and a standard classification. That is simpler to use, but it means the data cannot be imported into a standard library system later without manual work.</p>
+      <p class="fix"><b>Option:</b> add an optional ISBN field now — cheap insurance, no extra work at the counter.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Capacity of the numbering scheme</h4><span class="risk-id">D10</span></div>
+      <p>The <code>A12345</code> format allows 100,000 numbers per letter. That is ample, but the letter in the number is not the same as the category letter, and staff will assume it is. Agree now what the letter means.</p>
+      <p class="fix"><b>Mitigation:</b> either make the letter the category, or document that it is meaningless. Do not leave it ambiguous.</p>
+    </div>
+  </div>
+</section>
+
+<section id="phases">
+  <span class="sec-num">14</span>
+  <h2 class="sec">Delivery in three phases</h2>
+  <p>We recommend putting a working counter system in your hands early rather than delivering everything at once. Each phase is usable on its own.</p>
+
+  <div class="phase">
+    <div class="phase-n">1</div>
+    <div>
+      <h4>The counter works</h4>
+      <span class="when">First release</span>
+      <p>Branches, accounts and sign-in, the book catalogue with search, issuing and taking back with due dates, membership expiry, and the staff dashboard showing today's overdue books. At the end of this phase you can stop using the paper register.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-n">2</div>
+    <div>
+      <h4>The library runs itself</h4>
+      <span class="when">Second release</span>
+      <p>Opening hours and closures, annual fee payments with history and receipts, member warnings for due dates and expiry, the member-facing dashboard, and the reports in section&nbsp;9.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-n">3</div>
+    <div>
+      <h4>Faster and further</h4>
+      <span class="when">Once phases 1 and 2 are settled in use</span>
+      <p>Barcode scanning at the counter, SMS reminders, reservations, fines, renewals, and inter-branch requests. We would rather choose from this list after you have used the system for a few months than guess now.</p>
+    </div>
+  </div>
+</section>
+
+<section id="questions">
+  <span class="sec-num">15</span>
+  <h2 class="sec">Decisions we need from you</h2>
+  <p>Each of these changes what we build. Answers to Q1 to Q4 are needed before development starts.</p>
+  <ol class="q">
+    <li>Can a member borrow a book held at another branch, or only see that it exists there? (Recommendation R8.)</li>
+    <li>Should a member's registration become active immediately, or only after a librarian approves it at the counter? (Recommendation R6.)</li>
+    <li>Should librarians be able to add and edit books, or is that strictly a super admin task? Cataloguing new arrivals is usually a librarian's job.</li>
+    <li>Is there a fine for overdue books? If so, what is the daily rate and is there a maximum?</li>
+    <li>How many books may one member hold at once? We have assumed two.</li>
+    <li>What is the annual membership fee, and is it the same at every branch?</li>
+    <li>How many branches will there be at launch, and roughly how many books and members in total?</li>
+    <li>Who will be the first super admin, and who holds the setup code?</li>
+    <li>Do you want SMS reminders in scope, given the per-message cost? (FR-NOT-05.)</li>
+    <li>Should the interface be in English only, or English with Sinhala and Tamil?</li>
+  </ol>
+</section>
+
+<section id="signoff">
+  <span class="sec-num">16</span>
+  <h2 class="sec">Acceptance</h2>
+  <p>Signing below confirms that the requirements marked <span class="chip must">Must</span> in sections 3 to 10 describe the system you want built, that the limitations in section&nbsp;13 have been read and accepted, and that the answers to section&nbsp;15 have been provided in writing. Anything not listed in this document is outside the agreed scope and will be quoted separately.</p>
+  <div class="signoff">
+    <div class="sig">
+      <div class="who">&nbsp;</div>
+      <div class="what">Client &mdash; name, signature and date</div>
+    </div>
+    <div class="sig">
+      <div class="who">Chathuranga Jayawardhana</div>
+      <div class="what">System Designer &mdash; signature and date</div>
+      <div class="reach">
+        <a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a><br>
+        <a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a><br>
+        <a href="https://linkedin.com/in/chathuranga97">linkedin.com/in/chathuranga97</a>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:28px">Questions on any part of this document are welcome before signing. It is easier to change a requirement now than a screen later.</p>
+</section>
+
+<footer>
+  Pothgula &mdash; Software Requirements Specification v1.0 &middot; 25 August 2026 &middot; Draft for client review, not for construction until section&nbsp;15 is answered.<br>
+  Chathuranga Jayawardhana &middot; <a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a> &middot; <a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a> &middot; <a href="https://linkedin.com/in/chathuranga97">linkedin.com/in/chathuranga97</a>
+</footer>
+
+</main>
+</div>
+</div>

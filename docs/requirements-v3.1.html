@@ -1,0 +1,1579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pothgula Requirements v3.1</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F6F8F6; --surface:#FFFFFF; --surface-sunk:#EDF0EC;
+  --ink:#161D1A; --ink-soft:#3D4844; --muted:#6E7B75;
+  --rule:#DBE2DC; --rule-strong:#BFCBC2;
+  --accent:#1E5D4B; --accent-soft:#E3EFE9; --accent-ink:#164537;
+  --flag:#A03028; --flag-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(22,29,26,.05), 0 8px 24px -16px rgba(22,29,26,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101614; --surface:#18201D; --surface-sunk:#141A18;
+    --ink:#E7EDE8; --ink-soft:#BAC5BF; --muted:#8C9993;
+    --rule:#2A3531; --rule-strong:#3C4A45;
+    --accent:#63B79B; --accent-soft:#1B2E28; --accent-ink:#8ED3BB;
+    --flag:#E38278; --flag-soft:#33211F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101614; --surface:#18201D; --surface-sunk:#141A18;
+  --ink:#E7EDE8; --ink-soft:#BAC5BF; --muted:#8C9993;
+  --rule:#2A3531; --rule-strong:#3C4A45;
+  --accent:#63B79B; --accent-soft:#1B2E28; --accent-ink:#8ED3BB;
+  --flag:#E38278; --flag-soft:#33211F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+
+.shell{max-width:1180px; margin:0 auto; padding:0 24px 96px}
+.layout{display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; align-items:start}
+@media (max-width:900px){ .layout{grid-template-columns:minmax(0,1fr); gap:32px} }
+
+.masthead{padding:64px 0 40px; border-bottom:1px solid var(--rule-strong)}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 20px;
+}
+.wordmark{
+  font-family:"Newsreader",Georgia,serif; font-optical-sizing:auto; font-weight:500;
+  font-size:clamp(3rem,8vw,5.25rem); line-height:.96; letter-spacing:-.02em;
+  margin:0; text-wrap:balance;
+}
+.wordmark em{font-style:italic; color:var(--accent)}
+.standfirst{
+  font-family:"Newsreader",Georgia,serif; font-size:clamp(1.15rem,2.2vw,1.4rem);
+  line-height:1.5; color:var(--ink-soft); max-width:40ch; margin:22px 0 0;
+}
+.docmeta{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:20px 32px;
+  margin:44px 0 0; padding:24px 0 0; border-top:1px solid var(--rule);
+}
+.docmeta div{display:flex; flex-direction:column; gap:3px}
+.docmeta dt{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.docmeta dd{margin:0; font-size:14.5px; font-weight:500}
+
+.toc{position:sticky; top:24px; padding-top:56px}
+@media (max-width:900px){
+  .toc{position:static; padding:28px 22px; background:var(--surface); border:1px solid var(--rule); border-radius:4px}
+}
+.toc h2{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted); font-weight:500; margin:0 0 14px;
+}
+.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; counter-reset:toc}
+.toc a{
+  display:grid; grid-template-columns:26px 1fr; gap:6px; padding:5px 0;
+  color:var(--ink-soft); text-decoration:none; font-size:13.5px; line-height:1.35;
+}
+.toc a::before{
+  counter-increment:toc; content:counter(toc,decimal-leading-zero);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); padding-top:1px;
+}
+.toc a:hover{color:var(--accent)}
+.toc a:hover::before{color:var(--accent)}
+
+main{padding-top:56px; min-width:0}
+section{scroll-margin-top:24px; padding-bottom:52px}
+section + section{border-top:1px solid var(--rule); padding-top:52px}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500; letter-spacing:.14em;
+  color:var(--accent); display:block; margin-bottom:10px;
+}
+h2.sec{
+  font-family:"Newsreader",Georgia,serif; font-weight:500; font-size:clamp(1.75rem,3.4vw,2.35rem);
+  line-height:1.15; letter-spacing:-.015em; margin:0 0 18px; text-wrap:balance;
+}
+h3{
+  font-size:1rem; font-weight:600; letter-spacing:-.005em; margin:36px 0 12px;
+  padding-bottom:7px; border-bottom:1px solid var(--rule);
+}
+h4{font-size:14px; font-weight:600; margin:24px 0 8px}
+p{margin:0 0 15px; max-width:68ch}
+p.lead{font-size:17.5px; color:var(--ink-soft); max-width:62ch}
+ul.plain{margin:0 0 16px; padding-left:20px; max-width:68ch}
+ul.plain li{margin-bottom:7px}
+strong{font-weight:600}
+code{
+  font-family:"IBM Plex Mono",monospace; font-size:.86em; background:var(--surface-sunk);
+  padding:1px 5px; border-radius:3px; border:1px solid var(--rule);
+}
+
+.tablewrap{overflow-x:auto; margin:0 0 20px; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14px; min-width:560px}
+th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); font-weight:500; background:var(--surface-sunk); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td.id{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--accent); white-space:nowrap; font-weight:500}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+.mark{color:var(--accent); font-weight:600}
+.nomark{color:var(--rule-strong)}
+th.ctr,td.ctr{text-align:center}
+
+.chip{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; padding:2px 7px; border-radius:3px;
+  border:1px solid var(--rule-strong); color:var(--muted); white-space:nowrap;
+}
+.chip.must{background:var(--ink); border-color:var(--ink); color:var(--ground)}
+.chip.should{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.chip.high{border-color:var(--flag); color:var(--flag); background:var(--flag-soft)}
+
+.note{
+  background:var(--accent-soft); border:1px solid var(--rule); border-left:3px solid var(--accent);
+  padding:16px 18px; border-radius:0 4px 4px 0; margin:0 0 22px; font-size:14.5px;
+}
+.note p{margin:0; max-width:none; color:var(--ink-soft)}
+.note p + p{margin-top:9px}
+.note .tag{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent-ink); margin-bottom:6px; font-weight:500;
+}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:0 0 22px}
+.card{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:18px 20px; box-shadow:var(--shadow)}
+.card h4{margin:0 0 8px; font-size:14.5px}
+.card p{margin:0; font-size:14px; color:var(--ink-soft); max-width:none}
+.card .role{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); display:block; margin-bottom:9px;
+}
+.card ul{margin:10px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft)}
+.card ul li{margin-bottom:5px}
+
+.risk{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:16px 18px 16px 20px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.risk::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--rule-strong)}
+.risk.sev-high::before{background:var(--flag)}
+.risk.sev-med::before{background:var(--accent)}
+.risk-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:7px}
+.risk-head h4{margin:0; font-size:14.5px}
+.risk-id{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted)}
+.risk p{margin:0; font-size:13.5px; color:var(--ink-soft); max-width:none}
+.risk .fix{margin-top:9px; font-size:13px; color:var(--ink-soft); border-top:1px dotted var(--rule-strong); padding-top:8px}
+.risk .fix b{color:var(--ink); font-weight:600}
+
+.schema{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:0 0 22px}
+.tbl{background:var(--surface); border:1px solid var(--rule); border-radius:4px; overflow:hidden; box-shadow:var(--shadow)}
+.tbl-name{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:500; letter-spacing:.04em;
+  padding:9px 14px; background:var(--surface-sunk); border-bottom:1px solid var(--rule); color:var(--accent);
+}
+.tbl ul{list-style:none; margin:0; padding:10px 14px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; line-height:1.85}
+.tbl li{display:flex; justify-content:space-between; gap:12px; color:var(--ink-soft)}
+.tbl li span{color:var(--muted); font-size:10.5px; white-space:nowrap}
+.tbl li.new{color:var(--accent)}
+.tbl li.new span{color:var(--accent)}
+
+figure{margin:0 0 22px}
+.diagram{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:22px 18px; overflow-x:auto; box-shadow:var(--shadow);
+}
+.diagram svg{display:block; width:100%; min-width:640px; height:auto}
+.d-box{fill:var(--surface-sunk); stroke:var(--rule-strong); stroke-width:1.25}
+.d-box-flag{fill:var(--flag-soft); stroke:var(--flag); stroke-width:1.25}
+.d-label{fill:var(--ink); font-family:"IBM Plex Sans",sans-serif; font-size:14px; font-weight:500}
+.d-sub{fill:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.1em}
+.d-line{stroke:var(--rule-strong); stroke-width:1.25; fill:none}
+.d-edge{fill:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em}
+figcaption{font-size:12.5px; color:var(--muted); margin-top:10px; font-style:italic}
+
+.phase{display:grid; grid-template-columns:auto minmax(0,1fr); gap:20px; padding:20px 0; border-bottom:1px solid var(--rule)}
+.phase:last-child{border-bottom:none}
+.phase-n{
+  font-family:"Newsreader",Georgia,serif; font-size:2.4rem; line-height:1; color:var(--accent);
+  font-weight:500; font-variant-numeric:tabular-nums; padding-top:2px;
+}
+.phase h4{margin:0 0 4px; font-size:15px}
+.phase .when{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px}
+.phase p{margin:0; font-size:14px; color:var(--ink-soft); max-width:64ch}
+
+ol.q{list-style:none; counter-reset:q; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+ol.q li{
+  counter-increment:q; display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px;
+  padding:12px 0; border-bottom:1px solid var(--rule); font-size:14.5px; color:var(--ink-soft);
+}
+ol.q li::before{
+  content:"Q" counter(q); font-family:"IBM Plex Mono",monospace; font-size:11px;
+  color:var(--accent); padding-top:4px; font-weight:500;
+}
+ol.q li:last-child{border-bottom:none}
+
+.signoff{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:32px; margin-top:28px}
+.sig{border-top:1px solid var(--rule-strong); padding-top:10px}
+.sig .who{font-size:14px; font-weight:600}
+.sig .what{font-size:12.5px; color:var(--muted)}
+footer{margin-top:56px; padding-top:24px; border-top:1px solid var(--rule-strong); font-size:12.5px; color:var(--muted)}
+footer a{color:var(--muted)}
+
+.contact{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 24px;
+  margin:22px 0 0; padding:18px 0 0; border-top:1px solid var(--rule);
+}
+.contact-label{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.contact ul{list-style:none; display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; padding:0}
+.contact a{
+  color:var(--ink); text-decoration:none; font-size:14px; font-weight:500;
+  border-bottom:1px solid var(--rule-strong); padding-bottom:1px;
+}
+.contact a:hover{color:var(--accent); border-bottom-color:var(--accent)}
+.sig .reach{margin-top:7px; font-size:12.5px; color:var(--muted); line-height:1.55}
+.sig .reach a{color:var(--muted); text-decoration:none}
+.sig .reach a:hover{color:var(--accent)}
+
+@media print{
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]){
+    --ground:#FFFFFF; --surface:#FFFFFF; --surface-sunk:#F1F4F1;
+    --ink:#111815; --ink-soft:#333D39; --muted:#5C6763;
+    --rule:#D2DAD4; --rule-strong:#A9B5AE;
+    --accent:#154A3B; --accent-soft:#EAF2EE; --accent-ink:#123C31;
+    --flag:#8E2A22; --flag-soft:#F7E7E4;
+    --shadow:none;
+  }
+  @page{margin:15mm 14mm}
+  body{background:#fff; font-size:10pt; line-height:1.5}
+  .shell{max-width:none; padding:0}
+  .layout{display:block}
+  .masthead{padding:0 0 28px; break-after:page}
+  .wordmark{font-size:50pt}
+  .standfirst{font-size:14pt}
+  .toc{position:static; padding:0 0 18px; background:none; border:none; break-after:page}
+  .toc a{color:var(--ink-soft)}
+  main{padding-top:0}
+  section{padding-bottom:26px}
+  section + section{padding-top:26px}
+  h2.sec, h3, h4{break-after:avoid}
+  .tablewrap{overflow:visible; box-shadow:none}
+  table{min-width:0; font-size:8.5pt}
+  th,td{padding:6px 9px}
+  tr{break-inside:avoid}
+  .card,.risk,.tbl,.phase,.note,figure,.sig{break-inside:avoid; box-shadow:none}
+  .diagram{box-shadow:none; padding:14px 4px}
+  .diagram svg{min-width:0}
+  .grid2,.schema{gap:10px}
+  p, ul.plain li, ol.q li, p.lead{max-width:none}
+  a{color:inherit}
+  .contact a{border-bottom:none}
+  footer{break-inside:avoid; margin-top:32px}
+}
+
+/* --- v2 additions --- */
+.delta{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; padding:1px 6px; border-radius:3px;
+  margin-right:8px; white-space:nowrap; vertical-align:1px;
+}
+.delta.new{background:var(--accent); color:var(--ground); border:1px solid var(--accent)}
+.delta.changed{background:var(--accent-soft); color:var(--accent-ink); border:1px solid var(--accent)}
+.delta.gone{background:var(--flag-soft); color:var(--flag); border:1px solid var(--flag)}
+tr.gone td{color:var(--muted)}
+tr.gone td.id{text-decoration:line-through; color:var(--flag)}
+.chip.gone{border-color:var(--flag); color:var(--flag); background:var(--flag-soft)}
+.supersede{
+  margin:22px 0 0; padding:14px 16px; border:1px solid var(--rule-strong); border-radius:4px;
+  background:var(--surface); font-size:13.5px; color:var(--ink-soft); max-width:60ch;
+}
+.supersede b{color:var(--ink)}
+td.money{font-variant-numeric:tabular-nums; white-space:nowrap}
+.keyfmt{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:0 0 20px;
+}
+.keyfmt .seg{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:14px 16px; box-shadow:var(--shadow)}
+.keyfmt .seg code{font-size:1.5rem; background:none; border:none; padding:0; color:var(--accent); font-weight:500; letter-spacing:.06em}
+.keyfmt .seg h4{margin:8px 0 4px; font-size:13.5px}
+.keyfmt .seg p{margin:0; font-size:12.5px; color:var(--muted); max-width:none}
+@media print{
+  .keyfmt .seg,.supersede{break-inside:avoid; box-shadow:none}
+}
+
+/* --- v3 additions --- */
+.delta.moved{background:var(--surface-sunk); color:var(--muted); border:1px solid var(--rule-strong)}
+td.item{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted); white-space:nowrap}
+.keyfmt.k3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.keyfmt .seg code small{font-size:.55em; color:var(--muted); letter-spacing:0}
+.status-res{color:var(--accent); font-weight:600}
+.flow{display:flex; flex-wrap:wrap; gap:6px 0; align-items:center; margin:0 0 20px; font-size:13px}
+.flow span{background:var(--surface); border:1px solid var(--rule-strong); border-radius:3px; padding:5px 10px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.04em}
+.flow i{font-style:normal; color:var(--muted); padding:0 8px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<header class="masthead">
+  <p class="eyebrow">Software Requirements Specification &middot; Version 3.1</p>
+  <h1 class="wordmark">Poth<em>gula</em></h1>
+  <p class="standfirst">A free and open-source web system for lending and membership in a small library operating across several branches.</p>
+  <dl class="docmeta">
+    <div><dt>Prepared by</dt><dd>Chathuranga Jayawardhana</dd></div>
+    <div><dt>Role</dt><dd>Software Engineer, System Designer</dd></div>
+    <div><dt>Date</dt><dd>6 November 2026</dd></div>
+    <div><dt>Status</dt><dd>Revised baseline &mdash; for client confirmation</dd></div>
+  </dl>
+  <div class="supersede">
+    <b>This document revises version 3.0 of 22 September 2026.</b> It takes in your answers to the recommendations and questions of v3.0, fills every remaining open question with a recommended answer for you to confirm, and corrects the places where v3.0 contradicted itself. Section&nbsp;2 lists every change and where it came from. Requirement identifiers are unchanged, so <code>FR-CIR-04</code> means the same thing in every version; withdrawn requirements keep their number and are shown struck through. Markers now show what changed since <em>version&nbsp;3.0</em>; anything new or changed in v3.0 and untouched since is shown plain.
+  </div>
+  <div class="contact">
+    <span class="contact-label">Contact</span>
+    <ul>
+      <li><a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a></li>
+      <li><a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a></li>
+      <li><a href="https://linkedin.com/in/chathuranga97">linkedin.com/in/chathuranga97</a></li>
+    </ul>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#purpose">Purpose and scope</a></li>
+    <li><a href="#changes">What changed since v3.0</a></li>
+    <li><a href="#roles">Who uses the system</a></li>
+    <li><a href="#access">Accounts, registration and approval</a></li>
+    <li><a href="#branches">Branches and categories</a></li>
+    <li><a href="#catalogue">The book catalogue</a></li>
+    <li><a href="#circulation">Issuing, taking back and extending</a></li>
+    <li><a href="#requests">Books from other branches</a></li>
+    <li><a href="#lost">Lost and damaged books</a></li>
+    <li><a href="#membership">Membership and annual fee</a></li>
+    <li><a href="#hours">Opening hours</a></li>
+    <li><a href="#notices">Notices and events</a></li>
+    <li><a href="#alerts">Alerts and reminders</a></li>
+    <li><a href="#log">The activity log</a></li>
+    <li><a href="#reports">Reports and exports</a></li>
+    <li><a href="#nfr">Quality requirements</a></li>
+    <li><a href="#data">Information we store</a></li>
+    <li><a href="#advice">Recommendations and their outcome</a></li>
+    <li><a href="#limits">Limitations and risks</a></li>
+    <li><a href="#phases">Delivery in three phases</a></li>
+    <li><a href="#questions">Decisions, answered</a></li>
+    <li><a href="#signoff">Acceptance</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="purpose">
+  <span class="sec-num">01</span>
+  <h2 class="sec">Purpose and scope</h2>
+  <p class="lead">Pothgula replaces the paper register. It keeps one shared record of every book, every member and every loan across all of your branches, tells your staff what needs attention today, and keeps a permanent record of who did what.</p>
+
+  <h3>What the system does</h3>
+  <ul class="plain">
+    <li>Holds the <strong>catalogue</strong>: each book title once, and every physical copy of it, each copy with a number that says which branch accessioned it and which category it belongs to.</li>
+    <li>Records <strong>who borrowed what and when it is due back</strong>, lets a member ask for <strong>two more weeks</strong>, and shows staff what is due soon and what is overdue.</li>
+    <li>Lets a member <strong>request a book held at another branch</strong> and tracks that copy on its way there and back.</li>
+    <li>Settles <strong>lost books</strong> &mdash; the member either replaces the same book or pays the amount on the branch's lost-book tariff, within 100 days, after which borrowing is suspended until it is settled.</li>
+    <li>Takes <strong>membership applications</strong> from the public, holds them until a librarian approves them in person, and tracks each membership year and its fee.</li>
+    <li>Publishes each branch's <strong>opening hours, notices and events</strong> to members.</li>
+    <li>Shows every warning and reminder <strong>on the dashboard</strong> of the person who needs to see it.</li>
+    <li>Keeps an <strong>activity log</strong> of every change by every person, and exports it and every report as text, spreadsheet-ready CSV and PDF.</li>
+    <li>Produces <strong>summaries</strong> &mdash; most and least borrowed books, stock, fees collected, missing books.</li>
+  </ul>
+
+  <h3>What it does not do</h3>
+  <p>This release is a lending and membership system, not a full library automation package. It does not do acquisitions and purchase orders, loans to or from other libraries, digital or e-book lending, online fee payment, fines for late returns, barcode or QR scanning, or a public catalogue open to non-members. It also sends nothing outside itself &mdash; no SMS, no WhatsApp message, no email, no push notification. Section&nbsp;19 explains the consequences of each of these; section&nbsp;20 shows which could be added later.</p>
+
+  <div class="note">
+    <span class="tag">A constraint that shapes everything below</span>
+    <p>Pothgula is a <strong>free and open-source project</strong>. Nothing in it may depend on a paid third-party service, or on a charge per message, per request or per user. That decision removed SMS reminders in version&nbsp;2.0, decides how notice images and branch logos are stored (section&nbsp;12), and rules out a WhatsApp gateway even though the WhatsApp number is the sign-in name. It is written down as requirement NFR-11 so that it cannot be quietly reversed later.</p>
+  </div>
+
+  <div class="note">
+    <span class="tag">How to read this document</span>
+    <p>Every requirement has an identifier such as <code>FR-CIR-04</code> and a priority. <span class="chip must">Must</span> means the system is not accepted without it. <span class="chip should">Should</span> means it is planned and will be dropped only if we agree to drop it. <span class="chip">Could</span> means it is desirable and will be built if time allows. Requirements that are new or altered since version&nbsp;3.0 are marked <span class="delta new">New</span> or <span class="delta changed">Changed</span>; those removed are marked <span class="delta gone">Withdrawn</span> and greyed out. Please mark any requirement you disagree with before signing section&nbsp;22.</p>
+  </div>
+</section>
+
+<section id="changes">
+  <span class="sec-num">02</span>
+  <h2 class="sec">What changed since version 3.0</h2>
+  <p class="lead">Version&nbsp;3.0 ended with seventeen recommendations and twenty-two questions. Your notes answered most of the recommendations and the first two questions. This version writes those answers in, gives a recommended answer to every question still open, and repairs eleven places where v3.0 disagreed with itself. Nothing here adds scope you have not seen, apart from four small improvements in table&nbsp;D, each of which you can strike out.</p>
+
+  <h3>A &middot; Recommendations you accepted or declined</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Your note</th><th>Decision</th><th>What it means</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td class="item">1 &middot; R1</td><td><strong>A title is stored once; copies hang from it</strong></td><td>The catalogue now has two levels: a <em>title</em> (name, writer, publisher, ISBN, category) entered once, and the physical <em>copies</em> of it, each with its own accession number, branch and condition. Five copies are one title with five numbers, not five separate entries. Searching shows one line per title with how many copies are on the shelf at each branch.</td><td class="id">&sect;6, &sect;17</td></tr>
+        <tr><td class="item">2 &middot; R2</td><td><strong>One source of truth for availability</strong></td><td>Whether a copy is on the shelf, on loan, in transit or held is worked out from the loans and requests, never stored as a separate field that could disagree with them. The <code>location</code> field of v3.0 is removed.</td><td class="id">&sect;6, &sect;16</td></tr>
+        <tr><td class="item">3 &middot; R3</td><td><strong>Phone numbers stored as text</strong></td><td>Already adopted in v3.0 (NFR-15). Confirmed.</td><td class="id">&sect;16</td></tr>
+        <tr><td class="item">4 &middot; R4</td><td><strong>No role choice on the sign-in screen</strong></td><td>The landing page offers <em>Sign in</em> and <em>Apply for membership</em>. The account decides who you are. Because staff accounts are now always created by a super admin (next row), the role choice disappears from registration too.</td><td class="id">&sect;4</td></tr>
+        <tr><td class="item">5 &middot; R5</td><td><strong>No super admin code at all</strong></td><td>As you proposed: the first super admin is created during installation, by a one-time command on the server. Every further super admin and every admin is created by an existing super admin inside the system. There is no longer any way to become staff from the website, so there is no code to leak.</td><td class="id">&sect;4</td></tr>
+        <tr><td class="item">6 &middot; R9</td><td><strong>Super admin is organisation-wide</strong></td><td>A super admin belongs to no branch and acts on all of them. The "five per branch" limit of FR-AUT-04 is removed; the minimum of two stays.</td><td class="id">&sect;3, &sect;4</td></tr>
+        <tr><td class="item">7 &middot; R10</td><td><strong>Barcode and QR scanning: not required</strong></td><td>Declined. FR-CAT-17 (QR code) is withdrawn; FR-CAT-10 now prints plain-text spine labels only. Phase&nbsp;3 no longer contains scanning.</td><td class="id">&sect;6, &sect;20</td></tr>
+        <tr><td class="item">8 &middot; R12</td><td><strong>Nothing is ever deleted &mdash; not even by a super admin</strong></td><td>Every "delete" becomes a withdrawal, a void or a deactivation that keeps the record and its history. A loan entered by mistake is voided with a reason; a book that leaves is withdrawn; a notice is withdrawn. The one exception the law requires &mdash; removing the personal details of people who were never members &mdash; is done by blanking those details, not by removing the record (FR-AUT-20).</td><td class="id">&sect;3, &sect;6, &sect;7, &sect;12</td></tr>
+        <tr><td class="item">9 &middot; R13</td><td><strong>The log is written with the change, or not at all</strong></td><td>Each activity log entry is written in the same database transaction as the change it describes. If the entry cannot be written, the change does not happen.</td><td class="id">&sect;14</td></tr>
+        <tr><td class="item">10 &middot; R14</td><td><strong>The introducer's phone number is recorded</strong></td><td>The application form asks for the introducer's name <em>and</em> phone number, both required.</td><td class="id">&sect;4</td></tr>
+        <tr><td class="item">11 &middot; R15</td><td><strong>Suspend, never cancel, after day 100</strong></td><td>Combined with your answer to Q1: a member whose lost-book settlement passes 100 days is <em>suspended</em> &mdash; blocked from every borrowing feature &mdash; and the case goes to the super admins. The account, its history and the debt stay.</td><td class="id">&sect;9</td></tr>
+        <tr><td class="item">12 &middot; R16</td><td><strong>The five-day list is a working list</strong></td><td>Confirmed as written in v3.0 (FR-NOT-12): a sortable list on the staff dashboard, with overdue books held separately above it, not an alert per book.</td><td class="id">&sect;13</td></tr>
+        <tr><td class="item">13 &middot; R17</td><td><strong>A written lost-book tariff &mdash; one per branch</strong></td><td>Combined with your answer to Q2: each branch keeps its own tariff, an amount per category, maintained by that branch's librarians inside the system. The system fills the amount from it when a book is declared lost.</td><td class="id">&sect;9</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>B &middot; Questions you answered</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Question</th><th>Your answer</th><th>How it is written</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td class="item">Q1</td><td>"Yes, the member is blocked from every borrowing feature and the case goes to the super admin."</td><td>On day 101 the account becomes <strong>suspended</strong>: no borrowing, requesting or extending; any request in progress is cancelled. Signing in, seeing their record and settling still work. Every super admin sees the case. Only settling the debt, or a super admin's decision, lifts the suspension (FR-LST-15, FR-LST-09).</td><td class="id">FR-LST-15</td></tr>
+        <tr><td class="item">Q2</td><td>"No, each librarian has separate lost-book amounts."</td><td>We have read this as two things. <strong>No</strong>: the system no longer suggests twice the recorded price. <strong>Separate amounts</strong>: each branch's librarians keep their own tariff, so the same book can cost a different amount at two branches, but two members at the same branch pay the same. The tariff of the branch that <em>owns</em> the lost copy applies. If you meant that each librarian decides case by case with no tariff at all, tell us &mdash; it is a small change, and risk D14 explains why we advise against it.</td><td class="id">FR-LST-02, FR-LST-16</td></tr>
+        <tr><td class="item">Q3</td><td>Your note begins "Early I mentions that&hellip;" and is not finished.</td><td>We have taken it to confirm the rule you gave originally &mdash; one extension, two weeks, counted from the original due date &mdash; and recommended answers to the rest of the question in section&nbsp;21. Please complete the note if you meant something else.</td><td class="id">FR-CIR-10, FR-CIR-13</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>C &middot; Corrections to version 3.0</h3>
+  <p>Places where v3.0 contradicted itself or left a gap a member could fall through. Each is fixed in the requirement named.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>No.</th><th>The problem in v3.0</th><th>The fix</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td class="item">C1</td><td>FR-LOG-10 said reading the log is logged; FR-LOG-12 said reads are never logged.</td><td>Reads are not logged, with two named exceptions: reading the activity log, and exporting a person's details. Both are rare and both are sensitive.</td><td class="id">FR-LOG-01, FR-LOG-12</td></tr>
+        <tr><td class="item">C2</td><td>FR-AUT-20 removed rejected applicants' details after 90 days, but the append-only log (FR-LOG-05) kept a copy of every one of them in its before-and-after values, so the details were never really gone.</td><td>Applicants are <em>anonymised</em>: their record stays with the personal fields blanked, and the same fields are blanked in their log entries by a scheduled system task &mdash; the only alteration the log ever receives, and itself logged.</td><td class="id">FR-AUT-20, FR-LOG-05</td></tr>
+        <tr><td class="item">C3</td><td>FR-AUT-14 required two super admins at all times, but setup necessarily starts with one.</td><td>The system warns every super admin until a second exists, and from then on refuses to go below two.</td><td class="id">FR-AUT-14</td></tr>
+        <tr><td class="item">C4</td><td>A book in transit to a member, or held for them, did not count towards the two-book limit. A member could hold two books, request a third, and find it refused at the counter after it had travelled.</td><td>A copy in transit to, or held for, a member counts as one of their books from the moment the request is accepted.</td><td class="id">FR-CIR-06, FR-REQ-02</td></tr>
+        <tr><td class="item">C5</td><td>FR-MEM-02 renewed from the previous expiry date. A member who lapsed eleven months ago would pay a full year's fee for one month of membership.</td><td>Renewal within 90 days of expiry runs from the old expiry date; after that, a new year runs from the day of payment. The 90 days is a setting.</td><td class="id">FR-MEM-02</td></tr>
+        <tr><td class="item">C6</td><td>A rejected applicant could not sign in, and their WhatsApp number stayed taken until the 90-day purge, so they could not reapply.</td><td>Staff can reopen a rejected application. Once anonymised, the number is free again.</td><td class="id">FR-AUT-17</td></tr>
+        <tr><td class="item">C7</td><td>"Withdrawn" appeared as a reason a book could not be issued (FR-CIR-02) but was not one of a book's recorded states, and condition, location and withdrawal were three fields that could contradict each other.</td><td>A copy has a condition (useable, not useable, missing) and may be withdrawn; where it is &mdash; shelf, loan, transit, held &mdash; is worked out (R2).</td><td class="id">FR-CAT-03, FR-CAT-04</td></tr>
+        <tr><td class="item">C8</td><td>The days late on a loan and the member's count of late returns were stored as numbers, which would drift from the loan dates they come from.</td><td>Both are worked out from the due and return dates whenever they are shown.</td><td class="id">&sect;17</td></tr>
+        <tr><td class="item">C9</td><td>NFR-11 forbade any charge "per month"; NFR-13 allowed a low-cost server, which is charged per month.</td><td>NFR-11 now says plainly that it governs what the software depends on, not where the library chooses to run it.</td><td class="id">NFR-11, NFR-13</td></tr>
+        <tr><td class="item">C10</td><td>The owning branch of a requested book was never told when the borrowing branch extended the loan, so the book simply failed to come home on the expected day.</td><td>The owning branch's panel lists its copies out on loan at other branches, with the current due date.</td><td class="id">FR-REQ-09</td></tr>
+        <tr><td class="item">C11</td><td>Risk D18 measured image storage against a free 0.5&nbsp;GB database, but the technical decision record keeps free hosting for a demonstration with invented data only.</td><td>Real member data lives only in the library's own installation (new NFR-17). D18 is reduced accordingly.</td><td class="id">NFR-17, D18</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>D &middot; Small improvements we propose</h3>
+  <p>Each costs little, closes a risk from section&nbsp;19, and can be struck out before signing.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>No.</th><th>Improvement</th><th>Why</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td class="item">R18</td><td><strong>Identity is checked when an application is approved</strong></td><td>Approval happens at the counter with the applicant present: staff confirm their identity document against the form and tick that they did. The document number is not stored. Without this, approval only confirms that somebody filled in a form.</td><td class="id">FR-AUT-17</td></tr>
+        <tr><td class="item">R19</td><td><strong>Paper fallback for an internet outage</strong></td><td>A printable sheet of each branch's open loans, and the ability to enter a paper transaction afterwards with its real date, marked as back-dated in the log. Turns risk D4 from "the counter stops" into a known procedure.</td><td class="id">FR-CIR-14, FR-RPT-16</td></tr>
+        <tr><td class="item">R20</td><td><strong>A printed transit slip</strong></td><td>Books travelling between branches go with a slip listing the copies, the branches and the member. The carrier and the receiver sign it. Gives the transport procedure of question Q8 something to sign.</td><td class="id">FR-REQ-13</td></tr>
+        <tr><td class="item">R21</td><td><strong>No borrowing while a book is overdue</strong></td><td>Our recommended answer to Q14 instead of fines: a member holding an overdue book cannot borrow, request or extend until it is back. A member with three late returns in a year is flagged at the counter.</td><td class="id">FR-CIR-02, FR-CIR-15</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>E &middot; Recommended answers to the remaining questions</h3>
+  <p>Questions Q3 to Q22 are answered in section&nbsp;21 with our recommendation and the reason for it, and the requirements in this document are written as if you accept them. Signing section&nbsp;22 accepts them; striking one out reopens it. Five items are facts only you can supply &mdash; branch codes, categories, the fee, the first super admin, the server &mdash; and none of them blocks development; they are needed at installation.</p>
+</section>
+
+<section id="roles">
+  <span class="sec-num">03</span>
+  <h2 class="sec">Who uses the system</h2>
+  <p>Three kinds of people use Pothgula, plus two passing states of a member's account: an <em>applicant</em> who has applied but not yet been approved, and a <em>suspended</em> member whose lost-book settlement has run past its window. Everyone signs in with their WhatsApp number and a password, on the same screen.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="role">Member</span>
+      <h4>The person who borrows books</h4>
+      <p>Applies once, is approved in person by a librarian, pays an annual fee, and belongs to one home branch.</p>
+      <ul>
+        <li>Browses the catalogue of every branch and sees what is on the shelf</li>
+        <li>Borrows at their home branch; requests books from other branches</li>
+        <li>Asks for a two-week extension on a book they hold</li>
+        <li>Sees due dates, what they owe, opening hours, notices and events in one panel</li>
+        <li>Changes their own password and their own contact details</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="role">Admin &middot; Librarian</span>
+      <h4>Runs the counter at one branch</h4>
+      <p>Day-to-day staff. Everything they do is limited to their own branch.</p>
+      <ul>
+        <li>Approves membership applications in person; issues books and takes them back</li>
+        <li>Decides extension requests and handles other-branch requests</li>
+        <li>Adds titles and copies, registers members, publishes notices and events</li>
+        <li>Records annual fees and lost-book settlements; keeps the branch's lost-book tariff</li>
+        <li>Sets opening hours; reads and exports the branch's log</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="role">Super admin</span>
+      <h4>Runs the library organisation</h4>
+      <p><span class="delta changed">Changed</span>Belongs to no single branch. Everything an admin can do, at every branch, plus the decisions that should rest with few people.</p>
+      <ul>
+        <li>Creates branches with their two-letter codes, sets branch names and logos, defines categories</li>
+        <li>Creates every staff account, including other super admins; sets the annual fee for each branch</li>
+        <li>Voids mistaken loans, waives or reduces lost-book charges, lifts suspensions, moves copies between branches permanently, merges duplicate titles</li>
+        <li>Reads the activity log and the summaries for the whole library</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Who can do what</h3>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Capability</th><th class="ctr">Applicant</th><th class="ctr">Member</th><th class="ctr">Admin</th><th class="ctr">Super admin</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Browse the catalogue of any branch, see book details</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>See opening hours, notices and events</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td></tr>
+        <tr><td><span class="delta changed">Changed</span>Borrow a book (not while suspended or holding an overdue book)</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Home branch</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td></tr>
+        <tr><td>Request a book held at another branch</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td></tr>
+        <tr><td>Request a two-week extension</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td></tr>
+        <tr><td><span class="delta changed">Changed</span>Approve (in person, with identity check and first fee) or reject an application</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td><span class="delta new">New</span>Approve with the first fee waived</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Export one member's details (text, PDF)</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Issue a book to a member</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Take a book back</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Approve or decline an extension</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Accept, dispatch and receive other-branch requests</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Correct a loan record</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td><span class="delta new">New</span>Enter a back-dated transaction after an outage</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td><span class="delta changed">Changed</span>Add or edit a title; add, edit or withdraw a copy</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch's copies</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Register a member at the counter</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Record an annual fee payment</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td><span class="delta changed">Changed</span>Declare a book lost (amount from the tariff, or changed with a reason)</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td><span class="delta new">New</span>Keep the branch's lost-book tariff</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td><span class="delta changed">Changed</span>Waive or reduce a lost-book charge, extend its window, lift a suspension</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Publish, edit and withdraw notices and events</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch or all</td></tr>
+        <tr><td>Set opening days and times</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Any branch</td></tr>
+        <tr><td>Change own password</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Reset another person's password</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">Anyone</td></tr>
+        <tr><td>Read and export the activity log (text, CSV, PDF)</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">All branches</td></tr>
+        <tr><td>Run summaries and reports</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Own branch</td><td class="ctr mark">All branches</td></tr>
+        <tr><td>Change the annual fee</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Change a branch's name or logo, or the library name</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Create categories and their codes</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr class="gone"><td><span class="delta gone">Withdrawn</span>Delete a book, loan, member, payment or any other record &mdash; nobody can (R12)</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td></tr>
+        <tr><td><span class="delta new">New</span>Void a loan entered in error; merge two duplicate titles</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Move a copy to another branch permanently</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td><span class="delta changed">Changed</span>Create a staff account (admin or super admin)</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+        <tr><td>Create a branch and give it its two-letter code</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr nomark">&mdash;</td><td class="ctr mark">Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">The applicant and suspended states</span>
+    <p>Neither is a fourth role. An <strong>applicant</strong> is a member whose application has not yet been approved; a <strong>suspended</strong> member is one whose lost-book settlement has passed its window. Both keep the same account, sign-in and dashboard; everything to do with borrowing is closed to them and a banner says why. Approval, or settling the debt, removes the banner and reopens borrowing at once.</p>
+  </div>
+</section>
+
+<section id="access">
+  <span class="sec-num">04</span>
+  <h2 class="sec">Accounts, registration and approval</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-AUT-01</td><td><span class="delta changed">Changed</span>The landing page offers two things: <strong>Sign in</strong> and <strong>Apply for membership</strong>. There is no choice of Member, Admin or Super admin anywhere; the account a person signs in to decides what they can do. (R4)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-02</td><td>Sign-in uses the person's <strong>WhatsApp number</strong> and password. Passwords are stored one-way hashed and can never be read back by anyone, including us.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-03</td><td><span class="delta changed">Changed</span>A person applies for membership with: full name; address; WhatsApp number (required); another phone number (optional); date of birth (required); organisation, such as a school or workplace (optional); the <strong>name and phone number of the person who introduced them</strong> (both required); and their home branch. The applicant ticks that the introducer has agreed to be named. Submitting the form creates an account in the <strong>pending</strong> state &mdash; not a membership. (R14)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-04</td><td><span class="delta changed">Changed</span>Nobody can become staff through the website. The <strong>first super admin is created during installation</strong> by a one-time command run on the server, which refuses to run once any super admin exists. Every later super admin and every admin is created by an existing super admin inside the system. Super admins belong to no branch and there is no limit on their number. (R5, R9)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-05</td><td><span class="delta changed">Changed</span>A super admin can create an admin for any branch, and another super admin. An admin can register a member at their own branch. A member registered by staff at the counter goes through the same identity check and first fee as an approval (FR-AUT-17), and is active at once.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-06</td><td><span class="delta changed">Changed</span>An account is locked for 15 minutes after five failed sign-in attempts. (The super admin code this also applied to no longer exists.)</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-AUT-07</td><td>A staff session ends after 30 minutes of inactivity, so a counter machine left unattended does not stay signed in.</td><td><span class="chip should">Should</span></td></tr>
+        <tr class="gone"><td class="id">FR-AUT-08</td><td><span class="delta gone">Withdrawn</span>A member can reset a forgotten password using a code sent to their registered phone number. <em>Removed in v2.0. Still removed: a WhatsApp gateway is also a paid service.</em></td><td><span class="chip gone">Removed</span></td></tr>
+        <tr><td class="id">FR-AUT-09</td><td>A super admin can deactivate a staff or member account. Accounts are never deleted, so their loan history stays intact.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-AUT-10</td><td>Any signed-in person &mdash; applicant, member, admin or super admin &mdash; can change their own password by giving the current one and the new one twice. Changing a password ends every other session for that account.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-11</td><td>An admin can reset the password of any member or admin of their own branch. A super admin can reset the password of any account, including another super admin.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-12</td><td>A reset produces a temporary password shown once on screen for the staff member to hand over. The person must change it the first time they sign in and cannot use the system until they do. The old password is never shown and never recoverable.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-13</td><td>Every password change and every password reset is written to the activity log with who did it, to whom and when. The temporary password itself never appears in the log.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-14</td><td><span class="delta changed">Changed</span>At least two active super admin accounts must exist. Until the second is created, every super admin screen carries a warning saying so; once two exist, the system refuses to deactivate either of the last two. If every super admin is locked out, the same server command as FR-AUT-04 can reset one super admin's password; its use is logged.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-15</td><td>A password must be at least eight characters, and the system refuses the most commonly used ones.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-AUT-16</td><td>A pending applicant can sign in, browse the catalogue of every branch, open any book's details, and see opening hours, notices and events. They cannot be issued a book, request a book from another branch, or request an extension, and staff attempting to issue to them are told why. A banner on their dashboard says the application is waiting and that they should visit their home branch with proof of identity.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-17</td><td><span class="delta changed">Changed</span>An admin can approve or reject applications for their own branch; a super admin for any branch. <strong>Approval is done at the counter with the applicant present</strong>: staff check an identity document against the form and confirm that they did (the document number is not stored), and record the first year's fee in the same step (FR-MEM-10). Approval makes the account an active member and starts the membership year that day. Rejection requires a written reason; a rejected person cannot sign in and is told at the sign-in screen to contact the branch. Staff can reopen a rejected application until it is anonymised (FR-AUT-20). All of this is logged. (R18)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-18</td><td><span class="delta changed">Changed</span>The staff dashboard lists applications waiting for approval, oldest first, showing name, age (worked out from the date of birth), area (from the address), organisation, the introducer's name and phone number, and the date applied. Opening one shows every detail given on the form. The number waiting appears in the notification panel.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-19</td><td>From the pending list, and from any member's page, staff can export that one person's full details as a plain text file and as a PDF, each produced by the system itself with the branch name and logo on the PDF. Every export is logged with who exported whose details.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-20</td><td><span class="delta changed">Changed</span>An application still pending after 30 days is flagged on the staff dashboard. Rejected applications, and pending ones not approved within 90 days, are <strong>anonymised</strong>: the record stays, but the name, phone numbers, address, date of birth, organisation and introducer's details are blanked, in the record and in its activity log entries alike, and the WhatsApp number becomes free for a new application. This is the only way personal details leave the system. Both periods are settings.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-AUT-21</td><td>An applicant can correct their own application while it is pending. A member can change their own address, other phone number and organisation at any time; changing the WhatsApp number, because it is the sign-in name, is done by staff at the counter.</td><td><span class="chip should">Should</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">What this settles</span>
+    <p>With no super admin code, the single most serious risk in v3.0 &mdash; anyone holding the code could make themselves an owner of the library's data (risk D1) &mdash; is gone rather than mitigated. With approval in person, a membership now means a real person, checked against a document, who has paid. And with anonymisation instead of deletion, the library can honour the personal data law without breaking the "nothing is ever deleted" rule it chose in R12.</p>
+  </div>
+</section>
+
+<section id="branches">
+  <span class="sec-num">05</span>
+  <h2 class="sec">Branches and categories</h2>
+  <p class="lead">Two codes sit inside every book number &mdash; the branch's two letters and the category's letter and digit &mdash; so both are defined here, ahead of the catalogue, with the rules that keep them stable.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-BRN-01</td><td>A super admin creates a branch with the library name, the branch name, a two-letter branch code, an address and a phone number.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-BRN-02</td><td>The branch code is <strong>exactly two capital English letters</strong>, for example <code>KS</code>. The super admin chooses it, the system refuses one already in use, and it can be corrected only until the first copy carrying it is accessioned. After that it never changes, because it is printed on the books.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-BRN-03</td><td>A super admin can change a branch's name, and the library's name, at any time. The new name appears everywhere at once. Codes and accession numbers are untouched. The change is logged with the old and new names.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-BRN-04</td><td>A super admin can upload a <strong>logo</strong> for each branch: a PNG, JPEG or WebP image up to 2&nbsp;MB, which the system resizes and stores inside itself. The logo appears on the member's dashboard and the branch's pages, on staff screens, and on every PDF the system produces for that branch. A branch with no logo shows the library-wide logo, or the name in plain text if there is none.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-BRN-05</td><td>A category has a code of <strong>one capital letter followed by one digit</strong>, for example <code>A1</code>, and a readable name. A super admin creates categories; the code is unique across the library and cannot be changed once any copy carries it. The name can be changed at any time.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-BRN-06</td><td>Members see category <strong>names</strong> wherever a category is shown, never the bare code. The code appears only inside the accession number and in staff screens.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-BRN-07</td><td>A category can be retired so that no new title joins it, while the copies already in it keep their numbers and remain in the catalogue.</td><td><span class="chip should">Should</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">The ceiling</span>
+    <p>Two letters give <strong>676 branches</strong>; a letter and a digit give <strong>260 categories</strong>; five digits give 99,999 copies per branch per category. 260 is plenty for a library's own scheme, but not enough to mirror a standard classification such as Dewey, which was never the intention (risk D9).</p>
+  </div>
+
+  <h3><span class="delta new">New</span>A proposed starting scheme for categories</h3>
+  <p>Our recommended answer to Q13. The letter says the collection, the digit says the kind of book, so a librarian can read a number without looking it up. <code>A1</code> keeps the meaning used in every example so far. You can rename, add or leave out any of these before installation; once the first copy is numbered, the codes in use are fixed.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Digit</th><th>A &middot; Sinhala</th><th>B &middot; English</th><th>C &middot; Tamil</th><th>D &middot; Children's, any language</th></tr></thead>
+      <tbody>
+        <tr><td class="id">1</td><td>A1 Novels</td><td>B1 Novels</td><td>C1 Novels</td><td>D1 Picture books</td></tr>
+        <tr><td class="id">2</td><td>A2 Short stories</td><td>B2 Short stories</td><td>C2 Short stories</td><td>D2 Stories for young readers</td></tr>
+        <tr><td class="id">3</td><td>A3 Poetry and drama</td><td>B3 Poetry and drama</td><td>C3 Poetry and drama</td><td>D3 Learning and activity books</td></tr>
+        <tr><td class="id">4</td><td>A4 Translated fiction</td><td>B4 Translated fiction</td><td>C4 Translated fiction</td><td>&mdash;</td></tr>
+        <tr><td class="id">5</td><td>A5 Biography and history</td><td>B5 Biography and history</td><td>C5 Biography and history</td><td>&mdash;</td></tr>
+        <tr><td class="id">6</td><td>A6 Religion and philosophy</td><td>B6 Religion and philosophy</td><td>C6 Religion and philosophy</td><td>&mdash;</td></tr>
+        <tr><td class="id">7</td><td>A7 Science, technology and health</td><td>B7 Science, technology and health</td><td>C7 Science, technology and health</td><td>&mdash;</td></tr>
+        <tr><td class="id">8</td><td>A8 Education and exam guides</td><td>B8 Education and exam guides</td><td>C8 Education and exam guides</td><td>&mdash;</td></tr>
+        <tr><td class="id">9</td><td>A9 General and other</td><td>B9 General and other</td><td>C9 General and other</td><td>D9 Other children's</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>For branch codes we recommend two letters taken from the town's name as people say it (<code>KS</code>, <code>GL</code>), avoiding pairs that read alike on a handwritten label. The list of branches itself is yours to supply.</p>
+</section>
+
+<section id="catalogue">
+  <span class="sec-num">06</span>
+  <h2 class="sec">The book catalogue</h2>
+  <p><span class="delta changed">Changed</span>The catalogue now has two levels. A <strong>title</strong> is the book as a reader thinks of it &mdash; its name, writer, publisher and category &mdash; and is entered once. A <strong>copy</strong> is one physical book on a shelf, with its own accession number, branch and condition. Five copies of the same novel are one title and five copies. (R1)</p>
+
+  <h3>The accession number</h3>
+  <p>Every copy carries one. Eleven characters, always the same shape: <code>KS-A1-01234</code>.</p>
+
+  <div class="keyfmt k3">
+    <div class="seg">
+      <code>KS</code>
+      <h4>Branch code</h4>
+      <p>Two capital letters, given to the branch when it is created. Unique across the library and never reused.</p>
+    </div>
+    <div class="seg">
+      <code>A1</code>
+      <h4>Category code</h4>
+      <p>One capital letter and one digit &mdash; the title's category, each with a readable name.</p>
+    </div>
+    <div class="seg">
+      <code>01234</code>
+      <h4>Running number</h4>
+      <p>Five digits, counting up from 00001 within that branch and that category. The system allocates it, not the librarian.</p>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Example</th><th>Reads as</th></tr></thead>
+      <tbody>
+        <tr><td class="id">KS-A1-00001</td><td>Branch KS, category A1, the first copy of that category accessioned at that branch.</td></tr>
+        <tr><td class="id">KS-A1-00100</td><td>Branch KS, category A1, the hundredth.</td></tr>
+        <tr><td class="id">KS-A2-00001</td><td>Branch KS, category A2 &mdash; a different counter, so this is also a first copy.</td></tr>
+        <tr><td class="id">GL-A1-00001</td><td>Branch GL, category A1. Numbered on the same day as KS-A1-00001 and still unique.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-CAT-01</td><td><span class="delta changed">Changed</span>An admin or super admin registers a <strong>title</strong> once, with its name, writer, publisher, category, and optionally its ISBN and edition or year. They then add one or more <strong>copies</strong> of it, giving for each the branch, how the library obtained it (purchase, donation, or the donor's name) and optionally its price in rupees. Adding several copies is one action; the system allocates an accession number to each. Before a new title is created, the system shows existing titles with a similar name or the same ISBN, so that the same book is not entered twice.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-02</td><td>The accession number is branch code, category code and five digits, separated by hyphens, for example <code>KS-A1-01234</code>. The system allocates the next free number in that branch and category automatically, rejects any other format, and refuses a number already in use anywhere in the library. The hyphens are part of the number as printed; the system accepts it typed with or without them.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-03</td><td><span class="delta changed">Changed</span>Each copy belongs to exactly one branch. Its <strong>condition</strong> is recorded as Useable, Not useable or Missing; separately, a copy may be <strong>withdrawn</strong> from the collection with a reason.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-04</td><td><span class="delta changed">Changed</span>Each copy shows as On the shelf, On loan, In transit or Held for a member. This is <strong>worked out</strong> from the open loan and the open request on that copy, never stored separately (R2). Only a useable, non-withdrawn copy that is on the shelf can be issued or requested.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-05</td><td><span class="delta changed">Changed</span>A member sees their home branch's catalogue by default, one line per title, with how many copies the branch holds and how many are on the shelf. It can be filtered by category, writer and availability.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-06</td><td><span class="delta changed">Changed</span>A member can switch the view to any other branch, or to all branches, and see for each title which branches hold a copy and whether it is on the shelf there.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-07</td><td>A search box finds titles by name, writer or ISBN, and copies by accession number, across one branch or all branches. Typing <code>KS</code> lists that branch's copies; typing <code>KS-A1</code> lists that branch and category.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-08</td><td><span class="delta changed">Changed</span>An admin can edit any detail of a copy held at their own branch, and can correct a title's details; because a title is shared by every branch, the correction shows everywhere and is logged. A super admin can edit anything and is the only role that can move a copy to a different branch permanently.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-09</td><td>Category codes such as <code>A1</code> each carry a readable name, so members see "Sinhala novels" rather than "A1". The codes and names are defined in section&nbsp;5.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-10</td><td><span class="delta changed">Changed</span>The system can print sheets of spine labels showing each copy's accession number in large plain text. No barcode or QR code (R10 declined).</td><td><span class="chip">Could</span></td></tr>
+        <tr><td class="id">FR-CAT-11</td><td><span class="delta changed">Changed</span><strong>No one can delete a title or a copy</strong>, a super admin included. A copy that leaves the collection is withdrawn with a reason, by an admin of its branch or a super admin; it disappears from the members' catalogue while its history stays intact, and a super admin can reinstate it. (R12)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-12</td><td><span class="delta changed">Changed</span>A copy may carry a price in rupees. It is shown to staff for information only; the lost-book amount comes from the branch's tariff (FR-LST-16), not from the price.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CAT-13</td><td><span class="delta changed">Changed</span>Books already on the shelves with old-style numbers can be brought in by a one-off import that groups them into titles, gives each copy a new accession number and prints the new labels. Before the import is committed, staff review a list of probable duplicate titles (same ISBN, or near-identical name and writer). The old number is kept alongside so an old card index still matches.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CAT-14</td><td>An accession number, once given to a copy, never changes. If the copy is later moved to another branch or its title's category is corrected, the number stays as it was printed on the book, and the branch and category the system works from are separate fields. The number records where a copy was accessioned, not where it stands today.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-15</td><td>Each branch is given its two-letter code when it is created, under the rules in FR-BRN-02.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CAT-16</td><td>When an ISBN is typed for a new title, the system can offer to fill in the name, writer and publisher from a free and open book-data source. This is a convenience only; cataloguing works exactly the same without it, and no paid service is involved.</td><td><span class="chip">Could</span></td></tr>
+        <tr class="gone"><td class="id">FR-CAT-17</td><td><span class="delta gone">Withdrawn</span>The spine label can carry the accession number as a QR code as well as a barcode. <em>Removed in v3.1: scanning is not required.</em></td><td><span class="chip gone">Removed</span></td></tr>
+        <tr><td class="id">FR-CAT-18</td><td><span class="delta new">New</span>A super admin can <strong>merge</strong> two titles found to be the same book. The copies of one move under the other; the emptied title is kept, marked as merged into the other, and is no longer shown. Accession numbers are untouched.</td><td><span class="chip should">Should</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">What the split buys</span>
+    <p>Three questions the system could only guess at in v3.0 now have exact answers. <strong>Is there a copy at another branch?</strong> &mdash; count the copies of this title. <strong>Is this an identical copy for a lost book?</strong> &mdash; it is a copy of the same title. <strong>Which book is most borrowed?</strong> &mdash; add up the loans of every copy of the title, rather than ranking five copies of the same book separately.</p>
+  </div>
+</section>
+
+<section id="circulation">
+  <span class="sec-num">07</span>
+  <h2 class="sec">Issuing, taking back and extending</h2>
+  <p>This is the part of the system your staff will use every day, so it is designed around the counter: find the member, find the copy, confirm. In this version an overdue book blocks further borrowing, an extension requested in time is never counted against the member, and staff have a way to catch up after the internet has been down.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 880 330" role="img" aria-label="Life of a copy: on the shelf, on loan, extended once by two weeks, overdue which blocks further borrowing, declared lost; a lost book is settled within 100 days by the member giving the same book or paying the tariff amount, after which the member is suspended.">
+        <defs>
+          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g color="var(--rule-strong)">
+          <rect class="d-box" x="14" y="44" width="150" height="58" rx="3"/>
+          <text class="d-label" x="89" y="69" text-anchor="middle">On the shelf</text>
+          <text class="d-sub" x="89" y="87" text-anchor="middle">AVAILABLE</text>
+
+          <rect class="d-box" x="214" y="44" width="150" height="58" rx="3"/>
+          <text class="d-label" x="289" y="69" text-anchor="middle">On loan</text>
+          <text class="d-sub" x="289" y="87" text-anchor="middle">DUE IN 14 DAYS</text>
+
+          <rect class="d-box" x="214" y="144" width="150" height="58" rx="3"/>
+          <text class="d-label" x="289" y="169" text-anchor="middle">Extended</text>
+          <text class="d-sub" x="289" y="187" text-anchor="middle">DUE + 14, ONCE</text>
+
+          <rect class="d-box" x="482" y="44" width="150" height="58" rx="3"/>
+          <text class="d-label" x="557" y="69" text-anchor="middle">Overdue</text>
+          <text class="d-sub" x="557" y="87" text-anchor="middle">BLOCKS BORROWING</text>
+
+          <rect class="d-box-flag" x="716" y="44" width="150" height="58" rx="3"/>
+          <text class="d-label" x="791" y="69" text-anchor="middle">Declared lost</text>
+          <text class="d-sub" x="791" y="87" text-anchor="middle">100 DAYS TO SETTLE</text>
+
+          <path class="d-line" d="M164 73 H206" marker-end="url(#ar3)"/>
+          <text class="d-edge" x="185" y="34" text-anchor="middle">issue</text>
+
+          <path class="d-line" d="M364 73 H474" marker-end="url(#ar3)"/>
+          <text class="d-edge" x="419" y="34" text-anchor="middle">due date passes</text>
+
+          <path class="d-line" d="M289 102 V136" marker-end="url(#ar3)"/>
+          <text class="d-edge" x="330" y="124" text-anchor="start">staff approve request</text>
+          <path class="d-line" d="M364 173 H420 V73" marker-end="url(#ar3)"/>
+
+          <path class="d-line" d="M632 73 H708" marker-end="url(#ar3)"/>
+          <text class="d-edge" x="670" y="34" text-anchor="middle">staff declare lost</text>
+
+          <path class="d-line" d="M557 102 V230 H89 V110" marker-end="url(#ar3)"/>
+          <path class="d-line" d="M289 202 V230"/>
+          <text class="d-edge" x="323" y="246" text-anchor="middle">take back &mdash; late returns are called out</text>
+
+          <path class="d-line" d="M791 102 V178"/>
+          <path class="d-line" d="M791 178 H641 V206" marker-end="url(#ar3)"/>
+          <path class="d-line" d="M791 178 H807 V206" marker-end="url(#ar3)"/>
+          <text class="d-edge" x="700" y="196" text-anchor="middle">settled by</text>
+
+          <rect class="d-box" x="566" y="214" width="150" height="54" rx="3"/>
+          <text class="d-label" x="641" y="238" text-anchor="middle">Same title given</text>
+          <text class="d-sub" x="641" y="255" text-anchor="middle">NEW COPY CATALOGUED</text>
+
+          <rect class="d-box" x="739" y="214" width="127" height="54" rx="3"/>
+          <text class="d-label" x="802" y="238" text-anchor="middle">Amount paid</text>
+          <text class="d-sub" x="802" y="255" text-anchor="middle">BRANCH TARIFF</text>
+
+          <path class="d-line" d="M641 268 V300 H40 V110" marker-end="url(#ar3)"/>
+          <text class="d-edge" x="330" y="294" text-anchor="middle">replacement enters the collection</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption>The life of one copy in version 3.1. Changed since v3.0: an overdue book now blocks the member from borrowing again; the lost amount comes from the branch's tariff; a settlement not cleared in 100 days suspends the member; the replacement is a new copy of the same title.</figcaption>
+  </figure>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-CIR-01</td><td>Staff issue a book by selecting a member and a copy. The system records today as the borrow date and sets the due date 14 days later.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-02</td><td><span class="delta changed">Changed</span>The system refuses to issue a copy, and states the reason, if: the copy is not on the shelf (on loan, in transit, or held for another member), is missing, not useable or withdrawn; the member is an applicant, suspended or deactivated, or their membership has expired; <strong>the member holds a book that is overdue</strong>; the member is at their limit under FR-CIR-06; or the member has an open lost-book settlement and already holds one book. (R21)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-03</td><td>Staff take a book back in one action. The return date is recorded and the copy returns to the shelf immediately &mdash; or, for a copy from another branch, goes into transit back (FR-REQ-07).</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-04</td><td>If a book comes back after its due date, the counter screen shows a prominent notice with the number of days late before the take-back is confirmed. The days late show on the loan record, the member's page lists their late returns with the dates, and the member sees the same on their own dashboard the next time they sign in. No acknowledgement is asked of the member.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-05</td><td><span class="delta changed">Changed</span>Staff can correct a loan record &mdash; wrong copy, wrong member, wrong date. A correction never overwrites history: the previous values and who changed them are kept in the activity log. A loan entered entirely by mistake is <strong>voided</strong> by a super admin with a reason: it stays visible on the record, marked void, and no longer counts anywhere. Nobody can delete a loan. (R12)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-06</td><td><span class="delta changed">Changed</span>A member may have at most <strong>two books</strong> at a time, and at most one while a lost-book settlement is open (FR-LST-04). A copy in transit to the member or held for them under an accepted request counts as one of their books. Both numbers are branch settings.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-07</td><td>The loan period is a setting per branch, defaulting to 14 days, so a branch can run a longer or shorter period without new software. The extension period (FR-CIR-10) is the same setting.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CIR-08</td><td>At take-back, staff can declare the book lost or not useable instead of returning it to the shelf. Declaring it lost starts the settlement described in section&nbsp;9.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-09</td><td>A member's page shows their complete borrowing history, most recent first, including extensions and late returns.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CIR-10</td><td><span class="delta changed">Changed</span>A member can request <strong>one extension</strong> on each loan from their dashboard, at any time up to and including the due date. An admin of the home branch or a super admin approves or declines it, with a reason if declined. On approval the due date moves 14 days on from the <em>original</em> due date, whatever day the approval happens. A loan can be extended once only. An extension is refused, with the reason, when the loan is already overdue or the member is suspended or holds another overdue book.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-11</td><td>Staff can grant the same extension directly from the loan record when a member asks in person or by telephone, under the same rules. The log records whether the extension came from a member's request or a staff action.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-12</td><td>Extension requests waiting for a decision appear in the staff notification panel. The member sees the request as pending, approved or declined on their dashboard, with the new due date or the reason.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-13</td><td><span class="delta changed">Changed</span>A request still undecided two days before the due date is shown as urgent to staff. <strong>A request made in time protects the member</strong>: while it is undecided the loan is not treated as overdue and does not block them. If it is declined after the due date has passed, the member has three days from the decision to return the book before it counts as late. The three days is a branch setting.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-CIR-14</td><td><span class="delta new">New</span>After an outage, staff can enter an issue or take-back recorded on paper with its <strong>real date</strong>, up to seven days back. The entry is marked as back-dated, and the log keeps both the real date and when it was entered. (R19)</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-CIR-15</td><td><span class="delta new">New</span>A member with three or more late returns in the last twelve months is marked <strong>frequently late</strong> at the top of their record at the counter. It blocks nothing; it is there for the librarian's judgement. The number and the period are settings.</td><td><span class="chip should">Should</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="requests">
+  <span class="sec-num">08</span>
+  <h2 class="sec">Books from other branches</h2>
+  <p>A member borrows only at their home branch. When the book they want is on the shelf at another branch, they ask for it, staff at both branches see who is asking, and a copy travels &mdash; there, and back again after it is returned.</p>
+
+  <div class="flow"><span>Requested</span><i>&rarr;</i><span>Accepted</span><i>&rarr;</i><span>In transit to home branch</span><i>&rarr;</i><span>Held for member</span><i>&rarr;</i><span>On loan</span><i>&rarr;</i><span>Returned</span><i>&rarr;</i><span>In transit back</span><i>&rarr;</i><span>On the shelf</span></div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-REQ-01</td><td><span class="delta changed">Changed</span>A member can request a <strong>title</strong> from another branch that has a copy of it on the shelf, from the title's page in the catalogue. Only books on the shelf can be requested, not books on loan there. The request goes to that branch and is also visible to the member's home branch and to super admins.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-02</td><td><span class="delta changed">Changed</span>The request is accepted only if the member could be issued a book right now under FR-CIR-02, including the limit in FR-CIR-06, and the member may have <strong>one request open</strong> at a time. Applicants and suspended members cannot request. The reason is stated on screen when a request is refused.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-03</td><td><span class="delta changed">Changed</span>Staff looking at a request see the member's full details: full name, WhatsApp number, other phone number, address, date of birth and age, organisation, the introducer's name and phone number, home branch, membership expiry date, the books they currently hold, any open settlement, and their late returns.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-04</td><td><span class="delta changed">Changed</span>Staff at the holding branch accept or decline the request, with a reason if declined. Accepting means <strong>choosing which copy</strong> to send; that copy leaves the shelf and is marked in transit to the member's home branch, and from that moment cannot be issued to anyone else. The member sees the status change on their dashboard.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-05</td><td><span class="delta changed">Changed</span>Staff at the home branch record the copy's arrival. It is then held for the member for <strong>seven days</strong> (a branch setting); if the last day falls on a day the branch is closed, the hold runs to the next opening day. The member is told on their dashboard that it is ready, and it is issued at the counter as an ordinary loan with the ordinary due date.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-06</td><td>If the member does not collect within the hold period, the hold lapses, staff are told, and the copy is sent back: staff record dispatch at the home branch and arrival at the owning branch, where it returns to the shelf.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-07</td><td>When the member returns the book, it is taken back at the home branch like any other loan and immediately marked in transit back to its owning branch; arrival there puts it on the shelf. The copy's owning branch never changes through any of this, and its accession number is untouched.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-08</td><td>The catalogue shows a travelling copy as In transit or Held, never as On the shelf, at both branches.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-09</td><td><span class="delta changed">Changed</span>The staff notification panel lists, for each branch: requests awaiting a decision, accepted copies not yet dispatched, copies in transit to or from the branch, held copies whose hold lapses within two days, and <strong>the branch's own copies out on loan at other branches</strong> with their current due date, including any extension.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-10</td><td>Every step &mdash; request, accept, decline, dispatch, arrival, hold lapse, return dispatch &mdash; is written to the activity log with who did it and when, so a copy that goes missing between branches can be traced to the last hand it was in.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-REQ-11</td><td>A member can cancel their own request until it is accepted. A request in progress is cancelled automatically if the member is suspended.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-REQ-12</td><td>A copy in transit for more than a set number of days (default seven) is flagged to both branches and to super admins.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-REQ-13</td><td><span class="delta new">New</span>When staff record a dispatch, the system produces a printable <strong>transit slip</strong> listing each copy's accession number and title, the sending and receiving branches, the member it is for, the date, and spaces for the carrier and the receiver to sign. (R20)</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-REQ-14</td><td><span class="delta new">New</span>A copy that never arrives is <strong>the library's loss, not the member's</strong>. A super admin marks it Missing with a reason; no settlement is raised against any member, and the request is closed. It appears on the missing-books report as lost in transit.</td><td><span class="chip must">Must</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">The transport procedure we recommend (Q8)</span>
+    <p>The system records that a book left and that it arrived; people carry it. We recommend: one fixed transfer day each week between each pair of branches, or whenever staff travel between them anyway; books go in a closed envelope with the transit slip (FR-REQ-13); the carrier signs on leaving and the receiving librarian signs and records the arrival the same day; the signed slips are kept for a year. A book lost on the way is written off by a super admin (FR-REQ-14). This procedure is the library's to adopt and change; nothing in the software depends on its details.</p>
+  </div>
+</section>
+
+<section id="lost">
+  <span class="sec-num">09</span>
+  <h2 class="sec">Lost and damaged books</h2>
+  <p>A member who loses a book has two ways to put it right: bring another copy of the same book, or pay the amount on the branch's lost-book tariff. They have 100 days to do one of them, and may borrow one book instead of two meanwhile. If the 100 days pass, the member is suspended and the case goes to the super admins.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-LST-01</td><td>Staff can declare a copy lost, either at take-back or later from the loan record, giving a short reason. The copy's condition becomes Missing and it leaves circulation at once.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-02</td><td><span class="delta changed">Changed</span>Declaring a copy lost creates a settlement owed by the member who held it. The system fills in the amount from the <strong>tariff of the branch that owns the copy</strong>, for the copy's category (FR-LST-16). The admin or super admin declaring it may change the amount only by giving a reason. The tariff amount, the amount set, who set it and the reason are all kept and logged. The system no longer suggests twice the recorded price. The settlement can be cleared in two ways and no others: a copy of the same title, or payment of the amount.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-03</td><td>The amount due and the days remaining in the window are shown on the member's page, on the staff screen and in the member's own dashboard, so nobody has to calculate either at the counter.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-04</td><td><span class="delta changed">Changed</span>While a settlement is open and within its window, the member may hold at most one book; the lost copy itself does not count. Once the window has passed unsettled, the member is suspended (FR-LST-15).</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-05</td><td><span class="delta changed">Changed</span>An identical copy means a useable copy of the <strong>same title</strong> in the catalogue. Staff confirm at the counter that the book in front of them is that title in acceptable condition; the system records which copy was accepted as the replacement.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-06</td><td><span class="delta changed">Changed</span>A replacement is catalogued as a <strong>new copy of the same title</strong>, with a new accession number for the branch that owned the lost copy. The lost copy stays lost and written off. Its number is never reissued.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-07</td><td>A payment settlement records the amount, the date, a receipt number and the staff member who took it. Payments are never edited or deleted; a mistake is corrected by a reversing entry, so that both figures stay visible.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-08</td><td>Lost-book money is kept separate from annual fee money, so a fee collection report is not inflated by replacement charges.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-09</td><td><span class="delta changed">Changed</span>Only a super admin can, with a written reason: <strong>waive</strong> a settlement, <strong>reduce</strong> the amount after it is set, or <strong>extend</strong> the window once by a stated number of days. Waiving, or extending a window that has already passed, lifts the member's suspension. The original and new figures and the reason are all kept and shown in the activity log.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-10</td><td>The staff dashboard and the reports both list unsettled lost books, with the member, the copy, the date declared, the amount due, the days remaining, and whether the window has passed.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-11</td><td>A copy that comes back damaged but still readable can be marked Not useable without a settlement, at staff discretion. A copy damaged beyond use is treated exactly as a lost one.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-LST-12</td><td>If a copy declared lost is later found, a super admin can return it to the shelf. If a settlement was already paid, the system shows it alongside so the library can decide about a refund; the refund itself is a decision for staff, recorded as a reversing entry, not an automatic reversal.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-LST-13</td><td>A member's page shows every settlement they have ever had, open and cleared, with how each was cleared and how long it took.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-LST-14</td><td>A settlement has a window of 100 days from the day the copy was declared lost, held as a branch setting. The member's dashboard counts the days down; the staff panel shows windows closing within 14 days and windows already passed.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-15</td><td><span class="delta changed">Changed</span>When the window passes with the settlement still open, the member is <strong>suspended</strong>: they cannot be issued a book, request one from another branch or ask for an extension, and any request in progress is cancelled. They can still sign in, see their record and settle. A book they already hold is returned in the ordinary way. The case appears on every super admin's panel until it is closed. The suspension lifts automatically when the settlement is cleared, or by a super admin's decision under FR-LST-09. The membership is never cancelled and the amount never increases on its own. (Q1, R15)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LST-16</td><td><span class="delta new">New</span>Each branch has a <strong>lost-book tariff</strong>: an amount in rupees for each category, kept by that branch's admins and by super admins. A category without an amount leaves the figure for staff to enter. Every change to the tariff is logged with the old and new amounts, and the current tariff can be printed for the counter. (Q2, R17)</td><td><span class="chip must">Must</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Fair within a branch, different between branches</span>
+    <p>With a tariff per branch, two members who lose the same book at the same branch pay the same amount, and any departure from the tariff carries a written reason. Two members at two different branches may pay different amounts &mdash; that follows from your answer to Q2, and risk D14 records it so that it is a known choice rather than a surprise.</p>
+  </div>
+</section>
+
+<section id="membership">
+  <span class="sec-num">10</span>
+  <h2 class="sec">Membership and annual fee</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-MEM-01</td><td><span class="delta changed">Changed</span>A membership is valid for one year. The first year runs from the day the application is approved at the counter &mdash; which is also the day the first fee is paid (FR-MEM-10) &mdash; never from the day the public form was filled in.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-02</td><td><span class="delta changed">Changed</span>Staff record an annual fee payment against a member. If it is paid before expiry or within <strong>90 days</strong> after it, the membership runs one year from the previous expiry date, so paying a little late gains no extra time. If it is paid later than that, a new year runs from the day of payment. The 90 days is a setting.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-03</td><td>Staff see three lists on one screen: paid in the last 30 days, expiring in the next 30 days, and already expired.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-04</td><td>An expired member can still sign in and browse the catalogue but cannot be issued a book until the fee is paid.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-05</td><td><span class="delta changed">Changed</span>Each payment is kept as its own record with the amount, the date, a receipt number and the staff member who collected it. Payments are never overwritten and never deleted, by anyone; a mistake is corrected by a reversing entry.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-MEM-06</td><td>The annual fee amount is a setting per branch that only a super admin can change. A change applies to payments recorded from then on, never to payments already taken, and is logged with the old and new amounts.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-07</td><td>The system can print or export a receipt for a payment.</td><td><span class="chip">Could</span></td></tr>
+        <tr><td class="id">FR-MEM-08</td><td>A member's record holds their date of birth. It is required on every new application and optional only for members registered before version&nbsp;3.0.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-09</td><td><span class="delta changed">Changed</span>A member's record holds every field from FR-AUT-03 &mdash; including the other phone number, organisation, and the introducer's name and phone number &mdash; and all of it is shown on the member's page to staff and to the member themselves.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-MEM-10</td><td><span class="delta new">New</span>Approving an application and taking the first year's fee are <strong>one step</strong> at the counter: the approval screen records the payment and its receipt number. A person cannot be approved without paying, except that a super admin may approve with the first fee waived, giving a reason &mdash; for example a school reading programme. Waivers are listed on the fee collection report. (Q6)</td><td><span class="chip must">Must</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="hours">
+  <span class="sec-num">11</span>
+  <h2 class="sec">Opening hours</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-SCH-01</td><td>Staff set a weekly pattern for their branch: for each day of the week, an opening and closing time, or closed.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-SCH-02</td><td>Staff can mark specific dates as closed with a reason, for Poya days, public holidays and stock-taking. These override the weekly pattern.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-SCH-03</td><td>A member sees their home branch's hours on their dashboard and can look up any other branch's hours.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-SCH-04</td><td>Today's status is stated plainly: Open until 5.00 pm, Opens at 9.00 am, or Closed today, with the reason where one is recorded.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-SCH-05</td><td>A closure can be set for a date range in one action rather than day by day.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="notices">
+  <span class="sec-num">12</span>
+  <h2 class="sec">Notices and events</h2>
+  <p>A librarian can put a notice or an event in front of members: a title, a picture and a paragraph. Members see them on their dashboard alongside their branch's opening hours.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-PUB-01</td><td>An admin or super admin can publish a notice with a title, an optional image, and a paragraph of text that may contain a web link. An admin publishes for their own branch; a super admin can publish for one branch or for every branch at once.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-PUB-02</td><td>An event has the same fields as a notice plus a date, a start time, and optionally an end time and a place. Events are listed soonest first, are marked as past once their date has gone, and drop off the member's dashboard seven days after that.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-PUB-03</td><td>A notice can be given a date from which it is shown and a date after which it is hidden. A hidden or withdrawn notice is kept, not deleted, and can be shown again.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-PUB-04</td><td>A member's dashboard shows the notices and events of their home branch and those published for every branch, newest first. A member can look at another branch's notices and events, as they can its opening hours. Applicants see them too. (Confirmed, Q10.)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-PUB-05</td><td>An image is a PNG, JPEG or WebP up to 2&nbsp;MB. The system resizes it on upload, stores it inside the system, and shows a small version in the list and the full version when opened. No image is ever fetched from, or stored on, an outside website.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-PUB-06</td><td><span class="delta changed">Changed</span>An admin can edit or withdraw notices and events of their own branch; a super admin any. Publishing, editing and withdrawing are logged. <strong>Nobody can delete one</strong>; a withdrawn notice keeps its picture. (R12)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-PUB-07</td><td>A notice can be marked important, in which case it also appears in the member's notification panel until they have opened it.</td><td><span class="chip">Could</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="tag">Why the pictures live inside the system</span>
+    <p>A free image-hosting site is a paid service with the price set to zero for now: its terms change, its free tier shrinks, and every picture on every notice breaks on the same day. That is what NFR-11 exists to prevent. Storing pictures in Pothgula's own database costs nothing, needs no account anywhere, and is backed up with everything else. The one price is size, which is why FR-PUB-05 resizes on upload: a notice picture at 1200 pixels wide is around 150&nbsp;KB, not a 4&nbsp;MB photograph.</p>
+  </div>
+</section>
+
+<section id="alerts">
+  <span class="sec-num">13</span>
+  <h2 class="sec">Alerts and reminders</h2>
+  <p>Every alert this system produces is shown on the dashboard of the person who needs it. There is no other channel: nothing is sent by SMS, WhatsApp, email or push notification, because every one of those costs money to run.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-NOT-01</td><td><span class="delta changed">Changed</span>A member's dashboard warns them <strong>five days</strong> before a book is due &mdash; the same as staff, so there is time to ask for an extension and have it decided &mdash; and shows a stronger warning every day it stays overdue. The number of days is a setting. (Q7)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-02</td><td>A member is warned 30 days before their membership expires, and told clearly once it has expired.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-03</td><td><span class="delta changed">Changed</span>The staff dashboard opens on today's work: books due back today, books due within five days, books already overdue, applications waiting for approval, extension requests, other-branch requests needing action, memberships expiring this month, lost books not yet settled, and suspended members.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-04</td><td>Staff can produce a call list of overdue members with their phone numbers, for following up by telephone or WhatsApp by hand.</td><td><span class="chip should">Should</span></td></tr>
+        <tr class="gone"><td class="id">FR-NOT-05</td><td><span class="delta gone">Withdrawn</span>The system sends an SMS reminder for a due book and an expiring membership. <em>Removed in v2.0; still removed.</em></td><td><span class="chip gone">Removed</span></td></tr>
+        <tr><td class="id">FR-NOT-06</td><td>Every alert and reminder in the system is delivered by showing it in the dashboard of the signed-in person concerned. No feature depends on a message leaving the system.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-07</td><td>Each dashboard opens with a notification panel listing everything currently needing that person's attention, most urgent first, with a count. An item disappears from the panel as soon as the thing that caused it is dealt with.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-08</td><td><span class="delta changed">Changed</span>A member's panel covers: books due within five days; overdue books, with the reminder that they block further borrowing; late returns on their record; an extension request decided; an other-branch request accepted, declined or ready to collect; an open lost-book settlement with the amount and the days remaining; a suspension and what lifts it; membership expiring within 30 days or already expired; closures at their home branch in the next seven days; and, for an applicant, that the application is waiting and what to bring to the branch.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-09</td><td><span class="delta changed">Changed</span>A staff panel covers: books due back today; the five-day list of FR-NOT-12; overdue books; late returns taken back today; applications waiting for approval; extension requests waiting; other-branch requests at each step and the branch's copies out at other branches (FR-REQ-09); unsettled lost books, with windows closing within 14 days and windows already passed; suspended members; and memberships expiring this month. An admin sees their own branch; a super admin sees every branch, grouped by branch, with suspended members and copies lost in transit at the top.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-10</td><td>Alerts are worked out from live data each time a dashboard is opened, not stored and queued, so a notification can never be stale or arrive after the thing it warns about has been dealt with.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-NOT-11</td><td><span class="delta changed">Changed</span>When staff open a member's record at the counter, anything overdue, any late return in the last year, the frequently-late mark (FR-CIR-15), any open settlement, a suspension and any pending application is shown at the top of the page before anything else.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-NOT-12</td><td>The five-day list: every loan due within the next five days and not yet returned, showing the member's full name, WhatsApp number and other phone, their home branch; the book's title, accession number and owning branch; the due date; and whether an extension has been requested or granted. It is a list staff can sort, not an alert per book; overdue books are held separately above it. An admin sees their own branch's loans; a super admin sees all, grouped by branch. The number of days is a setting. (R16)</td><td><span class="chip must">Must</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="tag">The consequence, stated plainly</span>
+    <p>A member who never signs in will never see a reminder. Those are exactly the members who go overdue. The answer has to be a human one: the call list in FR-NOT-04, and staff telephoning or messaging people by hand. Having the WhatsApp number as the sign-in name makes that easier for the person making the calls; it does not let the system send anything. Risk D6 in section&nbsp;19 says what that means for your staff.</p>
+  </div>
+</section>
+
+<section id="log">
+  <span class="sec-num">14</span>
+  <h2 class="sec">The activity log</h2>
+  <p>Everything anybody does in this system that changes anything is written down, permanently, at the same moment as the change itself, and both admins and super admins can read it and take it away as a file.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-LOG-01</td><td><span class="delta changed">Changed</span>The activity log records, whoever performed them &mdash; applicant, member, admin, super admin or the system itself: every action that creates or changes data; every sign-in, failed sign-in and sign-out; and the two sensitive reads named in FR-LOG-12.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-02</td><td>Each entry records the date and time, the account that acted and its role, the branch, what was done, which record it was done to, the values before and after the change, and the network address of the device used.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-03</td><td>Member actions written to the log: signing in, a failed sign-in attempt, signing out, applying, changing a password, editing their own details, requesting or cancelling an extension, and requesting or cancelling a book from another branch.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-04</td><td><span class="delta changed">Changed</span>Staff actions written to the log: everything in FR-LOG-03, plus approving (with the identity check and fee) or rejecting or reopening an application; exporting a member's details; issuing, taking back, correcting, voiding or back-dating a loan; approving or declining an extension; every step of an other-branch request; adding or editing a title or copy, withdrawing or reinstating a copy, merging titles; registering or deactivating a member; taking an annual fee or a reversing entry; declaring a copy lost and setting the amount; changing the lost-book tariff; settling, waiving, reducing or extending a settlement; suspending and lifting a suspension; changing opening hours or closures; publishing, editing or withdrawing a notice or event; resetting another person's password; creating or editing a branch, its name or its logo; creating or retiring a category; changing the annual fee or any other branch setting; creating a staff account; and exporting the log itself.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-05</td><td><span class="delta changed">Changed</span>The log is append-only. Nobody &mdash; not an admin, not a super admin, not us &mdash; can edit or delete an entry from inside the application. The single exception is automatic: when an applicant is anonymised (FR-AUT-20), their personal values are blanked in their entries by the system, and that is itself logged.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-06</td><td>An admin can read the log for their own branch. A super admin can read the log for every branch.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-07</td><td>The log screen filters by date range, person, role, branch, kind of action and the record affected, and shows the newest first.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-08</td><td><span class="delta changed">Changed</span>Any log view can be exported as a plain text file (<code>.txt</code>), a spreadsheet file (<code>.csv</code>, written so that Sinhala and Tamil open correctly in Excel and LibreOffice) and a PDF, all produced by the system itself with no outside service. The PDF carries the branch name and logo, the filter used and the date it was produced. (Q11)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-09</td><td>Every record &mdash; a title, a copy, a member, a loan, a payment, a request, a notice &mdash; has a "history" tab showing its own log entries in order.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-LOG-10</td><td>Reading the log is itself logged, so it is visible who has been looking at whose activity.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-LOG-11</td><td>Log entries are kept for a retention period held as a setting, two years by default. Entries older than that are moved to an archive file, never destroyed. (Q20)</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-LOG-12</td><td><span class="delta changed">Changed</span>Ordinary reads are not logged. Browsing the catalogue, running a search or opening a book's page produces no entry, because doing so would multiply the size of the log many times over and would create a record of what every member has been reading. <strong>Two reads are logged</strong> because they are rare and sensitive: reading the activity log (FR-LOG-10) and exporting a person's details (FR-AUT-19). (Q19)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-LOG-13</td><td><span class="delta new">New</span>Each log entry is written in the <strong>same database transaction</strong> as the change it describes. If the entry cannot be written, the change is not made. There is no moment at which a change exists without its record. (R13)</td><td><span class="chip must">Must</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="reports">
+  <span class="sec-num">15</span>
+  <h2 class="sec">Reports and exports</h2>
+  <p>Every report is produced by the system itself and can be taken away as text, CSV or PDF.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td class="id">FR-RPT-01</td><td>Stock summary for a branch: how many titles and copies in each category, and how many copies are useable, missing, not useable, withdrawn, in transit or held.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-02</td><td>Currently issued and overdue lists, with extensions shown.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-03</td><td><span class="delta changed">Changed</span>Fee collection summary for a chosen date range, per branch and in total, with lost-book money, reversing entries and first-fee waivers shown separately.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-04</td><td>Membership count over time: applications, approvals, rejections, renewals, suspensions and lapsed members per month.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-05</td><td><span class="delta changed">Changed</span>Most borrowed and least borrowed <strong>titles</strong> over any chosen period, counting the loans of every copy together, with the number of times each was taken out, for one branch or the whole library, and filterable by category.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-RPT-06</td><td>An at-a-glance summary screen showing, in one view: total titles and copies held, how many are on loan now, how many are overdue now, active, expired and suspended members and waiting applications, unsettled lost books, fees collected this month, and the most borrowed title this month.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-RPT-07</td><td><span class="delta changed">Changed</span>A missing-books report listing every copy declared lost, not useable or lost in transit, in full detail &mdash; accession number, title, category, branch, the member who last held it (none for a copy lost in transit), the date it was declared, the amount set, and whether the settlement is open, cleared, waived or past its window.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-RPT-08</td><td>Borrowing by category and by month, so the library can see what is read and when the busy months are.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-09</td><td><span class="delta changed">Changed</span>Every report can be exported as a plain text file, a <code>.csv</code> spreadsheet file and a PDF, generated by the system with no paid service and no external website involved. The separate <code>.xlsx</code> format of v3.0 is dropped: a <code>.csv</code> opens directly in Excel. (Q11)</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-RPT-10</td><td>An admin sees reports for their own branch. A super admin sees any branch and the whole library combined, with branch-by-branch comparison.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-RPT-11</td><td>Membership by age band, drawn from the date of birth, so the library can see who it is serving.</td><td><span class="chip">Could</span></td></tr>
+        <tr><td class="id">FR-RPT-12</td><td>A year-end summary gathering the reports above into one printable document.</td><td><span class="chip">Could</span></td></tr>
+        <tr><td class="id">FR-RPT-13</td><td>A single member's details &mdash; every field on their record, their membership dates, current loans and open settlements &mdash; exported as a text file or a PDF, as FR-AUT-19 describes. This is the only export that carries one person's personal data on its own, and it is logged each time.</td><td><span class="chip must">Must</span></td></tr>
+        <tr><td class="id">FR-RPT-14</td><td>Other-branch requests over a period: how many, between which branches, how many declined and why, and how long each took from request to collection.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-15</td><td>Late returns over a period: the members with the most late returns and the average days late, per branch.</td><td><span class="chip should">Should</span></td></tr>
+        <tr><td class="id">FR-RPT-16</td><td><span class="delta new">New</span>A <strong>daily loans sheet</strong> for each branch &mdash; every open loan with member, phone, copy and due date &mdash; that staff print at opening, so the counter can keep working on paper if the internet goes down (FR-CIR-14). (R19)</td><td><span class="chip should">Should</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="nfr">
+  <span class="sec-num">16</span>
+  <h2 class="sec">Quality requirements</h2>
+  <p>These apply to the whole system rather than to one feature, and they are as much a part of acceptance as the features above.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Area</th><th>Requirement</th></tr></thead>
+      <tbody>
+        <tr><td class="id">NFR-01</td><td>Speed</td><td>Any counter action &mdash; search, issue, take back &mdash; completes in under two seconds with 50 people using the system at once, at the volumes assumed in Q16.</td></tr>
+        <tr><td class="id">NFR-02</td><td>Devices</td><td>Works on a desktop browser at 1366&times;768 and on a phone. Members will mostly use phones; staff will mostly use the counter machine.</td></tr>
+        <tr><td class="id">NFR-03</td><td>Browsers</td><td>Current versions of Chrome, Edge, Firefox and Safari.</td></tr>
+        <tr><td class="id">NFR-04</td><td>Language</td><td><span class="delta changed">Changed</span>Sinhala, Tamil and English text can be entered and displayed correctly in every field, including names, titles, notices and PDF exports. The <strong>interface</strong> is in English and Sinhala at launch, with every label held in translation files so that a Tamil interface can be added later without changing the software. (Q18)</td></tr>
+        <tr><td class="id">NFR-05</td><td>Time</td><td>All dates and times are shown in Sri Lanka time. Due dates, extension dates, holds and the 100-day window are calculated by date, not by hour.</td></tr>
+        <tr><td class="id">NFR-06</td><td>Security</td><td>All traffic over HTTPS. Passwords hashed with a modern algorithm. Staff pages unreachable without a valid staff session, checked on the server for every request &mdash; including the branch a staff member is allowed to act on. Uploaded images are checked to be images and are never served in a way that lets them run as code.</td></tr>
+        <tr><td class="id">NFR-07</td><td>Audit</td><td><span class="delta changed">Changed</span>Every action that changes data records who did it and when, in the same transaction as the change (FR-LOG-13), and cannot be edited from within the application. Section&nbsp;14 sets out what this covers in full.</td></tr>
+        <tr><td class="id">NFR-08</td><td>Backup</td><td><span class="delta changed">Changed</span>The database, including the images in it, is backed up every night; thirty daily copies are kept on the server and a copy is taken off the server at least weekly to a machine the library owns. A restore is tested before handover and every six months after. Recovery point: at most 24 hours of data. Backups run on free, self-hosted tooling. (Q22)</td></tr>
+        <tr><td class="id">NFR-09</td><td>Privacy</td><td><span class="delta changed">Changed</span>Member names, phone numbers, dates of birth, addresses, organisations and introducers' names and phone numbers are personal data under Sri Lanka's Personal Data Protection Act No.&nbsp;9 of 2022 &mdash; and so are the same details of applicants who are never approved. Access is limited to staff of the member's own branch, to staff of a branch handling a request from that member, and to super admins. The activity log and every exported file are covered by the same restriction. The application form carries a short privacy notice, and unsuccessful applicants are anonymised under FR-AUT-20.</td></tr>
+        <tr><td class="id">NFR-10</td><td>Correctness</td><td><span class="delta changed">Changed</span>A copy cannot have two open loans or two open requests at the same moment; it cannot be issued while in transit or held; and two branches cannot be given the same accession number, branch code or category code. All are enforced by the database itself, not only by the screens, and availability is always worked out from loans and requests (R2).</td></tr>
+        <tr><td class="id">NFR-11</td><td>Cost</td><td><span class="delta changed">Changed</span>No part of the system may depend on a paid third-party service, or on any charge per message, per request or per user. This applies to reminders, password resets, maps, PDF generation, image storage, fonts, error reporting and analytics alike. It governs what the software <em>depends on</em>; where the library chooses to run it is NFR-13.</td></tr>
+        <tr><td class="id">NFR-12</td><td>Licence</td><td><span class="delta changed">Changed</span>Every framework, database, library and tool used is free and open-source software under a permissive licence. Pothgula itself is released under the <strong>MIT licence</strong>, so the library owns and can modify, host and pass on its copy without asking anyone. (Q21)</td></tr>
+        <tr><td class="id">NFR-13</td><td>Hosting</td><td><span class="delta changed">Changed</span>The whole system can be installed and run by the library on its own machine or on a low-cost server it rents, from one setup file, with written instructions and no vendor account required to run it. Paying for a server is a choice of where to run the system, not a dependency of the system, and the library can move it at any time.</td></tr>
+        <tr><td class="id">NFR-14</td><td>Money</td><td>All amounts are held in whole cents of Sri Lankan rupees as exact numbers, never as approximate decimals, so no total can drift by a cent.</td></tr>
+        <tr><td class="id">NFR-15</td><td>Phone numbers</td><td>Phone numbers are held as text, never as numbers, so a leading zero survives. The WhatsApp number is unique among accounts that are not anonymised, because it is also the sign-in name; the other phone number need not be.</td></tr>
+        <tr><td class="id">NFR-16</td><td>Images</td><td>Every image &mdash; logos, notice and event pictures &mdash; is stored inside the system's own database, resized on upload to a bounded size, limited to PNG, JPEG and WebP, and served only by the system. No image is hosted outside it and no upload is accepted from a web address.</td></tr>
+        <tr><td class="id">NFR-17</td><td>Real data</td><td><span class="delta new">New</span>Real member data is held only in the library's own installation. Any public demonstration of the system runs on free hosting with invented data only, and is never connected to the real one.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="data">
+  <span class="sec-num">17</span>
+  <h2 class="sec">Information we store</h2>
+  <p>This is the record structure behind the system. It is included so you can confirm nothing you need is missing before we build. Fields shown in green are new or changed in version&nbsp;3.1. Things that can be worked out from other records &mdash; whether a copy is on the shelf, how many days a loan was late, how many late returns a member has &mdash; are deliberately <em>not</em> stored (R2).</p>
+
+  <div class="schema">
+    <div class="tbl">
+      <div class="tbl-name">branch</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>library_name <span>text</span></li>
+        <li>branch_name <span>text</span></li>
+        <li>branch_code <span>two letters, unique, fixed</span></li>
+        <li>logo_image_id <span>image, optional</span></li>
+        <li>address <span>text</span></li>
+        <li>phone <span>text</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">category</div>
+      <ul>
+        <li>code <span>letter + digit, unique, fixed</span></li>
+        <li>name <span>Sinhala novels, etc.</span></li>
+        <li>is_active <span>yes / no</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">title &mdash; new</div>
+      <ul>
+        <li class="new">id <span>number</span></li>
+        <li class="new">title <span>text</span></li>
+        <li class="new">writer <span>text, optional</span></li>
+        <li class="new">publisher <span>text, optional</span></li>
+        <li class="new">isbn <span>text, optional</span></li>
+        <li class="new">edition <span>text, optional</span></li>
+        <li class="new">category_code <span>category</span></li>
+        <li class="new">merged_into_id <span>title, optional</span></li>
+        <li class="new">created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">copy &mdash; was book</div>
+      <ul>
+        <li>accession_no <span>KS-A1-01234, unique</span></li>
+        <li class="new">title_id <span>title</span></li>
+        <li>branch_id <span>owning branch</span></li>
+        <li>accessioned_branch_id <span>branch that numbered it</span></li>
+        <li class="new">condition <span>useable / not useable / missing</span></li>
+        <li class="new">withdrawn_at / reason <span>optional</span></li>
+        <li>price_cents <span>LKR, optional</span></li>
+        <li>source <span>text, optional</span></li>
+        <li>legacy_no <span>old number, optional</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+        <li class="new">location <span>removed &mdash; worked out</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">user</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>full_name <span>text</span></li>
+        <li>user_type <span>member / admin / super admin</span></li>
+        <li class="new">status <span>pending / active / suspended / rejected / deactivated / anonymised</span></li>
+        <li>whatsapp_phone <span>text, unique, sign-in</span></li>
+        <li>other_phone <span>text, optional</span></li>
+        <li>password <span>hashed</span></li>
+        <li>must_change_password <span>yes / no</span></li>
+        <li>date_of_birth <span>date</span></li>
+        <li>address <span>text</span></li>
+        <li>organisation <span>text, optional</span></li>
+        <li>introduced_by_name <span>text</span></li>
+        <li class="new">introduced_by_phone <span>text</span></li>
+        <li class="new">branch_id <span>home branch; empty for super admin</span></li>
+        <li>applied_at <span>date</span></li>
+        <li>approved_at / approved_by <span>date, staff user</span></li>
+        <li class="new">identity_checked_by <span>staff user</span></li>
+        <li>rejection_reason <span>text, optional</span></li>
+        <li class="new">suspended_at <span>date, optional</span></li>
+        <li class="new">anonymised_at <span>date, optional</span></li>
+        <li>expire_at <span>date</span></li>
+        <li class="new">late_return_count <span>removed &mdash; worked out</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">borrow</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li class="new">copy_id <span>copy</span></li>
+        <li>user_id <span>member</span></li>
+        <li>branch_id <span>branch issued at</span></li>
+        <li>request_id <span>other-branch request, optional</span></li>
+        <li>borrow_date <span>date</span></li>
+        <li>due_date <span>borrow + 14 days</span></li>
+        <li>original_due_date <span>date</span></li>
+        <li>extension_status <span>none / requested / approved / declined</span></li>
+        <li>extension_requested_at <span>date, optional</span></li>
+        <li>extension_decided_by / at <span>staff user, date</span></li>
+        <li>extension_reason <span>text, if declined</span></li>
+        <li>returned_at <span>date, empty while on loan</span></li>
+        <li class="new">entered_at / is_backdated <span>when keyed in</span></li>
+        <li class="new">voided_at / by / reason <span>optional</span></li>
+        <li>lost_declared_at / by <span>date, staff user</span></li>
+        <li>issued_by / received_by <span>staff user</span></li>
+        <li class="new">days_late <span>removed &mdash; worked out</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">book_request</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li class="new">title_id <span>title asked for</span></li>
+        <li class="new">copy_id <span>chosen on acceptance</span></li>
+        <li>user_id <span>member</span></li>
+        <li>from_branch_id <span>owning branch</span></li>
+        <li>to_branch_id <span>member's home branch</span></li>
+        <li class="new">status <span>requested / accepted / in transit / held / issued / returning / completed / declined / cancelled / lapsed / lost in transit</span></li>
+        <li>requested_at <span>date</span></li>
+        <li>decided_by / decided_at <span>staff user, date</span></li>
+        <li>decline_reason <span>text, optional</span></li>
+        <li>dispatched_at / arrived_at <span>date</span></li>
+        <li>hold_until <span>date</span></li>
+        <li>return_dispatched_at / return_arrived_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">book_settlement</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>borrow_id <span>loan</span></li>
+        <li>copy_id <span>the lost copy</span></li>
+        <li>user_id <span>member</span></li>
+        <li class="new">tariff_cents <span>from owning branch's tariff</span></li>
+        <li>amount_due_cents <span>set by staff</span></li>
+        <li class="new">amount_reason <span>if different from tariff</span></li>
+        <li>amount_set_by <span>staff user</span></li>
+        <li>window_ends <span>declared + 100 days</span></li>
+        <li class="new">window_extended_by / reason <span>super admin, optional</span></li>
+        <li>cleared_by <span>replacement / payment / waiver</span></li>
+        <li>replacement_copy_id <span>new copy, optional</span></li>
+        <li>amount_paid_cents <span>LKR, optional</span></li>
+        <li>receipt_no <span>text, optional</span></li>
+        <li>reason <span>text, for a waiver</span></li>
+        <li>settled_on <span>date, empty while open</span></li>
+        <li>handled_by <span>staff user</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">lost_tariff &mdash; new</div>
+      <ul>
+        <li class="new">branch_id <span>branch</span></li>
+        <li class="new">category_code <span>category</span></li>
+        <li class="new">amount_cents <span>LKR</span></li>
+        <li class="new">updated_by / at <span>staff user, date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">membership_payment</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>user_id <span>member</span></li>
+        <li class="new">kind <span>fee / first fee / waiver / reversal</span></li>
+        <li>amount_cents <span>LKR, integer</span></li>
+        <li>paid_on <span>date</span></li>
+        <li>receipt_no <span>text</span></li>
+        <li>collected_by <span>staff user</span></li>
+        <li class="new">reason <span>for a waiver or reversal</span></li>
+        <li>extends_to <span>new expiry</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">notice</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>kind <span>notice / event</span></li>
+        <li>branch_id <span>branch, empty = all</span></li>
+        <li>title <span>text</span></li>
+        <li>body <span>text, may hold a link</span></li>
+        <li>image_id <span>image, optional</span></li>
+        <li>event_date / start_time / end_time <span>event only</span></li>
+        <li>venue <span>text, optional</span></li>
+        <li>show_from / show_until <span>date, optional</span></li>
+        <li>is_important <span>yes / no</span></li>
+        <li>withdrawn_at <span>date, optional</span></li>
+        <li>created_by <span>staff user</span></li>
+        <li>created_at / updated_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">image</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>data <span>bytes, resized</span></li>
+        <li>thumbnail <span>bytes</span></li>
+        <li>mime_type <span>png / jpeg / webp</span></li>
+        <li>width / height / bytes <span>numbers</span></li>
+        <li>uploaded_by <span>staff user</span></li>
+        <li>created_at <span>date</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">branch_schedule &middot; branch_closure</div>
+      <ul>
+        <li>branch_id <span>branch</span></li>
+        <li>weekday <span>Mon&ndash;Sun</span></li>
+        <li>open_time / close_time <span>time, empty = closed</span></li>
+        <li>closed_on <span>date, for a closure</span></li>
+        <li>reason <span>text, for a closure</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">branch_setting</div>
+      <ul>
+        <li>branch_id <span>branch</span></li>
+        <li>loan_days <span>default 14</span></li>
+        <li>max_books <span>default 2</span></li>
+        <li>max_books_while_settling <span>default 1</span></li>
+        <li>settlement_window_days <span>default 100</span></li>
+        <li>staff_due_warning_days <span>default 5</span></li>
+        <li class="new">member_due_warning_days <span>default 5</span></li>
+        <li class="new">decline_grace_days <span>default 3</span></li>
+        <li>hold_days <span>default 7</span></li>
+        <li>application_stale_days <span>default 30</span></li>
+        <li class="new">application_anonymise_days <span>default 90</span></li>
+        <li class="new">renewal_grace_days <span>default 90</span></li>
+        <li class="new">frequent_late_count / months <span>default 3 in 12</span></li>
+        <li>annual_fee_cents <span>LKR, super admin only</span></li>
+        <li>log_retention_months <span>default 24</span></li>
+      </ul>
+    </div>
+    <div class="tbl">
+      <div class="tbl-name">activity_log</div>
+      <ul>
+        <li>id <span>number</span></li>
+        <li>at <span>date and time, UTC</span></li>
+        <li>actor_id <span>any user, or the system</span></li>
+        <li>actor_role <span>member / admin / super admin / system</span></li>
+        <li>branch_id <span>branch</span></li>
+        <li>action <span>issued / approved / exported&hellip;</span></li>
+        <li>entity <span>title / copy / borrow / user&hellip;</span></li>
+        <li>entity_id <span>record affected</span></li>
+        <li>before / after <span>values changed</span></li>
+        <li>ip_address <span>text</span></li>
+        <li class="new">redacted_at <span>set only by anonymisation</span></li>
+      </ul>
+    </div>
+  </div>
+  <p>Two tables are new in this version. <strong>title</strong> holds each book once, and the old <strong>book</strong> table becomes <strong>copy</strong>, which keeps only what differs between two physical copies. <strong>lost_tariff</strong> holds each branch's amount per category. Three stored values that could drift from the facts they summarise &mdash; a copy's location, a loan's days late and a member's late-return count &mdash; are removed and worked out instead.</p>
+</section>
+
+<section id="advice">
+  <span class="sec-num">18</span>
+  <h2 class="sec">Recommendations and their outcome</h2>
+  <p class="lead">Every recommendation made in versions 1.0 to 3.0 now has an outcome. Four new ones, R18 to R21, are proposed in this version and are written into the requirements; strike any of them out before signing if you do not want it.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>ID</th><th>Recommendation</th><th>Outcome</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="id">R1</td><td>Separate the <strong>title</strong> from the <strong>copy</strong>.</td><td>Title and copy tables; requests ask for a title; a lost book is replaced by a copy of the same title; reports rank titles. &sect;6, &sect;17.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R2</td><td>Work out availability from loans and requests rather than storing it.</td><td>The <code>location</code> field is removed; days late and late-return counts are worked out too. FR-CAT-04, NFR-10.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R3</td><td>Store phone numbers as text; WhatsApp number unique.</td><td>NFR-15.</td><td class="status-res">Adopted &mdash; v3.0</td></tr>
+        <tr><td class="id">R4</td><td>Drop the role choice from the sign-in screen.</td><td>Dropped from sign-in and, since staff are no longer self-registered, from registration too. FR-AUT-01.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R5</td><td>Make the super admin code single-use.</td><td>Your stronger version adopted: no code at all; the first super admin is created at installation and creates the rest. FR-AUT-04.</td><td class="status-res">Adopted, strengthened &mdash; v3.1</td></tr>
+        <tr><td class="id">R6</td><td>Staff approve self-registration; the year starts at approval.</td><td>FR-AUT-16 to FR-AUT-18, FR-MEM-01.</td><td class="status-res">Adopted &mdash; v3.0</td></tr>
+        <tr><td class="id">R7</td><td>A due date and a separate returned date on each loan.</td><td>&sect;17, borrow.</td><td class="status-res">Adopted &mdash; v1.0</td></tr>
+        <tr><td class="id">R8</td><td>Decide the rule for other branches.</td><td>Borrow at home, request from elsewhere; the book travels. &sect;8.</td><td class="status-res">Adopted &mdash; v3.0</td></tr>
+        <tr><td class="id">R9</td><td>Super admin organisation-wide; admin branch-scoped.</td><td>Super admins belong to no branch; the five-per-branch cap is gone. FR-AUT-04.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R10</td><td>Barcode or QR scanning at the counter.</td><td>You do not need it. FR-CAT-17 withdrawn; FR-CAT-10 prints plain labels.</td><td>Declined &mdash; v3.1</td></tr>
+        <tr><td class="id">R11</td><td>Decide the branch-letter ceiling.</td><td>Two letters. &sect;5.</td><td class="status-res">Adopted &mdash; v3.0</td></tr>
+        <tr><td class="id">R12</td><td>"Delete" means withdraw, everywhere, for everyone.</td><td>Withdraw, void, deactivate or anonymise; never delete. FR-CAT-11, FR-CIR-05, FR-PUB-06, FR-AUT-20.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R13</td><td>Write the log in the same transaction as the change.</td><td>FR-LOG-13, NFR-07.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R14</td><td>Record the introducer's phone number.</td><td>Required on the form. FR-AUT-03.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R15</td><td>After day 100, suspend rather than cancel.</td><td>FR-LST-15.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R16</td><td>The five-day list is a working list, not alerts.</td><td>FR-NOT-12.</td><td class="status-res">Adopted &mdash; v3.1</td></tr>
+        <tr><td class="id">R17</td><td>A written tariff for lost-book amounts.</td><td>One tariff per branch, kept in the system. FR-LST-16.</td><td class="status-res">Adopted, per branch &mdash; v3.1</td></tr>
+        <tr><td class="id">R18</td><td><span class="delta new">New</span>Check identity when approving an application.</td><td>Approval in person, document checked, number not stored. FR-AUT-17.</td><td>Proposed &mdash; v3.1</td></tr>
+        <tr><td class="id">R19</td><td><span class="delta new">New</span>A paper fallback for internet outages.</td><td>Daily loans sheet and back-dated entry. FR-RPT-16, FR-CIR-14.</td><td>Proposed &mdash; v3.1</td></tr>
+        <tr><td class="id">R20</td><td><span class="delta new">New</span>A printed transit slip.</td><td>FR-REQ-13.</td><td>Proposed &mdash; v3.1</td></tr>
+        <tr><td class="id">R21</td><td><span class="delta new">New</span>Block borrowing while a book is overdue, instead of fines.</td><td>FR-CIR-02, FR-CIR-15.</td><td>Proposed &mdash; v3.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="limits">
+  <span class="sec-num">19</span>
+  <h2 class="sec">Limitations and risks</h2>
+  <p class="lead">What this system will not do for you, and what could go wrong. We would rather you know now than discover it after handover. This version closes the most serious risk of v3.0, narrows four others, and adds one.</p>
+
+  <h3>Serious &mdash; read before signing</h3>
+  <div class="grid2">
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Anyone with the code becomes an owner</h4><span class="risk-id">D1</span></div>
+      <p><span class="status-res">Closed in v3.1.</span> There is no super admin code any more. Staff accounts can only be created by a super admin, and the first one only on the server itself (FR-AUT-04).</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>The counter stops when the internet does</h4><span class="risk-id">D4</span></div>
+      <p>This is a web system with no offline mode. During an outage at a branch, staff cannot issue or take back books in the system.</p>
+      <p class="fix"><b>Mitigation, now in the requirements:</b> the daily loans sheet printed at opening (FR-RPT-16), paper slips during the outage, and back-dated entry within seven days afterwards (FR-CIR-14). Offline-capable software remains a much larger project.</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Reminders reach only people who sign in &mdash; permanently</h4><span class="risk-id">D6</span></div>
+      <p>A member who never signs in never learns their book is due, that their extension was declined, that a requested book is waiting for them, or that the 100-day window is about to close. The system cannot send a WhatsApp message.</p>
+      <p class="fix"><b>Mitigation:</b> the call list in FR-NOT-04 and the five-day list in FR-NOT-12, and staff time on the telephone or WhatsApp by hand. Plan for someone at each branch to do this weekly.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Late is free, but no longer unlimited</h4><span class="risk-id">D3</span></div>
+      <p><span class="status-res">Narrowed in v3.1.</span> There is still no money fine for lateness &mdash; by decision, not omission. But a member holding an overdue book can no longer borrow, request or extend (FR-CIR-02), and repeat lateness is marked at the counter (FR-CIR-15).</p>
+      <p class="fix"><b>If that is not enough:</b> fines can be added later; they would need cash handling, receipts and a cap, and are quoted separately.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>The same lost book can cost different amounts at different branches</h4><span class="risk-id">D14</span></div>
+      <p><span class="status-res">Narrowed in v3.1.</span> Within a branch the tariff makes the amount consistent, and any departure carries a written reason. Between branches, amounts differ because each branch keeps its own tariff &mdash; your answer to Q2.</p>
+      <p class="fix"><b>Mitigation:</b> super admins can compare the branch tariffs side by side and agree a common one at any time without software changes.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>A book between two branches belongs to nobody</h4><span class="risk-id">D15</span></div>
+      <p><span class="status-res">Decided in v3.1.</span> A copy lost in transit is the library's loss, written off by a super admin; no member is charged (FR-REQ-14). The signed transit slip (FR-REQ-13) shows whose hands it passed through.</p>
+      <p class="fix"><b>Still needed:</b> the library adopts the transport procedure recommended in &sect;8, or its own.</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Bringing the existing books in is now a two-level job</h4><span class="risk-id">D19</span></div>
+      <p><span class="delta new">New</span>With titles and copies separated, the import of the books already on your shelves must group copies into titles. Old registers spell the same title several ways; every misspelling becomes a separate title unless someone catches it.</p>
+      <p class="fix"><b>Mitigation:</b> the import shows probable duplicates for review before it is committed (FR-CAT-13), and a super admin can merge titles afterwards (FR-CAT-18). Allow a librarian's time for the review; it is a one-off.</p>
+    </div>
+  </div>
+
+  <h3>Worth knowing</h3>
+  <div class="grid2">
+    <div class="risk">
+      <div class="risk-head"><h4>No reservations for books on loan</h4><span class="risk-id">D5</span></div>
+      <p>A member can request a book on the shelf at another branch, but cannot queue for a book that is on loan anywhere: they must keep checking, and whoever arrives first gets it.</p>
+      <p class="fix"><b>Option:</b> phase&nbsp;3; the request flow in section&nbsp;8 is most of the machinery.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>Books moving between branches &mdash; staff must keep up</h4><span class="risk-id">D7</span></div>
+      <p>The transit and hold states are only as accurate as the staff who record dispatch and arrival. A copy that arrived but was never marked as arrived sits "in transit" for ever, and the member who asked for it is never told it is ready.</p>
+      <p class="fix"><b>Mitigation:</b> FR-REQ-09 puts every undone step on the panel of the branch that owes it; FR-REQ-12 flags the stuck ones to super admins.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>Personal data brings legal duties</h4><span class="risk-id">D8</span></div>
+      <p>The record holds two phone numbers, an organisation, and the name and phone number of a third person who did not fill in the form. Staff at a second branch see all of it when a request arrives. Single-person exports put all of it in a file that can be carried anywhere.</p>
+      <p class="fix"><b>Mitigation:</b> NFR-09, the introducer's consent tick (FR-AUT-03), anonymisation of unsuccessful applicants (FR-AUT-20), and logging every export. We will supply the privacy notice for the form.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>The catalogue is local, not standard</h4><span class="risk-id">D9</span></div>
+      <p>Books are catalogued with your own codes rather than a standard classification. Simpler to use, but not importable into a standard library system without manual work &mdash; and the accession number bakes your codes into every label.</p>
+      <p class="fix"><b>Option:</b> fill in the ISBN on titles that have one; FR-CAT-16 makes that quicker.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>The log will become the biggest thing in the database</h4><span class="risk-id">D11</span></div>
+      <p>Logging every change means the log grows without limit and will outgrow every other table within the first year.</p>
+      <p class="fix"><b>Mitigation:</b> FR-LOG-11 archives entries after two years; FR-LOG-12 keeps browsing out entirely.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>A locked-out super admin</h4><span class="risk-id">D12</span></div>
+      <p>A super admin who forgets their password depends on another super admin to reset it.</p>
+      <p class="fix"><b>Mitigation:</b> FR-AUT-14 keeps two alive; the server command of FR-AUT-04 is the documented last resort.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>The five-day list is long by design</h4><span class="risk-id">D16</span></div>
+      <p>With a 14-day loan, more than a third of all loans are always "due within five days" &mdash; seventy or eighty lines a morning at two hundred loans a week.</p>
+      <p class="fix"><b>Mitigation:</b> R16 &mdash; a sortable list below the overdue books, never an alert per line. The number of days is a setting.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>Applications need a visit</h4><span class="risk-id">D17</span></div>
+      <p>An applicant who applies online must still come to the branch with proof of identity and the fee before they can borrow. Some will not, and the library holds their details meanwhile.</p>
+      <p class="fix"><b>Mitigation:</b> the applicant's banner says exactly what to bring (FR-AUT-16); staff see the waiting list (FR-AUT-18); unapproved applications are anonymised after 90 days (FR-AUT-20).</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>Pictures and storage</h4><span class="risk-id">D18</span></div>
+      <p><span class="status-res">Reduced in v3.1.</span> The real installation runs on the library's own server (NFR-13, NFR-17), where storage is not a practical limit. Only the public demonstration sits on a small free database, and it holds invented data.</p>
+      <p class="fix"><b>Mitigation:</b> pictures are still resized on upload (FR-PUB-05), which keeps backups small.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>Closed in earlier versions</h4><span class="risk-id">D2 &middot; D10 &middot; D13</span></div>
+      <p>Unverified members borrowing (D2) and the 26-branch ceiling (D10) were closed in v3.0. The doubled price not replacing the book (D13) became D14 in v3.0 and is narrowed above.</p>
+    </div>
+  </div>
+</section>
+
+<section id="phases">
+  <span class="sec-num">20</span>
+  <h2 class="sec">Delivery in three phases</h2>
+  <p>We recommend putting a working counter system in your hands early rather than delivering everything at once. Each phase is usable on its own.</p>
+
+  <div class="phase">
+    <div class="phase-n">1</div>
+    <div>
+      <h4>The counter works</h4>
+      <span class="when">First release</span>
+      <p>Installation with the first super admin; branches with their codes, names and logos; categories; staff accounts; sign-in by WhatsApp number with no role picker; membership applications with in-person approval and the first fee <span class="delta changed">Changed</span>(annual fee payments move here from phase&nbsp;2, because approval now takes the first fee); password change and counter reset; the catalogue of titles and copies with accession numbers, search and the legacy import; issuing and taking back with the late-return callout and the overdue block; the daily loans sheet and back-dated entry; the five-day list and the overdue list; membership expiry and renewal &mdash; and the activity log, written in the same transaction as every change, from the first day. At the end of this phase you can stop using the paper register.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-n">2</div>
+    <div>
+      <h4>The library runs itself</h4>
+      <span class="when">Second release</span>
+      <p>Extensions by request and approval; other-branch requests with transit, hold and the transit slip; lost-book settlements with branch tariffs, the 100-day window and suspension; opening hours and closures; notices and events; receipts; the member-facing dashboard with its full notification panel; the log viewing screen with text, CSV and PDF export; and the reports of section&nbsp;15 with the same exports.</p>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="phase-n">3</div>
+    <div>
+      <h4>Faster and further</h4>
+      <span class="when">Once phases 1 and 2 are settled in use</span>
+      <p>Filling in book details from an ISBN, reservations for books on loan, printed spine-label sheets, the Tamil interface once a translation is supplied, and the year-end summary document. <span class="delta changed">Changed</span>Barcode and QR scanning, and fines, are no longer on this list &mdash; you have decided against them. SMS and WhatsApp messaging are out of scope by decision, not deferred.</p>
+    </div>
+  </div>
+</section>
+
+<section id="questions">
+  <span class="sec-num">21</span>
+  <h2 class="sec">Decisions, answered</h2>
+  <p>Every question from version&nbsp;3.0 now has an answer. <span class="chip must">Client</span> marks your own answers. <span class="chip should">Recommended</span> marks our recommendation, already written into the requirements; signing section&nbsp;22 accepts it, and striking it out reopens the question. <span class="chip">Your data</span> marks facts only you can supply; none of them blocks development &mdash; they are needed at installation.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>No.</th><th>Question</th><th>Answer</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td class="id">Q1</td><td>A lost book is not settled by day 100 &mdash; what happens?</td><td>The member is suspended from every borrowing feature and the case goes to the super admins. Nothing is cancelled and the amount does not grow. FR-LST-15.</td><td><span class="chip must">Client</span></td></tr>
+        <tr><td class="id">Q2</td><td>Suggest twice the price? Write a tariff?</td><td>No doubled price. Each branch keeps its own tariff per category; the owning branch's tariff applies; a different amount needs a reason. FR-LST-02, FR-LST-16. <em>Please confirm our reading of "each librarian has separate amounts".</em></td><td><span class="chip must">Client</span></td></tr>
+        <tr><td class="id">Q3</td><td>The extension rule; undecided requests; overdue books.</td><td>One extension, two weeks from the original due date, requested up to and including the due date. A request made in time is never counted against the member while undecided; if declined after the due date, three days' grace from the decision. An overdue loan cannot be extended. FR-CIR-10, FR-CIR-13.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q4</td><td>What did item 4 mean?</td><td>As written in v3.0: the late return is called out at the counter, kept on the member's record and shown on their dashboard. No acknowledgement is asked of the member; the overdue block of FR-CIR-02 does the real work. FR-CIR-04.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q5</td><td>Who is the introducer?</td><td>A <strong>referee</strong>: someone who knows the applicant and whom the library can call if it cannot reach the member. Not a guarantor &mdash; they owe nothing. Name and phone number both required; the applicant confirms the introducer agreed. FR-AUT-03.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q6</td><td>First fee at approval? Approval without paying?</td><td>Yes: approval is done at the counter, with an identity check, and takes the first fee in the same step. Only a super admin can approve with the fee waived, with a reason. FR-AUT-17, FR-MEM-10.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q7</td><td>Member warning three days or five?</td><td>Five, the same as staff: an extension must be asked for and decided before the due date, and three days is too tight for that. A setting. FR-NOT-01.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q8</td><td>How do books travel between branches?</td><td>A fixed weekly transfer day per pair of branches, books sent with a signed transit slip, arrival recorded the same day; a copy lost on the way is the library's loss. &sect;8, FR-REQ-13, FR-REQ-14.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q9</td><td>Only on-shelf books; one request at a time?</td><td>Yes to both. A requested copy counts towards the two-book limit from acceptance. FR-REQ-01, FR-REQ-02.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q10</td><td>Own branch's notices by default, or all?</td><td>Own branch plus library-wide notices by default; other branches on request. FR-PUB-04.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q11</td><td>What does "text" export mean?</td><td>Three formats: <code>.txt</code>, <code>.csv</code> (opens in Excel, including Sinhala and Tamil) and PDF. No separate <code>.xlsx</code>. FR-LOG-08, FR-RPT-09.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q12</td><td>Hold a requested book for seven days?</td><td>Yes, seven days, never ending on a day the branch is closed. A setting. FR-REQ-05.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q13</td><td>Branch codes and categories?</td><td>Categories: the starting scheme in &sect;5 (letter = collection, digit = kind of book), yours to adjust. Branch codes: two letters from each town's name; the list of branches is yours.</td><td><span class="chip should">Recommended</span> <span class="chip">Your data</span></td></tr>
+        <tr><td class="id">Q14</td><td>Fines for late books? Block borrowing while overdue?</td><td>No money fines in this release. Yes to the block: a member holding an overdue book cannot borrow, request or extend until it is back. Three late returns in a year are marked at the counter. FR-CIR-02, FR-CIR-15.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q15</td><td>The annual fee at each branch?</td><td>Entered by a super admin per branch at installation (FR-MEM-06). The software needs no figure before then.</td><td><span class="chip">Your data</span></td></tr>
+        <tr><td class="id">Q16</td><td>How many books, members and notices?</td><td>We design for up to 50,000 copies, 5,000 members, 1,000 loans a week and 20 notices a month across all branches. Ten times that would still run on the same server. Tell us if you expect more.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q17</td><td>Who are the first and second super admins, and who holds the code?</td><td>There is no code any more. The head of the library organisation becomes the first super admin at installation and creates the second &mdash; we suggest the senior librarian of the largest branch &mdash; on the same day. The names are yours. FR-AUT-04, FR-AUT-14.</td><td><span class="chip should">Recommended</span> <span class="chip">Your data</span></td></tr>
+        <tr><td class="id">Q18</td><td>Interface languages?</td><td>English and Sinhala at launch; Tamil added from a translation file when one is supplied, with no software change. Data in all three languages from day one. NFR-04.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q19</td><td>Log browsing and searching?</td><td>No. Only changes, sign-ins, reading the log and personal-data exports are logged. FR-LOG-12.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q20</td><td>How long to keep the log and unsuccessful applications?</td><td>Log entries two years online, then archived to file, never destroyed. Unsuccessful applications anonymised after 90 days. Both settings. FR-LOG-11, FR-AUT-20.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q21</td><td>Licence and copyright?</td><td>MIT licence, as proposed in the technical decision record. Copyright stays with the author; the MIT licence already gives the library every right to use, change, host and pass on the system. If the library is paying for development and wants the copyright itself, that belongs in the contract and does not change the licence. NFR-12.</td><td><span class="chip should">Recommended</span></td></tr>
+        <tr><td class="id">Q22</td><td>Hosting, backup and restore?</td><td>The real system self-hosted from one setup file on a low-cost rented server that every branch can reach; a public demonstration on free hosting with invented data only. Nightly automatic backup, weekly copy to a library-owned machine checked by a named super admin, restore rehearsed by the developer before handover and every six months. NFR-08, NFR-13, NFR-17.</td><td><span class="chip should">Recommended</span> <span class="chip">Your data</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>What we need from you before installation</h3>
+  <ul class="plain">
+    <li>The list of branches, each with its name, two-letter code, address and phone number.</li>
+    <li>Your category list &mdash; the scheme in &sect;5 as it stands or as you change it.</li>
+    <li>The annual fee at each branch, and each branch's first lost-book tariff.</li>
+    <li>The names of the first two super admins, and the admins for each branch.</li>
+    <li>The server the real system will run on, and the person who will check the weekly backup copy.</li>
+  </ul>
+</section>
+
+<section id="signoff">
+  <span class="sec-num">22</span>
+  <h2 class="sec">Acceptance</h2>
+  <p>Signing below confirms that the requirements marked <span class="chip must">Must</span> in sections 4 to 16 describe the system you want built; that the changes listed in section&nbsp;2 are what you asked for or accept; that the recommended answers in section&nbsp;21 are accepted except where you have struck them out; and that the limitations in section&nbsp;19 have been read and accepted. Anything not listed in this document is outside the agreed scope and will be quoted separately. This document supersedes version&nbsp;3.0 of 22 September 2026, version&nbsp;2.0 of 8 September 2026 and version&nbsp;1.0 of 25 August 2026 in full.</p>
+  <div class="signoff">
+    <div class="sig">
+      <div class="who">&nbsp;</div>
+      <div class="what">Client &mdash; name, signature and date</div>
+    </div>
+    <div class="sig">
+      <div class="who">Chathuranga Jayawardhana</div>
+      <div class="what">System Designer &mdash; signature and date</div>
+      <div class="reach">
+        <a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a><br>
+        <a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a><br>
+        <a href="https://linkedin.com/in/chathuranga97">linkedin.com/in/chathuranga97</a>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:28px">Questions on any part of this document are welcome before signing. It is easier to change a requirement now than a screen later &mdash; and easier to change a screen than a number printed on four thousand books.</p>
+</section>
+
+<footer>
+  Pothgula &mdash; Software Requirements Specification v3.1 &middot; 6 November 2026 &middot; Revises v3.0 of 22 September 2026 &middot; Baseline for construction once signed.<br>
+  Chathuranga Jayawardhana &middot; <a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a> &middot; <a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a> &middot; <a href="https://linkedin.com/in/chathuranga97">linkedin.com/in/chathuranga97</a>
+</footer>
+
+</main>
+</div>
+</div>
+</body>
+</html>

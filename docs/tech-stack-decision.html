@@ -1,0 +1,671 @@
+<title>Pothgula Tech Stack Decision</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F6F8F6; --surface:#FFFFFF; --surface-sunk:#EDF0EC;
+  --ink:#161D1A; --ink-soft:#3D4844; --muted:#6E7B75;
+  --rule:#DBE2DC; --rule-strong:#BFCBC2;
+  --accent:#1E5D4B; --accent-soft:#E3EFE9; --accent-ink:#164537;
+  --flag:#A03028; --flag-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(22,29,26,.05), 0 8px 24px -16px rgba(22,29,26,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101614; --surface:#18201D; --surface-sunk:#141A18;
+    --ink:#E7EDE8; --ink-soft:#BAC5BF; --muted:#8C9993;
+    --rule:#2A3531; --rule-strong:#3C4A45;
+    --accent:#63B79B; --accent-soft:#1B2E28; --accent-ink:#8ED3BB;
+    --flag:#E38278; --flag-soft:#33211F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101614; --surface:#18201D; --surface-sunk:#141A18;
+  --ink:#E7EDE8; --ink-soft:#BAC5BF; --muted:#8C9993;
+  --rule:#2A3531; --rule-strong:#3C4A45;
+  --accent:#63B79B; --accent-soft:#1B2E28; --accent-ink:#8ED3BB;
+  --flag:#E38278; --flag-soft:#33211F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+
+.shell{max-width:1180px; margin:0 auto; padding:0 24px 96px}
+.layout{display:grid; grid-template-columns:220px minmax(0,1fr); gap:56px; align-items:start}
+@media (max-width:900px){ .layout{grid-template-columns:minmax(0,1fr); gap:32px} }
+
+.masthead{padding:64px 0 40px; border-bottom:1px solid var(--rule-strong)}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11.5px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 20px;
+}
+.wordmark{
+  font-family:"Newsreader",Georgia,serif; font-optical-sizing:auto; font-weight:500;
+  font-size:clamp(3rem,8vw,5.25rem); line-height:.96; letter-spacing:-.02em;
+  margin:0; text-wrap:balance;
+}
+.wordmark em{font-style:italic; color:var(--accent)}
+.standfirst{
+  font-family:"Newsreader",Georgia,serif; font-size:clamp(1.15rem,2.2vw,1.4rem);
+  line-height:1.5; color:var(--ink-soft); max-width:40ch; margin:22px 0 0;
+}
+.docmeta{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:20px 32px;
+  margin:44px 0 0; padding:24px 0 0; border-top:1px solid var(--rule);
+}
+.docmeta div{display:flex; flex-direction:column; gap:3px}
+.docmeta dt{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.docmeta dd{margin:0; font-size:14.5px; font-weight:500}
+
+.toc{position:sticky; top:24px; padding-top:56px}
+@media (max-width:900px){
+  .toc{position:static; padding:28px 22px; background:var(--surface); border:1px solid var(--rule); border-radius:4px}
+}
+.toc h2{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted); font-weight:500; margin:0 0 14px;
+}
+.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; counter-reset:toc}
+.toc a{
+  display:grid; grid-template-columns:26px 1fr; gap:6px; padding:5px 0;
+  color:var(--ink-soft); text-decoration:none; font-size:13.5px; line-height:1.35;
+}
+.toc a::before{
+  counter-increment:toc; content:counter(toc,decimal-leading-zero);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted); padding-top:1px;
+}
+.toc a:hover{color:var(--accent)}
+.toc a:hover::before{color:var(--accent)}
+
+main{padding-top:56px; min-width:0}
+section{scroll-margin-top:24px; padding-bottom:52px}
+section + section{border-top:1px solid var(--rule); padding-top:52px}
+.sec-num{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500; letter-spacing:.14em;
+  color:var(--accent); display:block; margin-bottom:10px;
+}
+h2.sec{
+  font-family:"Newsreader",Georgia,serif; font-weight:500; font-size:clamp(1.75rem,3.4vw,2.35rem);
+  line-height:1.15; letter-spacing:-.015em; margin:0 0 18px; text-wrap:balance;
+}
+h3{
+  font-size:1rem; font-weight:600; letter-spacing:-.005em; margin:36px 0 12px;
+  padding-bottom:7px; border-bottom:1px solid var(--rule);
+}
+h4{font-size:14px; font-weight:600; margin:24px 0 8px}
+p{margin:0 0 15px; max-width:68ch}
+p.lead{font-size:17.5px; color:var(--ink-soft); max-width:62ch}
+ul.plain{margin:0 0 16px; padding-left:20px; max-width:68ch}
+ul.plain li{margin-bottom:7px}
+strong{font-weight:600}
+code{
+  font-family:"IBM Plex Mono",monospace; font-size:.86em; background:var(--surface-sunk);
+  padding:1px 5px; border-radius:3px; border:1px solid var(--rule);
+}
+
+.tablewrap{overflow-x:auto; margin:0 0 20px; border:1px solid var(--rule); border-radius:4px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14px; min-width:560px}
+th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--rule); vertical-align:top}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); font-weight:500; background:var(--surface-sunk); white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none}
+td.id{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--accent); white-space:nowrap; font-weight:500}
+td.num{font-variant-numeric:tabular-nums; white-space:nowrap}
+.mark{color:var(--accent); font-weight:600}
+.nomark{color:var(--rule-strong)}
+th.ctr,td.ctr{text-align:center}
+
+.chip{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; padding:2px 7px; border-radius:3px;
+  border:1px solid var(--rule-strong); color:var(--muted); white-space:nowrap;
+}
+.chip.must{background:var(--ink); border-color:var(--ink); color:var(--ground)}
+.chip.should{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.chip.high{border-color:var(--flag); color:var(--flag); background:var(--flag-soft)}
+
+.note{
+  background:var(--accent-soft); border:1px solid var(--rule); border-left:3px solid var(--accent);
+  padding:16px 18px; border-radius:0 4px 4px 0; margin:0 0 22px; font-size:14.5px;
+}
+.note p{margin:0; max-width:none; color:var(--ink-soft)}
+.note p + p{margin-top:9px}
+.note .tag{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--accent-ink); margin-bottom:6px; font-weight:500;
+}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin:0 0 22px}
+.card{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:18px 20px; box-shadow:var(--shadow)}
+.card h4{margin:0 0 8px; font-size:14.5px}
+.card p{margin:0; font-size:14px; color:var(--ink-soft); max-width:none}
+.card .role{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); display:block; margin-bottom:9px;
+}
+.card ul{margin:10px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft)}
+.card ul li{margin-bottom:5px}
+
+.risk{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:16px 18px 16px 20px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.risk::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--rule-strong)}
+.risk.sev-high::before{background:var(--flag)}
+.risk.sev-med::before{background:var(--accent)}
+.risk-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:7px}
+.risk-head h4{margin:0; font-size:14.5px}
+.risk-id{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted)}
+.risk p{margin:0; font-size:13.5px; color:var(--ink-soft); max-width:none}
+.risk .fix{margin-top:9px; font-size:13px; color:var(--ink-soft); border-top:1px dotted var(--rule-strong); padding-top:8px}
+.risk .fix b{color:var(--ink); font-weight:600}
+
+.schema{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin:0 0 22px}
+.tbl{background:var(--surface); border:1px solid var(--rule); border-radius:4px; overflow:hidden; box-shadow:var(--shadow)}
+.tbl-name{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:500; letter-spacing:.04em;
+  padding:9px 14px; background:var(--surface-sunk); border-bottom:1px solid var(--rule); color:var(--accent);
+}
+.tbl ul{list-style:none; margin:0; padding:10px 14px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; line-height:1.85}
+.tbl li{display:flex; justify-content:space-between; gap:12px; color:var(--ink-soft)}
+.tbl li span{color:var(--muted); font-size:10.5px; white-space:nowrap}
+.tbl li.new{color:var(--accent)}
+.tbl li.new span{color:var(--accent)}
+
+figure{margin:0 0 22px}
+.diagram{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  padding:22px 18px; overflow-x:auto; box-shadow:var(--shadow);
+}
+.diagram svg{display:block; width:100%; min-width:640px; height:auto}
+.d-box{fill:var(--surface-sunk); stroke:var(--rule-strong); stroke-width:1.25}
+.d-box-flag{fill:var(--flag-soft); stroke:var(--flag); stroke-width:1.25}
+.d-label{fill:var(--ink); font-family:"IBM Plex Sans",sans-serif; font-size:14px; font-weight:500}
+.d-sub{fill:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.1em}
+.d-line{stroke:var(--rule-strong); stroke-width:1.25; fill:none}
+.d-edge{fill:var(--muted); font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em}
+figcaption{font-size:12.5px; color:var(--muted); margin-top:10px; font-style:italic}
+
+.phase{display:grid; grid-template-columns:auto minmax(0,1fr); gap:20px; padding:20px 0; border-bottom:1px solid var(--rule)}
+.phase:last-child{border-bottom:none}
+.phase-n{
+  font-family:"Newsreader",Georgia,serif; font-size:2.4rem; line-height:1; color:var(--accent);
+  font-weight:500; font-variant-numeric:tabular-nums; padding-top:2px;
+}
+.phase h4{margin:0 0 4px; font-size:15px}
+.phase .when{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px}
+.phase p{margin:0; font-size:14px; color:var(--ink-soft); max-width:64ch}
+
+ol.q{list-style:none; counter-reset:q; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+ol.q li{
+  counter-increment:q; display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px;
+  padding:12px 0; border-bottom:1px solid var(--rule); font-size:14.5px; color:var(--ink-soft);
+}
+ol.q li::before{
+  content:"Q" counter(q); font-family:"IBM Plex Mono",monospace; font-size:11px;
+  color:var(--accent); padding-top:4px; font-weight:500;
+}
+ol.q li:last-child{border-bottom:none}
+
+.signoff{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:32px; margin-top:28px}
+.sig{border-top:1px solid var(--rule-strong); padding-top:10px}
+.sig .who{font-size:14px; font-weight:600}
+.sig .what{font-size:12.5px; color:var(--muted)}
+footer{margin-top:56px; padding-top:24px; border-top:1px solid var(--rule-strong); font-size:12.5px; color:var(--muted)}
+footer a{color:var(--muted)}
+
+.contact{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 24px;
+  margin:22px 0 0; padding:18px 0 0; border-top:1px solid var(--rule);
+}
+.contact-label{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--muted);
+}
+.contact ul{list-style:none; display:flex; flex-wrap:wrap; gap:8px 24px; margin:0; padding:0}
+.contact a{
+  color:var(--ink); text-decoration:none; font-size:14px; font-weight:500;
+  border-bottom:1px solid var(--rule-strong); padding-bottom:1px;
+}
+.contact a:hover{color:var(--accent); border-bottom-color:var(--accent)}
+.sig .reach{margin-top:7px; font-size:12.5px; color:var(--muted); line-height:1.55}
+.sig .reach a{color:var(--muted); text-decoration:none}
+.sig .reach a:hover{color:var(--accent)}
+
+@media print{
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]){
+    --ground:#FFFFFF; --surface:#FFFFFF; --surface-sunk:#F1F4F1;
+    --ink:#111815; --ink-soft:#333D39; --muted:#5C6763;
+    --rule:#D2DAD4; --rule-strong:#A9B5AE;
+    --accent:#154A3B; --accent-soft:#EAF2EE; --accent-ink:#123C31;
+    --flag:#8E2A22; --flag-soft:#F7E7E4;
+    --shadow:none;
+  }
+  @page{margin:15mm 14mm}
+  body{background:#fff; font-size:10pt; line-height:1.5}
+  .shell{max-width:none; padding:0}
+  .layout{display:block}
+  .masthead{padding:0 0 28px; break-after:page}
+  .wordmark{font-size:50pt}
+  .standfirst{font-size:14pt}
+  .toc{position:static; padding:0 0 18px; background:none; border:none; break-after:page}
+  .toc a{color:var(--ink-soft)}
+  main{padding-top:0}
+  section{padding-bottom:26px}
+  section + section{padding-top:26px}
+  h2.sec, h3, h4{break-after:avoid}
+  .tablewrap{overflow:visible; box-shadow:none}
+  table{min-width:0; font-size:8.5pt}
+  th,td{padding:6px 9px}
+  tr{break-inside:avoid}
+  .card,.risk,.tbl,.phase,.note,figure,.sig{break-inside:avoid; box-shadow:none}
+  .diagram{box-shadow:none; padding:14px 4px}
+  .diagram svg{min-width:0}
+  .grid2,.schema{gap:10px}
+  p, ul.plain li, ol.q li, p.lead{max-width:none}
+  a{color:inherit}
+  .contact a{border-bottom:none}
+  footer{break-inside:avoid; margin-top:32px}
+}
+
+/* --- v2 additions --- */
+.delta{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; padding:1px 6px; border-radius:3px;
+  margin-right:8px; white-space:nowrap; vertical-align:1px;
+}
+.delta.new{background:var(--accent); color:var(--ground); border:1px solid var(--accent)}
+.delta.changed{background:var(--accent-soft); color:var(--accent-ink); border:1px solid var(--accent)}
+.delta.gone{background:var(--flag-soft); color:var(--flag); border:1px solid var(--flag)}
+tr.gone td{color:var(--muted)}
+tr.gone td.id{text-decoration:line-through; color:var(--flag)}
+.chip.gone{border-color:var(--flag); color:var(--flag); background:var(--flag-soft)}
+.supersede{
+  margin:22px 0 0; padding:14px 16px; border:1px solid var(--rule-strong); border-radius:4px;
+  background:var(--surface); font-size:13.5px; color:var(--ink-soft); max-width:60ch;
+}
+.supersede b{color:var(--ink)}
+td.money{font-variant-numeric:tabular-nums; white-space:nowrap}
+.keyfmt{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:0 0 20px;
+}
+.keyfmt .seg{background:var(--surface); border:1px solid var(--rule); border-radius:4px; padding:14px 16px; box-shadow:var(--shadow)}
+.keyfmt .seg code{font-size:1.5rem; background:none; border:none; padding:0; color:var(--accent); font-weight:500; letter-spacing:.06em}
+.keyfmt .seg h4{margin:8px 0 4px; font-size:13.5px}
+.keyfmt .seg p{margin:0; font-size:12.5px; color:var(--muted); max-width:none}
+@media print{
+  .keyfmt .seg,.supersede{break-inside:avoid; box-shadow:none}
+}
+</style>
+
+<style>
+.ok{color:var(--accent); font-weight:600}
+.no{color:var(--flag); font-weight:600}
+.stack-row td:first-child{font-weight:600; white-space:nowrap}
+.srcs{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--muted); line-height:1.7}
+.srcs li{padding:5px 0; border-bottom:1px solid var(--rule)}
+.srcs li:last-child{border-bottom:none}
+.srcs code{font-size:11px; background:none; border:none; padding:0; color:var(--muted)}
+@media print{ .srcs{font-size:8pt} }
+</style>
+
+<div class="shell">
+
+<header class="masthead">
+  <p class="eyebrow">Technical Decision Record &middot; Version 1.0</p>
+  <h1 class="wordmark">Tech <em>Stack</em></h1>
+  <p class="standfirst">Which framework, which database, and which free hosting Pothgula should be built on &mdash; and why the requirements themselves decide most of it.</p>
+  <dl class="docmeta">
+    <div><dt>Prepared for</dt><dd>Chathuranga Jayawardhana</dd></div>
+    <div><dt>Governs</dt><dd>Requirements v2.0, &sect;13</dd></div>
+    <div><dt>Date</dt><dd>10 September 2026</dd></div>
+    <div><dt>Status</dt><dd>Recommendation &mdash; for decision</dd></div>
+  </dl>
+  <div class="supersede">
+    <b>This is not a requirements document.</b> It proposes answers to two of the open questions in requirements v2.0 &sect;18 &mdash; the open-source licence, and where the system will be hosted. Nothing here changes scope. Every hosting figure was verified on 10&nbsp;September&nbsp;2026; free tiers move, so section&nbsp;7 records what to re-check and when.
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#brief">What has to be decided</a></li>
+    <li><a href="#filter">What the requirements already decide</a></li>
+    <li><a href="#licence">The licence audit</a></li>
+    <li><a href="#stack">The recommended stack</a></li>
+    <li><a href="#shape">How the pieces fit</a></li>
+    <li><a href="#hosting">Free hosting</a></li>
+    <li><a href="#risks">Traps and things to re-check</a></li>
+    <li><a href="#answers">What this closes in &sect;18</a></li>
+    <li><a href="#decide">Decisions needed</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="brief">
+  <span class="sec-num">01</span>
+  <h2 class="sec">What has to be decided</h2>
+  <p class="lead">Three choices, in the order that they constrain each other: the database, the API framework, and where the whole thing runs for free.</p>
+  <p>Pothgula is being built as a free and open-source project with a separate API and a separate front end. That separation is a deliberate design choice, not an accident of tooling &mdash; it means the library could later put a different front end, a kiosk screen or a phone app, on the same API without rebuilding the system.</p>
+  <p>What makes this decision unusually easy is that requirements v2.0 already contains three constraints strong enough to eliminate most of the field before any comparison begins. They are worth restating, because two of them are commonly overlooked and both are expensive to discover late.</p>
+  <div class="note">
+    <span class="tag">The three governing requirements</span>
+    <p><b>NFR-11 &mdash; Cost.</b> No part of the system may depend on a paid third-party service, or on any charge per message, per request, per user or per month. This applies to reminders, password resets, maps, PDF generation, fonts, error reporting and analytics alike.</p>
+    <p><b>NFR-12 &mdash; Licence.</b> Every framework, database, library and tool used is free and open-source under a <i>permissive</i> licence, and the library owns and can modify its own copy without asking anyone.</p>
+    <p><b>NFR-13 &mdash; Hosting.</b> The whole system can be installed and run by the library on its own machine or on a low-cost server, with written setup instructions and <i>no vendor account required to run it</i>.</p>
+  </div>
+</section>
+
+<section id="filter">
+  <span class="sec-num">02</span>
+  <h2 class="sec">What the requirements already decide</h2>
+
+  <h3>NFR-13 means the architecture cannot be a platform</h3>
+  <p>This is the constraint that most often gets missed, because the popular way to build a small system in 2026 is to lean on a platform that supplies authentication, storage and a database together. That is precisely what NFR-13 forbids. If the login flow is Supabase Auth, the system does not run without a Supabase account. If the API is a set of Vercel or Cloudflare functions, the system does not run without that vendor. In both cases the library cannot install its own copy, and the requirement fails.</p>
+  <p>The test to apply to every candidate is simple: <b>does the whole system come up with <code>docker compose up</code> on a laptop with no internet and no accounts anywhere?</b> If yes, the requirement holds. Free hosting then becomes just one deployment target among several, rather than the architecture itself.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Ruled out by NFR-13</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase as a platform</td><td>Auth, storage and realtime are the vendor's. Self-hosting Supabase is possible but is a far heavier operation than running a Postgres container.</td></tr>
+        <tr><td>Firebase</td><td>Not self-hostable at all, and not open source.</td></tr>
+        <tr><td>Cloudflare D1 or a Workers-only back end</td><td>The runtime and the database exist only inside Cloudflare.</td></tr>
+        <tr><td>A serverless-shaped API</td><td>Ties request handling to one vendor's runtime and deployment model.</td></tr>
+        <tr><td>Auth0, Clerk, Firebase Auth</td><td>Vendor account required, and every one of them charges above a user threshold &mdash; so NFR-11 as well.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Note that using Supabase or Neon <i>as a plain hosted Postgres</i> is entirely fine, because the connection string can be pointed at a local container instead. What fails the test is depending on a vendor's <i>features</i>, not on their hosting.</p>
+
+  <h3>NFR-11 reaches further than it first appears</h3>
+  <p>The requirement names fonts and PDF generation explicitly, which has three practical consequences that need deciding now rather than during construction:</p>
+  <ul class="plain">
+    <li><b>Fonts.</b> Sinhala and Tamil rendering under NFR-04 needs Noto Sans Sinhala and Noto Sans Tamil. These are free under the SIL Open Font License, but they must be <i>committed to the repository and served by the application</i>, not pulled from the Google Fonts CDN &mdash; otherwise a self-hosted install without internet renders member names as empty boxes.</li>
+    <li><b>PDF and reports.</b> Section 12 requires printable summaries. Generate them in the browser with print stylesheets, or client-side with a permissively licensed library. No PDF-as-a-service.</li>
+    <li><b>Error reporting.</b> No Sentry or equivalent. Errors go to the application's own log, which the library's own server keeps.</li>
+  </ul>
+
+  <h3>NFR-10 decides the database category</h3>
+  <p>The requirement is that the same book cannot be issued twice at the same moment even if two staff act at once, and that two branches cannot be given the same accession number &mdash; <i>enforced in the database, not only in the screen</i>. That is a direct instruction to use a relational database with real transactions and real constraints, and to express both rules as constraints rather than as application code:</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Rule</th><th>How it is enforced</th></tr></thead>
+      <tbody>
+        <tr><td>An accession number is unique across the whole organisation</td><td>A unique index on the accession number column. The <code>AA00001</code> format already carries the branch letter, so collisions are structurally unlikely &mdash; but the index is what makes it certain.</td></tr>
+        <tr><td>A copy cannot be on two open loans at once</td><td>A <b>partial unique index</b> on the copy's identifier, restricted to rows where the loan is still open. Two simultaneous issues then become one success and one database error, with no application locking to get wrong.</td></tr>
+        <tr><td>A member may hold at most two books, per v2.0 Q5</td><td>Checked inside the same transaction as the issue, with the member's rows locked for the duration.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="licence">
+  <span class="sec-num">03</span>
+  <h2 class="sec">The licence audit</h2>
+  <p class="lead">NFR-12 asks for permissive licences specifically, not merely open source. That distinction disqualifies several obvious defaults.</p>
+  <p>A permissive licence &mdash; MIT, BSD, Apache&nbsp;2.0, the PostgreSQL licence, the SIL Open Font License &mdash; lets the library use, modify and redistribute its copy with essentially no obligation beyond keeping the notice. A copyleft licence such as GPL or AGPL attaches conditions to redistribution; SSPL is not recognised as open source at all. For a system a library may one day hand to another library, the difference matters.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Component</th><th>Licence</th><th class="ctr">NFR-12</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td><b>PostgreSQL</b></td><td>PostgreSQL licence</td><td class="ctr ok">Pass</td><td>Permissive, BSD-like. The recommended database.</td></tr>
+        <tr><td>MySQL</td><td>GPLv2</td><td class="ctr no">Fail</td><td>Copyleft. Also Oracle-owned, with a paid edition alongside.</td></tr>
+        <tr><td>MariaDB</td><td>GPLv2</td><td class="ctr no">Fail</td><td>Copyleft, despite being the community fork.</td></tr>
+        <tr><td>MongoDB</td><td>SSPL</td><td class="ctr no">Fail</td><td>Not OSI-approved. Not open source by the usual definition.</td></tr>
+        <tr><td>Redis, version 8</td><td>AGPLv3 / RSALv2</td><td class="ctr no">Fail</td><td>Relicensed away from BSD in 2024. Use <b>Valkey</b>, BSD-3, if a cache is ever needed &mdash; at fifty concurrent users, it is not.</td></tr>
+        <tr><td>SQLite</td><td>Public domain</td><td class="ctr ok">Pass</td><td>Passes on licence, but see the note below.</td></tr>
+        <tr><td>Node.js</td><td>MIT</td><td class="ctr ok">Pass</td><td></td></tr>
+        <tr><td>NestJS</td><td>MIT</td><td class="ctr ok">Pass</td><td></td></tr>
+        <tr><td>React, Vite, Tailwind CSS</td><td>MIT</td><td class="ctr ok">Pass</td><td></td></tr>
+        <tr><td>Drizzle ORM</td><td>MIT</td><td class="ctr ok">Pass</td><td></td></tr>
+        <tr><td>Noto Sans Sinhala and Tamil</td><td>SIL OFL 1.1</td><td class="ctr ok">Pass</td><td>Permissive for embedding. Commit the files; do not use the CDN.</td></tr>
+        <tr><td>Docker Engine</td><td>Apache 2.0</td><td class="ctr ok">Pass</td><td>Docker Desktop's licence differs, but the engine is what a server runs.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <span class="tag">Why not SQLite, given it passes</span>
+    <p>SQLite is licence-clean and would simplify hosting considerably. It is not recommended here because NFR-10 asks for correctness under simultaneous writes from multiple staff, and SQLite serialises writers across the whole database. At fifty concurrent users it would very likely cope &mdash; but Postgres removes the question entirely, costs nothing, and is what the library would want on the day a fourth branch opens.</p>
+  </div>
+</section>
+
+<section id="stack">
+  <span class="sec-num">04</span>
+  <h2 class="sec">The recommended stack</h2>
+  <p class="lead">TypeScript on both sides of the API boundary, PostgreSQL underneath, everything shipped as containers.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Layer</th><th>Choice</th><th>Licence</th><th>Why this one</th></tr></thead>
+      <tbody>
+        <tr class="stack-row"><td>Database</td><td>PostgreSQL 17</td><td>PostgreSQL</td><td>The only mainstream relational database with a permissive licence. Gives NFR-10 its partial unique indexes, NFR-04 its UTF-8 handling of Sinhala and Tamil, and NFR-14 its exact integer money as <code>bigint</code> cents.</td></tr>
+        <tr class="stack-row"><td>API</td><td>Node 22 with NestJS</td><td>MIT</td><td>Its module, guard and dependency-injection structure maps directly onto the three roles and onto branch scoping: a single guard enforces NFR-06's rule that the branch a staff member may act on is checked on the server for every request. Opinionated structure is a virtue on an open-source project, where a newcomer has to find their way around unaided.</td></tr>
+        <tr class="stack-row"><td>Database access</td><td>Drizzle ORM</td><td>MIT</td><td>SQL-first, so the NFR-10 constraints are written explicitly in migrations rather than left to an ORM's discretion. Lighter in memory than the alternatives, which matters on a 512&nbsp;MB free instance.</td></tr>
+        <tr class="stack-row"><td>Validation</td><td>Zod</td><td>MIT</td><td>One schema per request and response, shared by both sides &mdash; see section 5. This is the main practical payoff of choosing one language for a split API and front end.</td></tr>
+        <tr class="stack-row"><td>Authentication</td><td>Self-issued JWT, argon2id hashing</td><td>MIT</td><td>NFR-06 requires modern password hashing; argon2id is the current recommendation. Tokens are issued by the application itself, so there is no identity vendor and no NFR-13 violation. Password reset happens at the counter, per v2.0 &sect;4, so no email or SMS provider is needed anywhere in the system.</td></tr>
+        <tr class="stack-row"><td>Front end</td><td>React with Vite, TypeScript</td><td>MIT</td><td>Builds to plain static files that any web server can serve. Deliberately <i>not</i> Next.js: server-side rendering would add a second runtime to install and keep alive, which works against NFR-13 for no benefit an internal library system needs.</td></tr>
+        <tr class="stack-row"><td>Interface</td><td>Tailwind CSS with shadcn/ui</td><td>MIT</td><td>shadcn/ui is copied into the repository rather than installed as a dependency, so the library genuinely owns its interface code &mdash; which is what NFR-12's second clause asks for.</td></tr>
+        <tr class="stack-row"><td>Languages</td><td>react-i18next</td><td>MIT</td><td>Sinhala, Tamil and English under NFR-04, with the Noto fonts served from the application itself.</td></tr>
+        <tr class="stack-row"><td>Packaging</td><td>Docker Compose</td><td>Apache 2.0</td><td>Three containers &mdash; API, static front end, Postgres &mdash; and one command. This <i>is</i> the NFR-13 deliverable.</td></tr>
+        <tr class="stack-row"><td>Build and release</td><td>GitHub Actions and GHCR</td><td>&mdash;</td><td>Free and unlimited for public repositories, including public container images. The image the library self-hosts is then the same image that was tested.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Why not .NET, Java or Python</h3>
+  <p>All three are licence-clean and all three would produce a good system. The recommendation is driven by the free hosting tier, not by quality: a free container gets 512&nbsp;MB of memory and a tenth of a processor, and it is stopped and restarted whenever traffic pauses. A Node process starts in that environment in about a second; a JVM or .NET process is slower to start and heavier at rest, which turns every first visit to the demonstration into a noticeably long wait.</p>
+  <p>If Pothgula is eventually hosted on a real server &mdash; which section 6 recommends anyway &mdash; that argument disappears entirely, and any of the three would be a sound choice. The other consideration is smaller but real: with TypeScript on both sides, the API's request and response types are the front end's types, checked by the compiler. That is worth a good deal on a split project maintained by one person.</p>
+</section>
+
+<section id="shape">
+  <span class="sec-num">05</span>
+  <h2 class="sec">How the pieces fit</h2>
+  <p class="lead">One repository, three deployable pieces, and a shared package of schemas in the middle that keeps the API and the front end honest with each other.</p>
+
+  <figure>
+    <div class="diagram">
+      <svg viewBox="0 0 760 244" role="img" aria-label="Deployment topology: browser, static front end, API, PostgreSQL, and the self-hosted equivalent">
+        <rect class="d-box" x="8" y="84" width="126" height="64" rx="3"/>
+        <text class="d-label" x="71" y="110" text-anchor="middle">Browser</text>
+        <text class="d-sub" x="71" y="129" text-anchor="middle">STAFF &middot; MEMBER</text>
+
+        <path class="d-line" d="M134 116 H166 V52 H196"/>
+        <path class="d-line" d="M134 116 H166 V180 H196"/>
+        <text class="d-edge" x="176" y="110" text-anchor="middle">https</text>
+
+        <rect class="d-box" x="196" y="16" width="170" height="72" rx="3"/>
+        <text class="d-label" x="281" y="44" text-anchor="middle">Front end</text>
+        <text class="d-sub" x="281" y="62" text-anchor="middle">REACT + VITE &middot; STATIC</text>
+        <text class="d-sub" x="281" y="78" text-anchor="middle">CLOUDFLARE PAGES</text>
+
+        <rect class="d-box" x="196" y="144" width="170" height="72" rx="3"/>
+        <text class="d-label" x="281" y="172" text-anchor="middle">API</text>
+        <text class="d-sub" x="281" y="190" text-anchor="middle">NESTJS &middot; CONTAINER</text>
+        <text class="d-sub" x="281" y="206" text-anchor="middle">RENDER</text>
+
+        <path class="d-line" d="M366 180 H436"/>
+        <text class="d-edge" x="401" y="172" text-anchor="middle">sql/tls</text>
+
+        <rect class="d-box" x="436" y="144" width="170" height="72" rx="3"/>
+        <text class="d-label" x="521" y="172" text-anchor="middle">PostgreSQL 17</text>
+        <text class="d-sub" x="521" y="190" text-anchor="middle">CONSTRAINTS &middot; NFR-10</text>
+        <text class="d-sub" x="521" y="206" text-anchor="middle">NEON</text>
+
+        <rect class="d-box" x="436" y="16" width="170" height="72" rx="3" stroke-dasharray="4 3"/>
+        <text class="d-label" x="521" y="44" text-anchor="middle">packages/shared</text>
+        <text class="d-sub" x="521" y="62" text-anchor="middle">ZOD SCHEMAS</text>
+        <text class="d-sub" x="521" y="78" text-anchor="middle">BUILD TIME ONLY</text>
+
+        <path class="d-line" d="M436 52 H366" stroke-dasharray="4 3"/>
+        <path class="d-line" d="M521 88 V144" stroke-dasharray="4 3"/>
+
+        <rect class="d-box" x="642" y="84" width="110" height="64" rx="3" stroke-dasharray="4 3"/>
+        <text class="d-label" x="697" y="107" text-anchor="middle">Self-host</text>
+        <text class="d-sub" x="697" y="125" text-anchor="middle">SAME THREE</text>
+        <text class="d-sub" x="697" y="139" text-anchor="middle">CONTAINERS</text>
+        <path class="d-line" d="M606 116 H642" stroke-dasharray="4 3"/>
+      </svg>
+    </div>
+    <figcaption>The solid path is the free hosted deployment. The dashed box on the right is the same three pieces running from one <code>docker compose</code> file on the library's own machine &mdash; the NFR-13 deliverable, and the one that matters at handover.</figcaption>
+  </figure>
+
+  <h3>Repository layout</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Path</th><th>What lives there</th></tr></thead>
+      <tbody>
+        <tr><td class="id">apps/api</td><td>NestJS application, Drizzle migrations, seed data. Ships as a container image.</td></tr>
+        <tr><td class="id">apps/web</td><td>React and Vite front end. Builds to static files.</td></tr>
+        <tr><td class="id">packages/shared</td><td>Zod schemas and the types derived from them. Imported by both sides, so an API change the front end has not caught up with fails the build rather than production.</td></tr>
+        <tr><td class="id">infra/</td><td><code>docker-compose.yml</code>, the backup and restore scripts NFR-08 requires, and the written setup instructions NFR-13 requires.</td></tr>
+        <tr><td class="id">docs/</td><td>The requirements documents and this one.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A single repository is recommended over separate API and front-end repositories, despite the deployments being separate. The shared schema package is the reason: across two repositories it would have to be published to a registry and version-bumped on every change, which is a great deal of ceremony for a project with one maintainer.</p>
+</section>
+
+<section id="hosting">
+  <span class="sec-num">06</span>
+  <h2 class="sec">Free hosting</h2>
+  <p class="lead">Three services, none requiring a credit card, none expiring. Verified 10 September 2026.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Piece</th><th>Service</th><th>What the free tier gives</th><th>The catch</th></tr></thead>
+      <tbody>
+        <tr class="stack-row"><td>Front end</td><td>Cloudflare Pages</td><td>Unmetered requests for static assets, 500 builds a month, free custom domain and TLS.</td><td>None that applies here. The 100,000-requests-a-day ceiling belongs to Workers functions, which a purely static build never touches.</td></tr>
+        <tr class="stack-row"><td>API</td><td>Render</td><td>750 instance-hours a month, 512&nbsp;MB memory, no credit card.</td><td>Spins down after 15 minutes idle; the next request then waits roughly a minute while it starts. See R-02.</td></tr>
+        <tr class="stack-row"><td>Database</td><td>Neon</td><td>0.5&nbsp;GB storage, scales to zero and resumes instantly, no expiry, no credit card.</td><td>Storage is per project, and exceeding the free allowance suspends compute until the next month rather than deleting anything.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Do not use Render's free Postgres</span>
+    <p>Render offers a free PostgreSQL database alongside its free web service, and it is the obvious thing to reach for. It <b>expires 30 days after creation</b>, with a 14-day grace period, after which the database and its data are deleted. That is fine for a week's experiment and wrong for anything that must still be there next term. Render for the API, Neon for the database.</p>
+  </div>
+
+  <h3>Is half a gigabyte enough</h3>
+  <p>Comfortably. The accession number format allows 26 branches, and a branch library holds a few thousand copies. Even at the ceiling &mdash; 26 branches, five thousand copies each, twenty thousand members, and a decade of loan history and activity log &mdash; the whole database sits well under a tenth of the allowance. Storage will not be the constraint that forces a paid plan, and at fifty concurrent users nothing else in the free tier will be either.</p>
+
+  <h3>The alternative worth building towards</h3>
+  <p>A single always-free virtual machine on Oracle Cloud, running the same <code>docker compose</code> file, replaces all three services with one. It does not spin down, so the two-second target in NFR-01 holds for every request, and it doubles as a live proof that the self-hosted path in NFR-13 actually works &mdash; which is the thing most likely to be quietly broken at handover if nobody ever exercises it.</p>
+  <p>Three caveats. Oracle halved the always-free ARM allocation in June 2026, from four processors and 24&nbsp;GB of memory to two and 12&nbsp;GB &mdash; still far more than this system needs, but an existing instance must be resized to the new shape or it is stopped. Signup requires a card for identity verification, though the always-free resources themselves are not charged. And idle instances can be reclaimed, so a lightly loaded server needs something periodic keeping it awake.</p>
+  <p>The suggested order is to start on the three free services, because nothing there needs a card or an approval and the demonstration can be live the same day, then move to the virtual machine once the compose file exists and is worth exercising.</p>
+
+  <h3>Two options the guides still recommend that should not be used</h3>
+  <ul class="plain">
+    <li><b>Koyeb</b> closed its free tier to new signups after the Mistral acquisition in February 2026. Existing accounts keep it; new ones cannot be created.</li>
+    <li><b>Fly.io</b> no longer offers a free tier to new users, and requires a card.</li>
+  </ul>
+  <p>Both still appear near the top of most "best free hosting" articles, which is worth remembering when re-checking these figures later: the comparison sites lag the platforms by months.</p>
+</section>
+
+<section id="risks">
+  <span class="sec-num">07</span>
+  <h2 class="sec">Traps and things to re-check</h2>
+
+  <div class="grid2">
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Safari blocks the obvious login mechanism</h4><span class="risk-id">R-01</span></div>
+      <p>A separate API and front end means two different origins. The usual session cookie then has to be marked <code>SameSite=None</code>, which Safari treats as a third-party cookie and blocks &mdash; and NFR-03 requires Safari support. Members will mostly be on phones, where Safari is not a minority.</p>
+      <p class="fix"><b>Decide before writing the authentication module.</b> Either send the token in an <code>Authorization</code> header, which works everywhere and is the simpler choice, or put both pieces behind one domain with a proxy route so the cookie is first-party. Retrofitting either onto the other means revisiting every request path.</p>
+    </div>
+    <div class="risk sev-high">
+      <div class="risk-head"><h4>Cold starts contradict NFR-01</h4><span class="risk-id">R-02</span></div>
+      <p>NFR-01 requires any counter action to complete in under two seconds. A free Render instance that has been idle fifteen minutes takes about a minute to answer its first request. Read literally, the free tier cannot meet the requirement.</p>
+      <p class="fix"><b>Write the distinction down now.</b> The free hosting serves the public demonstration and the open-source showcase; the library's counter runs self-hosted, where NFR-01 is met with room to spare. Recorded before acceptance this is a deployment note; discovered at acceptance it reads as a missed requirement.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Free tiers move faster than documents</h4><span class="risk-id">R-03</span></div>
+      <p>Within the last year Fly.io withdrew its free tier, Koyeb closed signups, and Oracle halved its allocation without announcing it. Every figure in section 6 is dated 10 September 2026 for that reason.</p>
+      <p class="fix"><b>Re-check before each phase begins</b>, and keep the compose file working throughout. Because every piece is self-hostable, a platform withdrawing its free tier costs a redeployment rather than a rewrite &mdash; which is the practical reason NFR-13 is worth honouring strictly.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Backups are a requirement, not an afterthought</h4><span class="risk-id">R-04</span></div>
+      <p>NFR-08 requires a daily backup, a restore tested before handover, and free self-hosted tooling. Neon's free plan keeps a six-hour history window, which is not the same thing as a backup you hold yourself.</p>
+      <p class="fix"><b>Put <code>pg_dump</code> on a schedule, in the repository, from the first week</b>, writing somewhere the library controls. It is a few lines, it satisfies NFR-08 on both the hosted and self-hosted deployments, and the restore rehearsal is the part that gets skipped when it is left until the end.</p>
+    </div>
+    <div class="risk sev-med">
+      <div class="risk-head"><h4>Sinhala and Tamil are a build concern</h4><span class="risk-id">R-05</span></div>
+      <p>NFR-04 requires all three languages in every field, including names and book titles. Postgres handles the storage without special configuration. Rendering is where it breaks &mdash; and it breaks on the machine that has no internet, which is the self-hosted one.</p>
+      <p class="fix"><b>Commit the Noto font files and serve them from the application.</b> Put real Sinhala and Tamil names in the seed data from the first sprint, so the problem appears in development rather than at the counter.</p>
+    </div>
+    <div class="risk">
+      <div class="risk-head"><h4>Personal data would sit on someone else's server</h4><span class="risk-id">R-06</span></div>
+      <p>NFR-09 places member names, phone numbers, dates of birth and addresses under Sri Lanka's Personal Data Protection Act No. 9 of 2022. The free hosted deployment would put that data on infrastructure outside the country.</p>
+      <p class="fix"><b>Keep real member data off the free deployment entirely.</b> Seed the public demonstration with invented records. Real data belongs only on the library's own self-hosted install &mdash; which is a further argument for exercising that path early.</p>
+    </div>
+  </div>
+</section>
+
+<section id="answers">
+  <span class="sec-num">08</span>
+  <h2 class="sec">What this closes in &sect;18</h2>
+  <p class="lead">Two of the open questions in requirements v2.0 have answers if this recommendation is accepted.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Question</th><th>Proposed answer</th></tr></thead>
+      <tbody>
+        <tr><td>Which open-source licence should the project carry, and who holds the copyright &mdash; the library, or you personally? <span class="chip">NFR-12</span></td><td><b>MIT.</b> It is consistent to offer outward the same permissiveness NFR-12 demands of every dependency, and it is the licence most likely to let another library adopt the system without needing to take advice first. Who holds the copyright is a separate question that only you can answer; it does not affect the technical choice.</td></tr>
+        <tr><td>Where will the system be hosted, and who will run the daily backup and test the restore? <span class="chip">NFR-08 &middot; NFR-13</span></td><td><b>Two deployments.</b> A public demonstration on Cloudflare Pages, Render and Neon, seeded with invented data. The library's real install self-hosted from the compose file, with <code>pg_dump</code> on a daily schedule. Who runs the backup remains a question for the client &mdash; it is an operational commitment rather than a technical one, and R-04 explains why the restore rehearsal in particular must be scheduled.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="decide">
+  <span class="sec-num">09</span>
+  <h2 class="sec">Decisions needed</h2>
+  <p class="lead">Five, in the order they block work.</p>
+  <ol class="q">
+    <li><b>Accept the stack?</b> PostgreSQL, NestJS, React with Vite, everything in containers. Nothing else can start until this is settled.</li>
+    <li><b>Header tokens or a proxied cookie for authentication?</b> R-01. This shapes every request path in the system and is expensive to change later. The recommendation is header tokens.</li>
+    <li><b>Is MIT the licence, and in whose name?</b> The licence file belongs in the first commit; adding it later means asking every contributor to agree.</li>
+    <li><b>Is the distinction between demonstration hosting and the library's own install accepted?</b> R-02. It needs to be written into the requirements before acceptance rather than explained at it.</li>
+    <li><b>Who runs the backup and the restore rehearsal?</b> NFR-08 names the requirement but not the person. This is a client question.</li>
+  </ol>
+  <p style="margin-top:24px">Questions one, two and three block the first line of code. Four and five can be settled during phase one, but not later than it.</p>
+</section>
+
+<section id="sources">
+  <span class="sec-num">10</span>
+  <h2 class="sec">Sources</h2>
+  <p class="lead">Hosting figures verified 10 September 2026. Licences verified against each project's own repository.</p>
+  <ul class="srcs">
+    <li>Render &mdash; Deploy for Free &middot; <code>render.com/docs/free</code></li>
+    <li>Render free tier and the 30-day database &middot; <code>justinmckelvey.com/blog/is-render-free</code></li>
+    <li>Free PostgreSQL hosting, maintained comparison &middot; <code>github.com/freebase-cloud/free-postgres-hosting</code></li>
+    <li>Supabase and Neon free tiers compared &middot; <code>toolfreebie.com/supabase-vs-neon</code></li>
+    <li>Cloudflare Pages free tier limits, 2026 &middot; <code>temps.sh/blog/cloudflare-pages-free-tier-limits-2026</code></li>
+    <li>Koyeb free tier status after the acquisition &middot; <code>srvrlss.io/provider/koyeb</code></li>
+    <li>Free Docker hosting platforms tested, March 2026 &middot; <code>snapdeploy.dev/blog/free-docker-hosting-2026-platforms-compared</code></li>
+    <li>Oracle halves always-free Ampere A1 limits &middot; <code>infoq.com/news/2026/07/oracle-cloud-free-tier-limits</code></li>
+    <li>Oracle Cloud Infrastructure Free Tier documentation &middot; <code>docs.oracle.com/iaas/Content/FreeTier/freetier.htm</code></li>
+  </ul>
+</section>
+
+<footer>
+  Pothgula &mdash; Technical Decision Record v1.0 &middot; 10 September 2026 &middot; Recommendation for decision, subordinate to Requirements v2.0 of 8 September 2026 &middot; Hosting figures verified on the date of issue and subject to change by the providers without notice.<br>
+  Prepared for Chathuranga Jayawardhana &middot; <a href="tel:+94768711780">+94&nbsp;76&nbsp;871&nbsp;1780</a> &middot; <a href="mailto:chathuranga97lj@gmail.com">chathuranga97lj@gmail.com</a>
+</footer>
+
+</main>
+</div>
+</div>
