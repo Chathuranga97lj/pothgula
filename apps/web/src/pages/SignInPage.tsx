@@ -2,7 +2,9 @@ import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { errorMessage } from '../api/errors';
+import { useLibrary } from '../api/queries';
 import { useAuth } from '../auth/auth';
+import { Logo } from '../components/images';
 import { LanguageSelect } from '../components/LanguageSelect';
 import { Alert, Button, Field, Input } from '../components/ui';
 
@@ -16,6 +18,8 @@ export function SignInPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const library = useLibrary();
+  const libraryName = library.data?.name ?? t('app.name');
 
   if (me) {
     const from = (location.state as { from?: string } | null)?.from;
@@ -43,8 +47,15 @@ export function SignInPage() {
         <LanguageSelect />
       </header>
       <main className="mx-auto w-full max-w-sm flex-1 px-4 pt-8 pb-16">
-        <h1 className="text-3xl font-semibold text-emerald-900">{t('app.name')}</h1>
-        <p className="mb-8 text-stone-600">{t('app.tagline')}</p>
+        <div className="mb-8 flex items-center gap-4">
+          <Logo imageId={library.data?.logoImageId} name={libraryName} size="lg" />
+          <div>
+            <h1 className="text-2xl font-semibold text-emerald-900">{libraryName}</h1>
+            <p className="text-stone-600">
+              {t('app.name')} · {t('app.tagline')}
+            </p>
+          </div>
+        </div>
 
         <form
           onSubmit={submit}

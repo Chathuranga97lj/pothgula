@@ -121,7 +121,12 @@ export function Alert({
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <section className={cx('rounded-lg border border-stone-200 bg-white p-5 shadow-sm', className)}>
+    <section
+      className={cx(
+        'relative rounded-lg border border-stone-200 bg-white p-5 shadow-sm',
+        className,
+      )}
+    >
       {children}
     </section>
   );
