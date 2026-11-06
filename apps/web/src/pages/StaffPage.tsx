@@ -1,5 +1,4 @@
 import {
-  branchSummarySchema,
   type CreateStaffRequest,
   createStaffRequestSchema,
   type StaffMember,
@@ -11,12 +10,12 @@ import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { api } from '../api/client';
+import { useBranches } from '../api/queries';
 import { errorMessage } from '../api/errors';
 import { ME_KEY, useMe } from '../auth/auth';
 import { Alert, Button, Card, Field, Input, PageTitle, Select } from '../components/ui';
 
 const STAFF_KEY = ['staff'] as const;
-const BRANCHES_KEY = ['branches'] as const;
 
 interface Issued {
   name: string;
@@ -34,10 +33,7 @@ export function StaffPage() {
     queryKey: STAFF_KEY,
     queryFn: () => api('/staff', { schema: z.array(staffMemberSchema) }),
   });
-  const branches = useQuery({
-    queryKey: BRANCHES_KEY,
-    queryFn: () => api('/branches', { schema: z.array(branchSummarySchema) }),
-  });
+  const branches = useBranches();
   const branchCode = (id: number | null) =>
     id === null ? t('staff.allBranches') : (branches.data?.find((b) => b.id === id)?.code ?? '—');
 
