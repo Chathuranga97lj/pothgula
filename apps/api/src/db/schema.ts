@@ -59,13 +59,30 @@ export const copyCondition = pgEnum('copy_condition', ['useable', 'not_useable',
 export const paymentKind = pgEnum('payment_kind', ['fee', 'first_fee', 'waiver', 'reversal']);
 export const imageMime = pgEnum('image_mime', ['image/png', 'image/jpeg', 'image/webp']);
 
-// ─── Branches and categories (§5) ──────────────────────────────────────────
+// ─── The library, branches and categories (§5) ─────────────────────────────
+
+/**
+ * The library itself: one row. Its name and logo are library-wide (FR-BRN-03,
+ * FR-BRN-04), so they are held once here rather than copied onto every branch.
+ */
+export const library = pgTable(
+  'library',
+  {
+    id: integer('id').primaryKey().default(1),
+    name: text('name').notNull(),
+    logoImageId: integer('logo_image_id').references((): AnyPgColumn => image.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check('library_single_row', sql`${t.id} = 1`),
+    check('library_name_not_blank', sql`btrim(${t.name}) <> ''`),
+  ],
+);
 
 export const branch = pgTable(
   'branch',
   {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-    libraryName: text('library_name').notNull(),
     branchName: text('branch_name').notNull(),
     branchCode: text('branch_code').notNull().unique(),
     logoImageId: integer('logo_image_id').references((): AnyPgColumn => image.id),

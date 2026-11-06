@@ -141,7 +141,7 @@ describe('staff screen (FR-AUT-05, FR-AUT-09, FR-AUT-11, FR-AUT-14)', () => {
       'GET /staff': {
         body: [{ ...superAdmin, lockedUntil: null, whatsappPhone: '0770001111' }, librarian],
       },
-      'GET /branches': { body: [{ id: 1, code: 'KS', name: 'Kesbewa' }] },
+      'GET /branches': { body: [{ id: 1, code: 'KS', name: 'Kesbewa', logoImageId: null }] },
       ...(extra as Record<string, never>),
     });
   }

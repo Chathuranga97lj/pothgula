@@ -5,7 +5,7 @@
 import { SYSTEM_ACTOR } from '../audit/actor';
 import type { UnitOfWork } from '../audit/unit-of-work';
 import { allocateAccessionNumbers } from '../catalogue/accession';
-import { branch, branchSetting, category, copy, title } from './schema';
+import { branch, branchSetting, category, copy, library, title } from './schema';
 
 const LIBRARY = 'Pothgula Demonstration Library';
 
@@ -120,12 +120,19 @@ export async function seedDemo(uow: UnitOfWork): Promise<SeedResult> {
       return { skipped: true, branches: 0, categories: 0, titles: 0, copies: 0 };
     }
 
+    await tx.update(library).set({ name: LIBRARY });
+    await log({
+      action: 'library.rename',
+      entity: 'library',
+      entityId: 1,
+      after: { name: LIBRARY },
+    });
+
     const branchIds: Record<string, number> = {};
     for (const b of BRANCHES) {
       const [row] = await tx
         .insert(branch)
         .values({
-          libraryName: LIBRARY,
           branchName: b.name,
           branchCode: b.code,
           address: b.address,
