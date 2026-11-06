@@ -2,3 +2,4 @@ docs/
 pnpm-lock.yaml
 **/dist/
 **/coverage/
+apps/api/drizzle/meta/

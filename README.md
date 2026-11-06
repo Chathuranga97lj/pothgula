@@ -35,9 +35,15 @@ You need Node 24 (see `.node-version`), pnpm 10 and Docker.
 ```sh
 pnpm install
 pnpm build:shared      # the API and web app import the built shared package
-pnpm db:up             # PostgreSQL 17 for development (used from milestone M1)
+pnpm db:up             # PostgreSQL 17 for development, on localhost:5433
+pnpm --filter @pothgula/api db:migrate
+pnpm --filter @pothgula/api db:seed   # invented demonstration data
 pnpm dev               # API on :3000, web on :5173 (proxies /api to the API)
 ```
+
+The development database listens on **5433**, not 5432, so it does not collide with a PostgreSQL already installed on the machine. Set `POTHGULA_DB_PORT` to change it, and `DATABASE_URL` to point the API elsewhere.
+
+The API's database tests (`*.db.test.ts`) start their own PostgreSQL 17 container with Testcontainers, so Docker must be running for `pnpm test`. `pnpm --filter @pothgula/api test:unit` runs only the tests that need no database.
 
 Checks run in CI on every pull request:
 

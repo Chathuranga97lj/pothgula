@@ -5,7 +5,28 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
-    include: ['src/**/*.test.ts'],
     environment: 'node',
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          include: ['src/**/*.test.ts'],
+          exclude: ['src/**/*.db.test.ts'],
+        },
+      },
+      {
+        // Integration tests against a real PostgreSQL 17 (Testcontainers), so the
+        // database's own rules are what is tested (NFR-10).
+        extends: true,
+        test: {
+          name: 'db',
+          include: ['src/**/*.db.test.ts'],
+          globalSetup: ['./test/postgres.global-setup.ts'],
+          testTimeout: 30_000,
+          hookTimeout: 180_000,
+        },
+      },
+    ],
   },
 });

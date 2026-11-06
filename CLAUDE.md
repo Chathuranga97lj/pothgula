@@ -10,10 +10,14 @@ Web-based, multi-branch library management system. **Status: in development — 
 
 ```sh
 pnpm install && pnpm build:shared   # API and web import the built shared package
-pnpm db:up                          # dev Postgres (infra/compose.dev.yml)
+pnpm db:up                          # dev Postgres on localhost:5433 (infra/compose.dev.yml)
+pnpm --filter @pothgula/api db:migrate && pnpm --filter @pothgula/api db:seed
+pnpm --filter @pothgula/api db:generate -- --name <what>   # after editing src/db/schema.ts
 pnpm dev                            # API :3000 (/api prefix), web :5173 proxying /api
-pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build   # what CI runs
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build   # what CI runs (DB tests need Docker)
 ```
+
+Database rules live in the database: column checks and partial unique indexes in `apps/api/src/db/schema.ts`; triggers (append-only log, no deletes, fixed codes) and the `copy_availability` view in hand-written `apps/api/drizzle/0001_rules.sql`. Every data change goes through `UnitOfWork.run(actor, (tx, log) => …)`, which refuses to commit without an activity-log entry. Integration tests clone a migrated template database per file (`apps/api/test/db.ts`).
 
 Layout: `apps/api` (NestJS), `apps/web` (React), `packages/shared` (Zod schemas, `parseAccession`/`formatAccession`, `todayColombo`/`addDays`), `infra/`, `docs/`.
 
