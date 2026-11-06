@@ -3,10 +3,124 @@
     "name": "Pothgula",
     "tagline": "Library lending and membership"
   },
-  "health": {
-    "checking": "Checking the server…",
-    "ok": "Server is running. Library date: {{date}}",
-    "down": "The server cannot be reached."
+  "language": "Language",
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel"
   },
-  "language": "Language"
+  "roles": {
+    "member": "Member",
+    "admin": "Librarian",
+    "super_admin": "Super admin"
+  },
+  "status": {
+    "pending": "Waiting for approval",
+    "active": "Active",
+    "suspended": "Suspended",
+    "rejected": "Not approved",
+    "deactivated": "Deactivated",
+    "anonymised": "Removed"
+  },
+  "nav": {
+    "label": "Main",
+    "home": "Home",
+    "staff": "Staff",
+    "changePassword": "Change password",
+    "signOut": "Sign out"
+  },
+  "signIn": {
+    "title": "Sign in",
+    "phone": "WhatsApp number",
+    "phoneHint": "The number you registered with, for example 077 123 4567.",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "forgotten": "Forgotten your password? Ask a librarian at your branch to reset it."
+  },
+  "changePassword": {
+    "title": "Change password",
+    "lead": "You will stay signed in here; every other device will be signed out.",
+    "mustTitle": "Choose your own password",
+    "mustBody": "You signed in with a temporary password. Choose a new one before you continue.",
+    "current": "Current password",
+    "new": "New password",
+    "repeat": "New password again",
+    "mismatch": "The two new passwords are not the same.",
+    "submit": "Change password",
+    "done": "Your password has been changed."
+  },
+  "passwordRules": {
+    "too_short": "At least eight characters",
+    "too_long": "No more than 128 characters",
+    "too_common": "Not a commonly used password",
+    "same_as_phone": "Not your phone number"
+  },
+  "home": {
+    "welcome": "Welcome, {{name}}",
+    "lead": {
+      "member": "Your loans, due dates and library notices will appear here.",
+      "admin": "Today's work at your branch will appear here.",
+      "super_admin": "The whole library's work will appear here."
+    },
+    "fewerThanTwoTitle": "Only one super admin",
+    "fewerThanTwoBody": "The library needs at least two active super admins, so that one can always help the other.",
+    "addSuperAdmin": "Add a second super admin",
+    "pendingTitle": "Your application is waiting for approval",
+    "pendingBody": "Visit your home branch with proof of identity and the first year's fee. You can browse the catalogue meanwhile.",
+    "comingTitle": "More is on the way",
+    "comingBody": "Branches, the catalogue, issuing and returns arrive in the next releases."
+  },
+  "staff": {
+    "title": "Staff",
+    "leadSuper": "Every librarian and super admin. Accounts are never deleted; deactivate one to stop it being used.",
+    "leadAdmin": "Librarians at your branch.",
+    "add": "Add staff member",
+    "addTitle": "New staff member",
+    "name": "Full name",
+    "phone": "WhatsApp number",
+    "role": "Role",
+    "branch": "Branch",
+    "status": "Status",
+    "actions": "Actions",
+    "allBranches": "All branches",
+    "chooseBranch": "Choose a branch",
+    "superAdminNoBranch": "A super admin works across every branch.",
+    "create": "Create account",
+    "formIncomplete": "Fill in the name, a valid WhatsApp number and, for a librarian, the branch.",
+    "you": "you",
+    "locked": "Locked",
+    "awaitingFirstSignIn": "New password needed",
+    "resetPassword": "Reset password",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateReason": "Why is {{name}}'s account being deactivated?",
+    "confirmDeactivate": "Deactivate account",
+    "tempTitle": "Temporary password for {{name}}",
+    "tempBody": "Give this to the person in private. It is shown only now and cannot be seen again. They must choose their own password when they first sign in.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "tempDone": "I have handed it over"
+  },
+  "errors": {
+    "invalid_credentials": "That WhatsApp number and password do not match.",
+    "account_locked": "Too many failed attempts. Try again in {{minutes}} minutes, or ask a librarian to reset your password.",
+    "application_rejected": "Your application was not approved. Please contact your branch.",
+    "account_deactivated": "This account has been deactivated. Please contact the library.",
+    "not_signed_in": "Please sign in again.",
+    "must_change_password": "Please choose a new password before continuing.",
+    "wrong_current_password": "Your current password is not correct.",
+    "password_unchanged": "The new password must be different from the current one.",
+    "password_not_acceptable": "Choose a password that meets the rules below.",
+    "phone_in_use": "An account already uses this WhatsApp number.",
+    "minimum_super_admins": "At least two super admin accounts must stay active.",
+    "cannot_deactivate_self": "You cannot deactivate your own account.",
+    "already_deactivated": "This account is already deactivated.",
+    "use_change_password": "Use \"Change password\" for your own account.",
+    "user_not_found": "That account no longer exists.",
+    "branch_not_found": "That branch does not exist.",
+    "forbidden": "You do not have permission to do this.",
+    "invalid_request": "Some of the information is missing or not valid.",
+    "network_error": "The server cannot be reached. Check the connection and try again.",
+    "internal_error": "Something went wrong. Please try again."
+  }
 }
