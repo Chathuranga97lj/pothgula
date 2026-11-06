@@ -6,7 +6,9 @@
   "language": "Language",
   "common": {
     "loading": "Loading…",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "save": "Save",
+    "saved": "Saved."
   },
   "roles": {
     "member": "Member",
@@ -26,7 +28,9 @@
     "home": "Home",
     "staff": "Staff",
     "changePassword": "Change password",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "branches": "Branches",
+    "categories": "Categories"
   },
   "signIn": {
     "title": "Sign in",
@@ -121,6 +125,135 @@
     "forbidden": "You do not have permission to do this.",
     "invalid_request": "Some of the information is missing or not valid.",
     "network_error": "The server cannot be reached. Check the connection and try again.",
-    "internal_error": "Something went wrong. Please try again."
+    "internal_error": "Something went wrong. Please try again.",
+    "image_type": "Choose a PNG, JPEG or WebP image.",
+    "image_too_large": "The image must be 2 MB or smaller.",
+    "image_unreadable": "That image could not be read.",
+    "image_missing": "Choose an image to upload.",
+    "image_not_found": "That image no longer exists.",
+    "branch_code_in_use": "Another branch already uses this code.",
+    "branch_code_locked": "This code is printed on books and can no longer change.",
+    "category_code_in_use": "Another category already uses this code.",
+    "category_code_locked": "Books already carry this code, so it can no longer change. The name can.",
+    "category_not_found": "That category does not exist."
+  },
+  "images": {
+    "uploading": "Uploading…",
+    "rules": "PNG, JPEG or WebP, up to 2 MB. It is resized and kept inside the system."
+  },
+  "branches": {
+    "title": "Branches",
+    "lead": "Every branch of the library, with its two-letter code.",
+    "none": "No branches yet.",
+    "readOnly": "Only a super admin can change these details.",
+    "library": "The library",
+    "libraryName": "Library name",
+    "renameLibrary": "Rename",
+    "addLibraryLogo": "Add a library logo",
+    "replaceLibraryLogo": "Replace the library logo",
+    "add": "Add a branch",
+    "addTitle": "New branch",
+    "create": "Create branch",
+    "name": "Branch name",
+    "code": "Branch code",
+    "codeHint": "Two capital letters, e.g. KS. It is printed on every book of this branch.",
+    "codeLocked": "Books already carry this code, so it can no longer change.",
+    "address": "Address",
+    "phone": "Phone",
+    "details": "Details",
+    "formIncomplete": "Fill in every field: a two-letter code and a valid phone number.",
+    "logo": "Logo",
+    "addLogo": "Add a logo",
+    "replaceLogo": "Replace the logo",
+    "logoUse": "Shown to this branch's members and staff, and on its PDFs. Without one, the library's logo is used.",
+    "settings": "Settings",
+    "settingsLead": "Changes apply from now on, and are written to the activity log with the old and new values.",
+    "settingsReadOnly": "Only a super admin can change the settings.",
+    "saveSettings": "Save settings",
+    "settingInvalid": "\"{{name}}\" is not a valid number."
+  },
+  "settings": {
+    "groups": {
+      "lending": "Lending",
+      "reminders": "Reminders",
+      "membership": "Membership",
+      "lostAndLate": "Lost books and late returns",
+      "records": "Records"
+    },
+    "loanDays": {
+      "label": "Loan period (days)",
+      "hint": "Also the length of an extension."
+    },
+    "maxBooks": {
+      "label": "Books at a time",
+      "hint": "The most one member may hold."
+    },
+    "maxBooksWhileSettling": {
+      "label": "Books while a loss is open",
+      "hint": "While a lost book is not yet settled."
+    },
+    "holdDays": {
+      "label": "Hold a requested book (days)",
+      "hint": "After it arrives from another branch."
+    },
+    "staffDueWarningDays": {
+      "label": "Warn staff (days before due)",
+      "hint": "The five-day list."
+    },
+    "memberDueWarningDays": {
+      "label": "Warn members (days before due)",
+      "hint": "On their dashboard."
+    },
+    "declineGraceDays": {
+      "label": "Grace after a late decline (days)",
+      "hint": "When an extension is declined after the due date."
+    },
+    "annualFeeCents": {
+      "label": "Annual fee",
+      "hint": "For payments taken from now on."
+    },
+    "renewalGraceDays": {
+      "label": "Renewal grace (days)",
+      "hint": "Renewing within this keeps the old expiry date."
+    },
+    "applicationStaleDays": {
+      "label": "Flag waiting applications after (days)",
+      "hint": ""
+    },
+    "applicationAnonymiseDays": {
+      "label": "Remove unsuccessful applicants after (days)",
+      "hint": "Their personal details are blanked."
+    },
+    "settlementWindowDays": {
+      "label": "Days to settle a lost book",
+      "hint": "Then borrowing is suspended."
+    },
+    "frequentLateCount": {
+      "label": "Late returns to flag a member",
+      "hint": ""
+    },
+    "frequentLateMonths": {
+      "label": "…within (months)",
+      "hint": ""
+    },
+    "logRetentionMonths": {
+      "label": "Keep the log online (months)",
+      "hint": "At least 24; older entries are archived, never destroyed."
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "lead": "The letter and digit in every accession number, each with a name members see.",
+    "code": "Code",
+    "name": "Name",
+    "status": "Status",
+    "add": "Add category",
+    "edit": "Edit",
+    "retire": "Retire",
+    "reinstate": "Reinstate",
+    "retired": "Retired",
+    "inUse": "In use",
+    "codeLocked": "Books already carry this code, so it can no longer change. The name can.",
+    "formIncomplete": "A code is one capital letter and one digit, such as A1, and needs a name."
   }
 }

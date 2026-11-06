@@ -52,7 +52,7 @@ export function setSignedOutHandler(handler: (() => void) | null): void {
 }
 
 interface RequestOptions<S extends z.ZodType | undefined> {
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'PATCH';
   body?: unknown;
   /** Checks the response against the shared schema, so a mismatch fails loudly. */
   schema?: S;
@@ -64,7 +64,8 @@ export async function api<S extends z.ZodType | undefined = undefined>(
 ): Promise<S extends z.ZodType ? z.output<S> : unknown> {
   const token = tokenStore.get();
   const headers: Record<string, string> = {};
-  if (options.body !== undefined) headers['content-type'] = 'application/json';
+  const isForm = options.body instanceof FormData;
+  if (options.body !== undefined && !isForm) headers['content-type'] = 'application/json';
   if (token) headers.authorization = `Bearer ${token}`;
 
   let res: Response;
@@ -72,7 +73,12 @@ export async function api<S extends z.ZodType | undefined = undefined>(
     res = await fetch(`/api${path}`, {
       method: options.method ?? 'GET',
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body:
+        options.body === undefined
+          ? undefined
+          : isForm
+            ? (options.body as FormData)
+            : JSON.stringify(options.body),
     });
   } catch {
     throw new ApiError(0, 'network_error', 'The server cannot be reached.');
