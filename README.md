@@ -41,6 +41,14 @@ pnpm --filter @pothgula/api db:seed   # invented demonstration data
 pnpm dev               # API on :3000, web on :5173 (proxies /api to the API)
 ```
 
+To sign in, create the first super admin (FR-AUT-04). This is done on the server, never through the website, and only once:
+
+```sh
+pnpm --filter @pothgula/api create-super-admin --name "Your Name" --phone 07XXXXXXXX
+```
+
+It prints a temporary password that must be changed at the first sign-in. If every super admin is locked out, `pnpm --filter @pothgula/api reset-super-admin --phone 07XXXXXXXX` issues a new temporary password; both commands are written to the activity log.
+
 The development database listens on **5433**, not 5432, so it does not collide with a PostgreSQL already installed on the machine. Set `POTHGULA_DB_PORT` to change it, and `DATABASE_URL` to point the API elsewhere.
 
 The API's database tests (`*.db.test.ts`) start their own PostgreSQL 17 container with Testcontainers, so Docker must be running for `pnpm test`. `pnpm --filter @pothgula/api test:unit` runs only the tests that need no database.

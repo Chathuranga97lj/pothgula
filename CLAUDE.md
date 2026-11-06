@@ -13,11 +13,14 @@ pnpm install && pnpm build:shared   # API and web import the built shared packag
 pnpm db:up                          # dev Postgres on localhost:5433 (infra/compose.dev.yml)
 pnpm --filter @pothgula/api db:migrate && pnpm --filter @pothgula/api db:seed
 pnpm --filter @pothgula/api db:generate -- --name <what>   # after editing src/db/schema.ts
+pnpm --filter @pothgula/api create-super-admin --name "…" --phone 07…   # first super admin (server only)
 pnpm dev                            # API :3000 (/api prefix), web :5173 proxying /api
 pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build   # what CI runs (DB tests need Docker)
 ```
 
-Database rules live in the database: column checks and partial unique indexes in `apps/api/src/db/schema.ts`; triggers (append-only log, no deletes, fixed codes) and the `copy_availability` view in hand-written `apps/api/drizzle/0001_rules.sql`. Every data change goes through `UnitOfWork.run(actor, (tx, log) => …)`, which refuses to commit without an activity-log entry. Integration tests clone a migrated template database per file (`apps/api/test/db.ts`).
+Database rules live in the database: column checks and partial unique indexes in `apps/api/src/db/schema.ts`; triggers (append-only log, no deletes, fixed codes) and the `copy_availability` view in hand-written `apps/api/drizzle/0001_rules.sql`. Every data change goes through `UnitOfWork.run(actor, (tx, log) => …)`, which refuses to commit without an activity-log entry. Integration tests clone a migrated template database per file (`apps/api/test/db.ts`); HTTP tests use `startApp()` in `apps/api/test/app.ts`.
+
+API conventions: every route needs a session unless marked `@Public()`; restrict with `@Roles(...)` and check branch scope in the service. Read the caller with `@Auth() ctx` and pass `ctx.actor` to `UnitOfWork`. Validate bodies with `parseBody(sharedSchema, body)`. Throw `AppError` with a stable `code` (the web app translates codes). Never put `password_hash` or a temporary password in a log entry — use `loggableUser()`.
 
 Layout: `apps/api` (NestJS), `apps/web` (React), `packages/shared` (Zod schemas, `parseAccession`/`formatAccession`, `todayColombo`/`addDays`), `infra/`, `docs/`.
 
