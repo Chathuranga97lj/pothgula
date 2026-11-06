@@ -4,6 +4,7 @@ export * from './branches.js';
 export * from './codes.js';
 export * from './dates.js';
 export * from './health.js';
+export * from './membership.js';
 export * from './money.js';
 export * from './password.js';
 export * from './phone.js';
