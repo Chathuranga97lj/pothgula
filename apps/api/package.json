@@ -9,13 +9,20 @@
     "dev": "nest start --watch --preserveWatchOutput",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:db": "vitest run --project db",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/cli/migrate.ts",
+    "db:seed": "tsx src/cli/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.4.0",
     "@nestjs/core": "^12.4.0",
     "@nestjs/platform-express": "^12.4.0",
     "@pothgula/shared": "workspace:*",
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },
@@ -24,10 +31,14 @@
     "@nestjs/schematics": "^12.0.13",
     "@nestjs/testing": "^12.4.0",
     "@swc/core": "^1.16.22",
+    "@testcontainers/postgresql": "^12.2.1",
     "@types/express": "^5.0.0",
     "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
+    "drizzle-kit": "^0.31.11",
     "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3",
     "unplugin-swc": "^2.0.0",
     "vitest": "^5.1.0"
