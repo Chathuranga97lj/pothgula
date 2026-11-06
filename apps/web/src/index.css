@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+/*
+ * Fonts are bundled with the app, never fetched from a CDN (NFR-11, tech-stack R-05),
+ * so Sinhala and Tamil render on a self-hosted install with no internet.
+ */
+@theme {
+  --font-sans:
+    'Noto Sans Variable', 'Noto Sans Sinhala Variable', 'Noto Sans Tamil Variable', system-ui,
+    sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+}

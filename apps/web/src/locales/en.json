@@ -1,0 +1,12 @@
+{
+  "app": {
+    "name": "Pothgula",
+    "tagline": "Library lending and membership"
+  },
+  "health": {
+    "checking": "Checking the server…",
+    "ok": "Server is running. Library date: {{date}}",
+    "down": "The server cannot be reached."
+  },
+  "language": "Language"
+}

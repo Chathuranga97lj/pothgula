@@ -1,40 +1,49 @@
 # Pothgula — Library Management System
 
-Web-based, multi-branch library management system. **Status: design phase — no application code yet.**
+Web-based, multi-branch library management system. **Status: in development — Phase 1 ("the counter works"), milestones M0–M8.**
 
-- Designer / owner: Chathuranga Jayawardhana (Software Engineer)
-- Baseline design: `docs/requirements-v3.html` (client-facing SRS, v3.0, 2026-09-22). Treat it as the source of truth for scope; anything not in it is out of scope until the client approves it. v1.0 (`requirements.html`) and v2.0 (`requirements-v2.html`) are kept as history; `docs/issues.txt` is the client's raw notes behind v3.
-- Stack (proposed in `docs/tech-stack-decision.html`, not yet accepted): PostgreSQL 17, NestJS, React + Vite, Docker Compose. Do not write code against it until it is agreed.
+- Designer / owner: Chathuranga Jayawardhana (Software Engineer). He reviews and squash-merges every PR; work happens on `feat/mN-…` branches, never directly on `main`.
+- Baseline design: `docs/requirements-v3.1.html` (SRS v3.1, 2026-11-06; PDF alongside). Source of truth for scope; anything not in it is out of scope until the client approves it. It awaits the client's signature: the Q2 reading (per-branch lost-book tariff) and the unfinished Q3 note may still change, and both affect Phase 2 only. Older versions (`requirements.html`, `-v2`, `-v3`) are history; `docs/issues.txt` is the client's raw notes (kept local and gitignored — never commit it to the public repo).
+- Stack (accepted; `docs/tech-stack-decision.html`): PostgreSQL 17, Node 24 LTS, NestJS 12 (ESM-only package; the API app itself compiles to CommonJS like Nest's starter), Drizzle ORM, Zod 4, React 19 + Vite 8 + Tailwind 4, react-i18next, Vitest 5, TypeScript 6.0, pnpm 10 workspaces, Docker Compose. Deliberate change from the record: sign-in uses opaque DB-backed session tokens in `Authorization: Bearer`, not JWTs (FR-AUT-07/10 need server-side revocation).
+
+## Commands
+
+```sh
+pnpm install && pnpm build:shared   # API and web import the built shared package
+pnpm db:up                          # dev Postgres (infra/compose.dev.yml)
+pnpm dev                            # API :3000 (/api prefix), web :5173 proxying /api
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build   # what CI runs
+```
+
+Layout: `apps/api` (NestJS), `apps/web` (React), `packages/shared` (Zod schemas, `parseAccession`/`formatAccession`, `todayColombo`/`addDays`), `infra/`, `docs/`.
 
 ## Domain vocabulary
 
-| Term | Meaning |
-|---|---|
-| Branch | One physical library location with a fixed two-letter code (`KS`). Every book copy and every member belongs to one home branch. |
-| Category | A book category with a fixed letter+digit code (`A1`) and a readable name. |
-| Accession number | Human-readable id printed on a physical copy, format `KS-A1-01234` (branch code, category code, five-digit running number per branch+category). Immutable once allocated. |
-| Member | `user_type = normal` — borrows books at their home branch only. Self-registration creates a *pending* application; staff approve it and the one-year membership runs from approval. Renewed by an annual fee. |
-| Applicant | A pending member: can sign in and browse everything, cannot borrow, request or extend. |
-| Admin (Librarian) | Branch-scoped staff: approve members, issue/return, extensions, requests, notices, open hours, payments, lost-book amounts. Cannot delete. |
-| Super admin | Organisation-wide staff: everything an admin can do at any branch, plus branches, codes, logos, categories, staff, the annual fee, deletes and waivers. |
-| Issue / Take back | Lending a copy to a member / receiving it back. Loan period 2 weeks; one 2-week extension per loan on request, approved by staff, counted from the original due date. |
-| Request | A member asking for a copy shelved at another branch; the copy travels to the home branch and back (requested → in transit → held → issued → returning). |
-| Settlement | What a member owes for a lost copy: an identical replacement or an amount set by staff, within a 100-day window; one book may be borrowed meanwhile. |
+| Term              | Meaning                                                                                                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Branch            | One physical library location with a fixed two-letter code (`KS`). Every book copy and every member belongs to one home branch.                                                                                    |
+| Category          | A book category with a fixed letter+digit code (`A1`) and a readable name.                                                                                                                                         |
+| Accession number  | Human-readable id printed on a physical copy, format `KS-A1-01234` (branch code, category code, five-digit running number per branch+category). Immutable once allocated.                                          |
+| Member            | `user_type = member` — borrows books at their home branch only. Self-registration creates a _pending_ application; staff approve it and the one-year membership runs from approval. Renewed by an annual fee.      |
+| Applicant         | A pending member: can sign in and browse everything, cannot borrow, request or extend.                                                                                                                             |
+| Admin (Librarian) | Branch-scoped staff: approve members, issue/return, extensions, requests, notices, open hours, payments, the branch lost-book tariff.                                                                              |
+| Super admin       | Organisation-wide staff: everything an admin can do at any branch, plus branches, codes, logos, categories, staff, the annual fee, waivers, voiding loans, merging titles and lifting suspensions. Nobody deletes. |
+| Issue / Take back | Lending a copy to a member / receiving it back. Loan period 2 weeks; one 2-week extension per loan on request, approved by staff, counted from the original due date.                                              |
+| Request           | A member asking for a copy shelved at another branch; the copy travels to the home branch and back (requested → in transit → held → issued → returning).                                                           |
+| Settlement        | What a member owes for a lost copy: an identical replacement or an amount set by staff, within a 100-day window; one book may be borrowed meanwhile.                                                               |
 
-## Design decisions already made (v1 → v3)
+## Design decisions (v3.1)
 
-- Roles are `normal`, `admin`, `super_admin`; super admin registration is gated by a pre-shared bootstrap code.
-- Free and open-source: no paid third-party service anywhere (NFR-11). No SMS/WhatsApp/email sending; all alerts are dashboard-only.
-- Sign-in name is the member's WhatsApp number (string, unique). Member also has `other_phone`, `organisation`, `introduced_by_name` (required) and `date_of_birth` (required).
-- Max 2 books per member; 1 while a lost-book settlement is open; none after the 100-day window lapses.
-- Book price optional; the lost-book amount is set by staff at declaration (2× price is only a suggestion).
-- Staff are warned of loans due within 5 days; members at 3 days. Late returns are called out at the counter and kept on the member's record.
-- Every data change by anyone is logged, append-only; reads are not logged. Logs and reports export as text, spreadsheet and PDF, generated locally.
-- Images (branch logos, notice/event pictures) are stored in the system's own database, resized on upload; never on an external host.
-
-## Open design questions
-
-`docs/requirements-v3.html` §18 (recommendations R1, R2, R4, R5, R9, R12–R17) and §21 (22 questions) list what is **not yet accepted** — notably splitting `book` into title + copy, dropping the role picker from login, a single-use bootstrap code, what happens after day 100 of a settlement, who the "introducer" is, and fines for late returns. Confirm with Chathuranga before implementing any of them; do not silently "fix" the schema.
+- Roles are `member`, `admin`, `super_admin`. Super admins belong to no branch. There is **no** super admin code: the first super admin is created by a server CLI at install; super admins create all other staff. Sign-in screen has no role picker.
+- Catalogue is **title + copy** (R1). Availability (shelf / loan / transit / held), days late and late-return counts are **derived, never stored** (R2).
+- **Nothing is deleted**, even by super admins (R12): withdraw, void, deactivate, or anonymise (unsuccessful applicants after 90 days, including redaction of their log entries).
+- Every data change, sign-in event, log read and personal-data export is logged append-only, **in the same transaction as the change** (R13 / FR-LOG-13). Ordinary reads are not logged.
+- Free and open-source: no paid third-party service anywhere (NFR-11). No SMS/WhatsApp/email sending; all alerts are dashboard-only. Fonts and images are served by the app.
+- Sign-in name is the WhatsApp number (string, unique among non-anonymised accounts). Application also needs DOB and the introducer's name **and phone**.
+- Approval is in person: identity checked (number not stored) and first fee taken in one step; only a super admin can waive the fee.
+- Max 2 books (a requested copy in transit/held counts); 1 while a lost-book settlement is open; a member holding an **overdue** book cannot borrow, request or extend; after day 100 of a settlement the member is **suspended**.
+- Lost-book amount comes from the owning branch's tariff per category; changing it needs a reason. No fines for lateness.
+- Staff and member due warnings both at 5 days. Exports: `.txt`, `.csv` (UTF-8 BOM) and PDF.
 
 ## Conventions
 
