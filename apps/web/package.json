@@ -17,15 +17,19 @@
     "@fontsource-variable/noto-sans-sinhala": "^5.3.0",
     "@fontsource-variable/noto-sans-tamil": "^5.3.0",
     "@pothgula/shared": "workspace:*",
+    "@tanstack/react-query": "^5.106.1",
     "i18next": "^26.7.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-i18next": "^17.1.13"
+    "react-i18next": "^17.1.13",
+    "react-router": "^8.5.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.4",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
