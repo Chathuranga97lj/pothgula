@@ -33,7 +33,12 @@ export class ErrorFilter implements ExceptionFilter {
       return {
         status,
         body: {
-          code: status === HttpStatus.NOT_FOUND ? 'not_found' : 'http_error',
+          code:
+            status === HttpStatus.NOT_FOUND
+              ? 'not_found'
+              : status === HttpStatus.PAYLOAD_TOO_LARGE
+                ? 'image_too_large'
+                : 'http_error',
           message: exception.message,
         },
       };
