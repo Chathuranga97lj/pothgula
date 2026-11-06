@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 type Reply = { status?: number; body?: unknown };
-type Route = Reply | ((body: unknown) => Reply);
+export type Route = Reply | ((body: unknown) => Reply);
 
 export interface Call {
   route: string;
@@ -20,7 +20,12 @@ export function fakeApi(routes: Record<string, Route>) {
     vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
       const route = `${init?.method ?? 'GET'} ${url.replace(/^\/api/, '')}`;
-      const body = typeof init?.body === 'string' ? JSON.parse(init.body) : undefined;
+      const body =
+        typeof init?.body === 'string'
+          ? JSON.parse(init.body)
+          : init?.body instanceof FormData
+            ? init.body
+            : undefined;
       const headers = (init?.headers ?? {}) as Record<string, string>;
       calls.push({ route, body, authorization: headers.authorization ?? null });
 
