@@ -22,6 +22,8 @@ Database rules live in the database: column checks and partial unique indexes in
 
 API conventions: every route needs a session unless marked `@Public()`; restrict with `@Roles(...)` and check branch scope in the service. Read the caller with `@Auth() ctx` and pass `ctx.actor` to `UnitOfWork`. Validate bodies with `parseBody(sharedSchema, body)`. Throw `AppError` with a stable `code` (the web app translates codes). Never put `password_hash` or a temporary password in a log entry — use `loggableUser()`.
 
+Web conventions: call the API through `api(path, { schema })` in `apps/web/src/api/client.ts` (adds the bearer token, parses with the shared schema, throws `ApiError` with the API's code); show failures with `errorMessage(t, err)`, which translates `errors.<code>`. Every visible string lives in `src/locales/en.json` and `si.json` — add both. Screens behind sign-in sit under `<RequireAuth>`; role-limited ones also under `<RequireRole>` (the API enforces the same rule). UI building blocks are in `src/components/ui.tsx`. Screen tests render the whole app with `renderApp(path)` against `fakeApi({...})`.
+
 Layout: `apps/api` (NestJS), `apps/web` (React), `packages/shared` (Zod schemas, `parseAccession`/`formatAccession`, `todayColombo`/`addDays`), `infra/`, `docs/`.
 
 ## Domain vocabulary
