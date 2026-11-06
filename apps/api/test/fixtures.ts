@@ -13,7 +13,6 @@ export async function makeBranch(db: Db, code = 'KS') {
   const [row] = await db
     .insert(branch)
     .values({
-      libraryName: 'Test Library',
       branchName: `Branch ${code}`,
       branchCode: code,
       address: '1 Test Road',
