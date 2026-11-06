@@ -11,9 +11,12 @@ export type Actor =
       ipAddress: string | null;
     }
   | {
-      /** A scheduled job, the install command or the seed script. */
+      /**
+       * A scheduled job, the install command, the seed script — or a request
+       * with no signed-in user, such as a failed sign-in (its IP is kept).
+       */
       kind: 'system';
-      ipAddress?: null;
+      ipAddress?: string | null;
     };
 
 export const SYSTEM_ACTOR: Actor = { kind: 'system' };

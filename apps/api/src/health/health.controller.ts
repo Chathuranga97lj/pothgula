@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { todayColombo, type HealthResponse } from '@pothgula/shared';
+import { Public } from '../auth/auth-context';
 
 @Controller('health')
 export class HealthController {
   @Get()
+  @Public()
   check(): HealthResponse {
     const now = new Date();
     return {

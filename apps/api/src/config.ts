@@ -9,3 +9,11 @@ export function databaseUrl(env: NodeJS.ProcessEnv = process.env): string {
   }
   return DEV_DATABASE_URL;
 }
+
+/** FR-AUT-07: a staff session ends after 30 minutes without activity. */
+export const STAFF_IDLE_MS = 30 * 60_000;
+/** Members stay signed in on their own phone for up to 30 days of inactivity. */
+export const MEMBER_IDLE_MS = 30 * 24 * 60 * 60_000;
+/** FR-AUT-06: five failed attempts lock the account for 15 minutes. */
+export const MAX_FAILED_SIGNINS = 5;
+export const LOCKOUT_MS = 15 * 60_000;
