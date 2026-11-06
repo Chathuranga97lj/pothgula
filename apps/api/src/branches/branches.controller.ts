@@ -6,7 +6,7 @@ import {
   updateBranchRequestSchema,
   updateBranchSettingsRequestSchema,
 } from '@pothgula/shared';
-import { Auth, type AuthContext, Roles } from '../auth/auth-context';
+import { Auth, type AuthContext, Public, Roles } from '../auth/auth-context';
 import { parseBody, parseId } from '../common/validate';
 import { ImageUpload } from '../images/upload';
 import { BranchesService } from './branches.service';
@@ -15,8 +15,9 @@ import { BranchesService } from './branches.service';
 export class BranchesController {
   constructor(private readonly branches: BranchesService) {}
 
-  /** Every signed-in person: members choose and view branches too. */
+  /** Public: the application form lists branches to choose a home branch from (FR-AUT-03). */
   @Get()
+  @Public()
   list(): Promise<BranchSummary[]> {
     return this.branches.list();
   }
