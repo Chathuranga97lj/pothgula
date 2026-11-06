@@ -1,14 +1,9 @@
 import { Controller, Get, Inject } from '@nestjs/common';
+import type { BranchSummary } from '@pothgula/shared';
 import { asc } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
 import { branch } from '../db/schema';
-
-export interface BranchSummary {
-  id: number;
-  code: string;
-  name: string;
-}
 
 /** The list of branches for pickers. Full branch management arrives in M3. */
 @Controller('branches')
