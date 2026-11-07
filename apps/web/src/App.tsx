@@ -4,15 +4,18 @@ import { Layout } from './components/Layout';
 import { ApplyPage } from './pages/ApplyPage';
 import { BranchesPage } from './pages/BranchesPage';
 import { BranchPage } from './pages/BranchPage';
+import { CataloguePage } from './pages/CataloguePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { HomePage } from './pages/HomePage';
 import { MemberPage } from './pages/MemberPage';
 import { MembersPage } from './pages/MembersPage';
 import { MyMembershipPage } from './pages/MyMembershipPage';
+import { NewTitlePage } from './pages/NewTitlePage';
 import { RegisterMemberPage } from './pages/RegisterMemberPage';
 import { SignInPage } from './pages/SignInPage';
 import { StaffPage } from './pages/StaffPage';
+import { TitlePage } from './pages/TitlePage';
 
 export function App() {
   return (
@@ -23,6 +26,16 @@ export function App() {
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="catalogue" element={<CataloguePage />} />
+          <Route
+            path="titles/new"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <NewTitlePage />
+              </RequireRole>
+            }
+          />
+          <Route path="titles/:id" element={<TitlePage />} />
           <Route
             path="my-membership"
             element={
