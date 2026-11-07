@@ -42,7 +42,8 @@ Gotenberg was not run in Docker. Its rendering is Chromium's, which the referenc
 **Use pdfmake in the API for every PDF the system produces.**
 
 - **No extra service.** One container less to install, update and back up (NFR-13), and no Chromium in memory. That matters on the 512 MB free demo instance and on a small library server.
-- **Fonts:** static Noto Sans, Noto Sans Sinhala and Noto Sans Tamil TTF files (Regular and Bold, SIL OFL) are committed under `apps/api/assets/fonts/` with their licence. They are loaded from local disk only; `setUrlAccessPolicy(() => false)` blocks any remote fetch. Static files are used rather than the variable fonts from the spike, to keep the image small.
+- **Fonts:** Noto Sans and Noto Sans Tamil as static TTF files (Regular and Bold), and Noto Sans Sinhala as the **variable** font, all SIL OFL, committed under `apps/api/assets/fonts/` with their licence. They are loaded from local disk only; `setUrlAccessPolicy(() => false)` blocks any remote fetch.
+- **Amendment (M4b, 2026-11-07):** the static Sinhala fonts, hinted and unhinted, render සු with a gap after it in fontkit (සුනිල් prints as "සු නිල්"; සූර්ය and සුදු are affected too). The variable font used in this spike does not. Sinhala therefore uses the variable font; its default instance is the regular weight, so Sinhala is never printed in bold. When adding Sinhala text to a PDF, check words with ු and ූ.
 - **A shared `pdf` module** in the API owns the fonts, the run-splitting helper (`splitByScript`), and the branch logo and name header every PDF carries (FR-BRN-04). It is built with the first PDF (FR-AUT-19, milestone M4), with unit tests for the splitter and a rendering test that checks the shaped glyph output for the sample lines above.
 
 ## When to revisit
