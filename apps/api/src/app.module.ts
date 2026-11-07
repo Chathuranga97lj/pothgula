@@ -7,11 +7,20 @@ import { ErrorFilter } from './common/error.filter';
 import { DbModule } from './db/db.module';
 import { HealthController } from './health/health.controller';
 import { ImagesController } from './images/images.controller';
+import { JobsModule } from './jobs/jobs.module';
 import { MembersModule } from './members/members.module';
 import { StaffModule } from './staff/staff.module';
 
 @Module({
-  imports: [DbModule, AuditModule, AuthModule, StaffModule, BranchesModule, MembersModule],
+  imports: [
+    DbModule,
+    AuditModule,
+    AuthModule,
+    StaffModule,
+    BranchesModule,
+    MembersModule,
+    JobsModule,
+  ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],
 })
