@@ -27,7 +27,10 @@ export function HomePage() {
       {user.status === 'pending' && (
         <div className="mb-6">
           <Alert tone="info" title={t('home.pendingTitle')}>
-            {t('home.pendingBody')}
+            {t('home.pendingBody')}{' '}
+            <Link to="/my-membership" className="font-medium underline">
+              {t('home.pendingLink')}
+            </Link>
           </Alert>
         </div>
       )}

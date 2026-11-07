@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { errorMessage } from '../api/errors';
 import { useLibrary } from '../api/queries';
 import { useAuth } from '../auth/auth';
@@ -94,6 +94,12 @@ export function SignInPage() {
             {busy ? t('signIn.submitting') : t('signIn.submit')}
           </Button>
           <p className="text-sm text-stone-600">{t('signIn.forgotten')}</p>
+          <p className="border-t border-stone-200 pt-4 text-sm">
+            {t('signIn.notMember')}{' '}
+            <Link to="/apply" className="font-medium text-emerald-800 underline">
+              {t('signIn.apply')}
+            </Link>
+          </p>
         </form>
       </main>
     </div>
