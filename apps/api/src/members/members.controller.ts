@@ -1,4 +1,15 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import {
   applicationRequestSchema,
   approveRequestSchema,
@@ -11,10 +22,11 @@ import {
   updateApplicationRequestSchema,
   updateProfileRequestSchema,
 } from '@pothgula/shared';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { Auth, type AuthContext, clientMeta, Public, Roles } from '../auth/auth-context';
 import { AppError } from '../common/app-error';
 import { parseBody, parseId } from '../common/validate';
+import { type ExportFormat, MemberExportService } from './member-export';
 import { MembersService } from './members.service';
 
 /** FR-AUT-03, FR-AUT-17 – FR-AUT-18: applying, and deciding applications. */
@@ -63,7 +75,10 @@ export class ApplicationsController {
 /** FR-AUT-05, FR-MEM-02, FR-MEM-03, FR-MEM-09: members, for staff. */
 @Controller('members')
 export class MembersController {
-  constructor(private readonly members: MembersService) {}
+  constructor(
+    private readonly members: MembersService,
+    private readonly exports: MemberExportService,
+  ) {}
 
   @Get()
   @Roles('admin', 'super_admin')
@@ -88,6 +103,30 @@ export class MembersController {
   @Roles('admin', 'super_admin')
   detail(@Auth() ctx: AuthContext, @Param('id') id: string): Promise<MemberDetail> {
     return this.members.detail(ctx, parseId(id));
+  }
+
+  /** FR-AUT-19: one person's details as a text file or a PDF; every export is logged. */
+  @Get(':id/export')
+  @Roles('admin', 'super_admin')
+  async export(
+    @Auth() ctx: AuthContext,
+    @Param('id') id: string,
+    @Query('format') format: string | undefined,
+    @Res() res: Response,
+  ): Promise<void> {
+    if (format !== 'txt' && format !== 'pdf') {
+      throw AppError.badRequest('invalid_request', 'format must be txt or pdf');
+    }
+    const file = await this.exports.export(ctx, parseId(id), format as ExportFormat);
+    res
+      .status(200)
+      .set({
+        'Content-Type': file.contentType,
+        'Content-Disposition': `attachment; filename="${file.filename}"`,
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      })
+      .end(file.body);
   }
 
   @Post(':id/renew')
