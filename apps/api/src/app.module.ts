@@ -3,6 +3,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { BranchesModule } from './branches/branches.module';
+import { CatalogueModule } from './catalogue/catalogue.module';
 import { ErrorFilter } from './common/error.filter';
 import { DbModule } from './db/db.module';
 import { HealthController } from './health/health.controller';
@@ -20,6 +21,7 @@ import { StaffModule } from './staff/staff.module';
     BranchesModule,
     MembersModule,
     JobsModule,
+    CatalogueModule,
   ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],
