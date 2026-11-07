@@ -50,8 +50,16 @@ export function Layout() {
               <NavLink to="/" end className={navClass}>
                 {t('nav.home')}
               </NavLink>
+              {!isStaff && (
+                <NavLink to="/my-membership" className={navClass}>
+                  {t('nav.myMembership')}
+                </NavLink>
+              )}
               {isStaff && (
                 <>
+                  <NavLink to="/members" className={navClass}>
+                    {t('nav.members')}
+                  </NavLink>
                   <NavLink to="/branches" className={navClass}>
                     {t('nav.branches')}
                   </NavLink>

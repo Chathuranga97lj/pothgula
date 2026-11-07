@@ -16,7 +16,8 @@
     "db:migrate": "tsx src/cli/migrate.ts",
     "db:seed": "tsx src/cli/seed.ts",
     "create-super-admin": "tsx src/cli/create-super-admin.ts",
-    "reset-super-admin": "tsx src/cli/reset-super-admin.ts"
+    "reset-super-admin": "tsx src/cli/reset-super-admin.ts",
+    "jobs": "tsx src/cli/jobs.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.4.0",
@@ -26,6 +27,7 @@
     "@pothgula/shared": "workspace:*",
     "drizzle-orm": "^0.45.4",
     "multer": "^2.5.0",
+    "pdfmake": "^0.3.13",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",

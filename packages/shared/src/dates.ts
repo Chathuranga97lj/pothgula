@@ -39,3 +39,25 @@ export function addDays(isoDate: string, days: number): string {
 export function daysBetween(from: string, to: string): number {
   return Math.round((toUtcMidnight(to) - toUtcMidnight(from)) / DAY_MS);
 }
+
+/**
+ * The same date `years` later. 29 February becomes 28 February in a year without
+ * one, so a membership never gains a day (FR-MEM-01).
+ */
+export function addYears(isoDate: string, years: number): string {
+  toUtcMidnight(isoDate);
+  const [y, m, d] = isoDate.split('-').map(Number) as [number, number, number];
+  const year = y + years;
+  const lastDay = new Date(Date.UTC(year, m, 0)).getUTCDate();
+  const pad = (n: number, width = 2) => String(n).padStart(width, '0');
+  return `${pad(year, 4)}-${pad(m)}-${pad(Math.min(d, lastDay))}`;
+}
+
+/** Whole years of age on a given date (FR-AUT-18). */
+export function ageOn(dateOfBirth: string, onDate: string): number {
+  toUtcMidnight(dateOfBirth);
+  toUtcMidnight(onDate);
+  const [by, bm, bd] = dateOfBirth.split('-').map(Number) as [number, number, number];
+  const [y, m, d] = onDate.split('-').map(Number) as [number, number, number];
+  return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
+}

@@ -6,6 +6,8 @@ export default defineConfig({
   plugins: [swc.vite({ module: { type: 'es6' } })],
   test: {
     environment: 'node',
+    // No background jobs during tests; they call the job functions directly.
+    env: { POTHGULA_JOBS: 'off' },
     projects: [
       {
         extends: true,

@@ -115,7 +115,7 @@ describe('sessions (NFR-06, FR-AUT-07)', () => {
     for (const [method, path] of [
       ['get', '/api/auth/me'],
       ['get', '/api/staff'],
-      ['get', '/api/branches'],
+      ['get', '/api/me/membership'],
       ['post', '/api/staff'],
     ] as const) {
       const res = await t.http()[method](path);
@@ -203,7 +203,7 @@ describe('temporary passwords (FR-AUT-11, FR-AUT-12)', () => {
     const tempToken = await signIn(t, member.whatsappPhone!, temp);
     const me = await t.http().get('/api/auth/me').set(bearer(tempToken));
     expect(me.body.user.mustChangePassword).toBe(true);
-    const blocked = await t.http().get('/api/branches').set(bearer(tempToken));
+    const blocked = await t.http().get('/api/me/membership').set(bearer(tempToken));
     expect(blocked.body.code).toBe('must_change_password');
     await t
       .http()
@@ -211,7 +211,7 @@ describe('temporary passwords (FR-AUT-11, FR-AUT-12)', () => {
       .set(bearer(tempToken))
       .send({ currentPassword: temp, newPassword: 'green-door-at-noon' })
       .expect(204);
-    expect((await t.http().get('/api/branches').set(bearer(tempToken))).status).toBe(200);
+    expect((await t.http().get('/api/me/membership').set(bearer(tempToken))).status).toBe(200);
 
     // FR-AUT-13: logged, without the temporary password.
     const entries = (await logOf('auth.password_reset')).filter(

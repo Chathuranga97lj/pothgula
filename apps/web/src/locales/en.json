@@ -30,7 +30,9 @@
     "changePassword": "Change password",
     "signOut": "Sign out",
     "branches": "Branches",
-    "categories": "Categories"
+    "categories": "Categories",
+    "members": "Members",
+    "myMembership": "My membership"
   },
   "signIn": {
     "title": "Sign in",
@@ -39,7 +41,9 @@
     "password": "Password",
     "submit": "Sign in",
     "submitting": "Signing in…",
-    "forgotten": "Forgotten your password? Ask a librarian at your branch to reset it."
+    "forgotten": "Forgotten your password? Ask a librarian at your branch to reset it.",
+    "notMember": "Not a member yet?",
+    "apply": "Apply for membership"
   },
   "changePassword": {
     "title": "Change password",
@@ -72,7 +76,8 @@
     "pendingTitle": "Your application is waiting for approval",
     "pendingBody": "Visit your home branch with proof of identity and the first year's fee. You can browse the catalogue meanwhile.",
     "comingTitle": "More is on the way",
-    "comingBody": "Branches, the catalogue, issuing and returns arrive in the next releases."
+    "comingBody": "Branches, the catalogue, issuing and returns arrive in the next releases.",
+    "pendingLink": "Check or correct your application."
   },
   "staff": {
     "title": "Staff",
@@ -135,7 +140,15 @@
     "branch_code_locked": "This code is printed on books and can no longer change.",
     "category_code_in_use": "Another category already uses this code.",
     "category_code_locked": "Books already carry this code, so it can no longer change. The name can.",
-    "category_not_found": "That category does not exist."
+    "category_not_found": "That category does not exist.",
+    "members_only": "Only members have a membership record.",
+    "not_pending": "This application has already been decided.",
+    "not_rejected": "Only an application that was not approved can be reopened.",
+    "waiver_super_admin_only": "Only a super admin can waive the first fee.",
+    "cannot_renew": "Approve the application first; then the membership can be renewed.",
+    "member_not_found": "That member does not exist.",
+    "other_branch": "This belongs to another branch.",
+    "invalid_date_of_birth": "The date of birth must be in the past."
   },
   "images": {
     "uploading": "Uploading…",
@@ -255,5 +268,124 @@
     "inUse": "In use",
     "codeLocked": "Books already carry this code, so it can no longer change. The name can.",
     "formIncomplete": "A code is one capital letter and one digit, such as A1, and needs a name."
+  },
+  "person": {
+    "fullName": "Full name",
+    "dateOfBirth": "Date of birth",
+    "address": "Address",
+    "whatsappPhone": "WhatsApp number",
+    "whatsappHint": "You will sign in with this number.",
+    "otherPhone": "Other phone (optional)",
+    "organisation": "School or workplace (optional)",
+    "organisationHint": "For example the school you attend.",
+    "homeBranch": "Home branch",
+    "chooseBranch": "Choose a branch",
+    "introducedByName": "Introduced by",
+    "introducerHint": "Someone who knows you and whom the library may call.",
+    "introducedByPhone": "Introducer's phone"
+  },
+  "apply": {
+    "title": "Apply for membership",
+    "lead": "Fill this in at home. Then visit your branch with proof of identity and the first year’s fee; a librarian will approve you there.",
+    "password": "Choose a password",
+    "consent": "The person who introduced me has agreed to be named and contacted by the library.",
+    "privacyTitle": "Your personal details",
+    "privacyBody": "The library keeps the details on this form to run your membership, and shows them only to its staff. If your application is not approved within 90 days, your details are removed. (Personal Data Protection Act No. 9 of 2022.)",
+    "privacyAccept": "I have read this and agree.",
+    "submit": "Send application",
+    "sending": "Sending…",
+    "haveAccount": "Already applied? Sign in",
+    "incomplete": "Please fill in every required field: a valid WhatsApp number, your date of birth, your home branch, and the introducer’s name and phone."
+  },
+  "membership": {
+    "pending": "Waiting for approval",
+    "active": "Member",
+    "expired": "Expired",
+    "suspended": "Suspended",
+    "rejected": "Not approved",
+    "deactivated": "Deactivated",
+    "anonymised": "Removed"
+  },
+  "members": {
+    "title": "Members",
+    "lead": "Applications to approve, finding a member, and memberships to renew.",
+    "register": "Register a member",
+    "tabs": {
+      "waiting": "Waiting ({{count}})",
+      "search": "Find a member",
+      "lists": "Renewals",
+      "rejected": "Not approved"
+    },
+    "noneWaiting": "No applications are waiting.",
+    "noneRejected": "No applications have been rejected.",
+    "searchLabel": "Find a member",
+    "searchPlaceholder": "Part of a name, or a phone number",
+    "noMatch": "No member matches.",
+    "lists": {
+      "expiringSoon": "Expiring in the next 30 days",
+      "expired": "Already expired",
+      "paidRecently": "Paid in the last 30 days"
+    },
+    "listEmpty": "Nobody.",
+    "ageArea": "Age · area",
+    "applied": "Applied",
+    "approved": "Approved",
+    "expires": "Membership expires",
+    "state": "Membership",
+    "stale": "Waiting over 30 days",
+    "age": "age {{age}}",
+    "rejectionReason": "Reason not approved",
+    "approveTitle": "Approve at the counter",
+    "approveLead": "With the applicant here: check their identity document against these details, then take the first year’s fee.",
+    "identityChecked": "I have checked an identity document against these details.",
+    "waive": "Waive the first fee (super admin)",
+    "waiveReason": "Why is the fee waived?",
+    "firstFee": "First year’s fee (Rs)",
+    "receiptNo": "Receipt number",
+    "approve": "Approve and start membership",
+    "reject": "Not approve…",
+    "rejectReason": "Why is this application not approved?",
+    "confirmReject": "Do not approve",
+    "approvedNotice": "Approved. The membership runs until {{date}}.",
+    "rejectedNotice": "The application was not approved. The person has been told when they next sign in.",
+    "feeIncomplete": "Enter the amount and the receipt number.",
+    "reopenTitle": "Reopen the application",
+    "reopenLead": "It goes back to the waiting list. Personal details are removed 90 days after it was made.",
+    "reopen": "Reopen",
+    "renewTitle": "Renew",
+    "renewLead": "The membership runs until {{date}}. A year is added from that date, or from today if it lapsed long ago.",
+    "annualFee": "Annual fee (Rs)",
+    "recordPayment": "Record payment",
+    "renewedNotice": "Payment recorded. The membership now runs until {{date}}.",
+    "resetLead": "Gives a temporary password, shown once, that must be changed at the next sign-in.",
+    "exportPdf": "Export PDF",
+    "exportTxt": "Export text",
+    "exportNote": "Every export is written to the activity log.",
+    "payments": "Payments",
+    "noPayments": "No payments yet.",
+    "paidOn": "Date",
+    "kind": "Kind",
+    "amount": "Amount",
+    "receiptOrReason": "Receipt or reason",
+    "validUntil": "Valid until",
+    "paymentKind": {
+      "first_fee": "First fee",
+      "fee": "Annual fee",
+      "waiver": "Fee waived",
+      "reversal": "Reversal"
+    },
+    "registerLead": "For someone who is here at the counter. They are a member at once, with a temporary password.",
+    "consentAsked": "The person confirms their introducer agreed to be named.",
+    "registerSubmit": "Register and take the fee",
+    "registerIncomplete": "Fill in every required field, tick both boxes, and enter the fee and receipt number.",
+    "registeredTitle": "Member registered",
+    "openRecord": "Open their record"
+  },
+  "my": {
+    "title": "My membership",
+    "lead": "Your details as the library holds them. You can change your address, other phone and organisation here.",
+    "pendingLead": "Your application, as the library will see it. You can correct it until it is approved.",
+    "expires": "Your membership runs until {{date}}.",
+    "otherChanges": "To change your name, date of birth or WhatsApp number, ask a librarian."
   }
 }

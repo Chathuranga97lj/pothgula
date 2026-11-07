@@ -166,6 +166,8 @@ export const appUser = pgTable(
     organisation: text('organisation'),
     introducedByName: text('introduced_by_name'),
     introducedByPhone: text('introduced_by_phone'),
+    /** FR-AUT-03: the applicant confirmed the introducer agreed to be named. */
+    introducerConsent: boolean('introducer_consent').notNull().default(false),
     /** Home branch for members, the branch of an admin; null for super admins (R9). */
     branchId: integer('branch_id').references(() => branch.id),
     appliedAt: instant('applied_at'),

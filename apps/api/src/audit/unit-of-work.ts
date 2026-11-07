@@ -37,13 +37,25 @@ export class UnitOfWork {
   constructor(@Inject(DB) private readonly db: Db) {}
 
   run<T>(actor: Actor, work: (tx: Tx, log: Log) => Promise<T>): Promise<T> {
+    return this.runAs((tx, logAs) => work(tx, (entry) => logAs(actor, entry)));
+  }
+
+  /**
+   * As `run`, for the rare work whose actor only exists part-way through — a
+   * public application, where the applicant's account is created in the same
+   * transaction. Each entry names its actor; the same rule applies: no entry,
+   * no commit.
+   */
+  runAs<T>(
+    work: (tx: Tx, logAs: (actor: Actor, entry: LogEntry) => Promise<void>) => Promise<T>,
+  ): Promise<T> {
     return this.db.transaction(async (tx) => {
       let entries = 0;
-      const log: Log = async (entry) => {
+      const logAs = async (actor: Actor, entry: LogEntry) => {
         await tx.insert(activityLog).values(toRow(actor, entry));
         entries += 1;
       };
-      const result = await work(tx, log);
+      const result = await work(tx, logAs);
       if (entries === 0) throw new UnloggedChangeError();
       return result;
     });
