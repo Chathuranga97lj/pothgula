@@ -106,12 +106,20 @@ export async function api<S extends z.ZodType | undefined = undefined>(
  * Fetches a file the API makes (an export, a sheet to print) and hands it to the
  * browser to save. It needs the session token, so it cannot be a plain link.
  */
-export async function downloadFile(path: string, fallbackName: string): Promise<void> {
+export async function downloadFile(
+  path: string,
+  fallbackName: string,
+  post?: unknown,
+): Promise<void> {
   const token = tokenStore.get();
+  const headers: Record<string, string> = token ? { authorization: `Bearer ${token}` } : {};
+  if (post !== undefined) headers['content-type'] = 'application/json';
   let res: Response;
   try {
     res = await fetch(`/api${path}`, {
-      headers: token ? { authorization: `Bearer ${token}` } : {},
+      method: post === undefined ? 'GET' : 'POST',
+      headers,
+      body: post === undefined ? undefined : JSON.stringify(post),
     });
   } catch {
     throw new ApiError(0, 'network_error', 'The server cannot be reached.');
@@ -121,10 +129,15 @@ export async function downloadFile(path: string, fallbackName: string): Promise<
     throw new ApiError(res.status, body?.code ?? 'http_error', body?.message ?? res.statusText);
   }
   const name = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1];
-  const url = URL.createObjectURL(await res.blob());
+  saveBlob(await res.blob(), name ?? fallbackName);
+}
+
+/** Hands a file made in the browser (or fetched) to the browser to save. */
+export function saveBlob(blob: Blob, name: string): void {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = name ?? fallbackName;
+  a.download = name;
   document.body.append(a);
   a.click();
   a.remove();

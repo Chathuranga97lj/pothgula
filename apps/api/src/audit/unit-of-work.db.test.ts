@@ -60,6 +60,21 @@ describe('UnitOfWork (FR-LOG-13)', () => {
     expect((entry?.afterData as { condition: string }).condition).toBe('not_useable');
   });
 
+  it('writes several entries in one call, for a bulk change', async () => {
+    await uow.run(admin, async (_tx, log) => {
+      await log(
+        Array.from({ length: 1201 }, (_, i) => ({
+          action: 'test.bulk',
+          entity: 'copy',
+          entityId: i,
+        })),
+      );
+    });
+    const entries = await entriesFor('test.bulk');
+    expect(entries).toHaveLength(1201);
+    expect(entries[0]).toMatchObject({ actorId: lib.admin.id, branchId: lib.branch.id });
+  });
+
   it('rolls the change back when nothing was logged', async () => {
     await expect(
       uow.run(admin, async (tx) => {

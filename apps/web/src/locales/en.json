@@ -179,7 +179,11 @@
     "date_in_future": "That date has not happened yet.",
     "backdate_too_old": "Paper slips can be entered up to 7 days back.",
     "nothing_to_change": "Nothing is different from what the loan already says.",
-    "branch_required": "Choose the branch first."
+    "branch_required": "Choose the branch first.",
+    "file_required": "Choose the file first.",
+    "import_has_errors": "Some rows still need correcting; check the file again.",
+    "duplicates_unreviewed": "Decide every probable duplicate before importing.",
+    "bad_decision": "A decision does not match the file. Check the file again and decide afresh."
   },
   "images": {
     "uploading": "Uploading…",
@@ -439,7 +443,8 @@
     "holding": "{{branch}}: {{onShelf}} of {{total}} on the shelf",
     "alsoAt": "Also on the shelf at {{branches}}",
     "previous": "Previous",
-    "next": "More results"
+    "next": "More results",
+    "import": "Import the old catalogue"
   },
   "copyState": {
     "on_shelf": "On the shelf",
@@ -689,5 +694,80 @@
     "pendingBody": "Not yet a member: approve the application before lending anything.",
     "lateReturns_one": "{{count}} late return in the last {{months}} months.",
     "lateReturns_other": "{{count}} late returns in the last {{months}} months."
+  },
+  "import": {
+    "title": "Import the old catalogue",
+    "lead": "A one-off: the books already on the shelves get new numbers and new spine labels. Their old numbers are kept, so the old card index still matches.",
+    "howTitle": "Before you start",
+    "how1": "One row per physical book: two copies of the same book are two rows. Copies are grouped into titles for you.",
+    "how2": "Columns (the first row holds their names): {{columns}}. Only title and category are needed; category is the new code, such as A1.",
+    "how3": "In Excel, save it as \"CSV UTF-8 (Comma delimited)\" so that Sinhala and Tamil come through.",
+    "template": "Download an empty template",
+    "branch": "Branch the books are at",
+    "chooseBranch": "Choose a branch",
+    "file": "The file",
+    "fileHint": "A .csv file of at most 5 MB (about 20,000 books).",
+    "chooseFile": "Choose the branch and the file first.",
+    "check": "Check the file",
+    "checking": "Checking…",
+    "fileProblem": "This file cannot be read",
+    "fileErrors": {
+      "empty": "It has no rows under the heading row.",
+      "not_utf8": "It is not saved as UTF-8. In Excel choose \"Save as\" and \"CSV UTF-8 (Comma delimited)\".",
+      "too_many_rows": "It has more than 20,000 rows. Split it into smaller files.",
+      "missing_column": "The heading row has no column for: {{columns}}."
+    },
+    "summary": "{{rows}} rows, making {{titles}} titles",
+    "ignored": "These columns are not used: {{columns}}.",
+    "errorsTitle_one": "{{count}} row needs correcting",
+    "errorsTitle_other": "{{count}} rows need correcting",
+    "errorsLead": "Correct these in the spreadsheet, save it, and check the file again. Nothing is imported until every row is right.",
+    "line": "Line",
+    "problem": "Problem",
+    "errors": {
+      "missing_title": "No title.",
+      "missing_category": "No category.",
+      "unknown_category": "There is no category {{value}}.",
+      "retired_category": "Category {{value}} is retired; choose another.",
+      "bad_isbn": "{{value}} is not an ISBN (10 or 13 digits).",
+      "bad_price": "{{value}} is not an amount in rupees.",
+      "too_long": "The {{value}} is too long.",
+      "old_number_repeated": "Old number {{value}} is used on an earlier line too.",
+      "old_number_exists": "Old number {{value}} has already been imported at this branch.",
+      "category_differs": "Another copy of this book has a different category ({{value}} here). Copies of one title share one category."
+    },
+    "reviewTitle": "Probable duplicates",
+    "reviewLead": "These may be a book the library already has, or the same book written two ways in the file. Decide each one.",
+    "decided": "{{done}} of {{total}} decided",
+    "restAreNew_one": "The {{count}} undecided one is a different book",
+    "restAreNew_other": "All {{count}} undecided are different books",
+    "lines_one": "line {{lines}}",
+    "lines_other": "lines {{lines}}",
+    "asNew": "A different book: make it a new title",
+    "asExisting": "More copies of",
+    "copiesHeld_one": "{{count}} copy held",
+    "copiesHeld_other": "{{count}} copies held",
+    "reason": {
+      "same_isbn": "same ISBN",
+      "similar_title": "similar name"
+    },
+    "asSameAs": "The same book as",
+    "ready": "{{copies}} copies will be numbered. {{titles}} titles have no probable duplicate.",
+    "import_one": "Import {{count}} copy",
+    "import_other": "Import {{count}} copies",
+    "importing": "Importing…",
+    "decideFirst": "Decide every probable duplicate first.",
+    "doneTitle": "Import finished",
+    "done_one": "{{count}} copy imported",
+    "done_other": "{{count}} copies imported",
+    "doneBody": "{{created}} new titles; copies added to {{added}} titles the library already had.",
+    "nextSteps": "Print the new spine labels and put each on its book; the old number is printed small on each label to help. Keep the list of old and new numbers with the card index.",
+    "labels": "Print the spine labels",
+    "mapping": "Download old and new numbers (CSV)",
+    "toCatalogue": "Go to the catalogue",
+    "oldNumber": "Old number",
+    "newNumber": "New number",
+    "more_one": "And {{count}} more in the downloaded list.",
+    "more_other": "And {{count}} more in the downloaded list."
   }
 }
