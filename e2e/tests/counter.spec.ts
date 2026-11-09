@@ -52,6 +52,7 @@ test('a librarian refuses, takes back late, then issues', async ({ page }) => {
 
   await test.step('taking it back shows how late it is before confirming', async () => {
     await page.getByRole('tab', { name: 'Take back' }).click();
+    await expect(page.getByRole('button', { name: 'Find the loan' })).toBeVisible();
     await page.getByLabel('Book number').fill(E2E.overdueCopy);
     await page.getByRole('button', { name: 'Find the loan' }).click();
 
