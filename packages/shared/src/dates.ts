@@ -71,3 +71,8 @@ export function ageOn(dateOfBirth: string, onDate: string): number {
   const [y, m, d] = onDate.split('-').map(Number) as [number, number, number];
   return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
 }
+
+/** The last day of the month `isoDate` falls in (FR-NOT-03: "expiring this month"). */
+export function endOfMonth(isoDate: string): string {
+  return addDays(addMonths(`${isoDate.slice(0, 8)}01`, 1), -1);
+}
