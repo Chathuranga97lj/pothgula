@@ -38,8 +38,10 @@ export function ChangePasswordPage() {
         method: 'POST',
         body: { currentPassword: current, newPassword: next },
       });
-      queryClient.setQueryData(ME_KEY, (me: { user: { mustChangePassword: boolean } } | undefined) =>
-        me ? { ...me, user: { ...me.user, mustChangePassword: false } } : me,
+      queryClient.setQueryData(
+        ME_KEY,
+        (me: { user: { mustChangePassword: boolean } } | undefined) =>
+          me ? { ...me, user: { ...me.user, mustChangePassword: false } } : me,
       );
       setDone(true);
       setCurrent('');
