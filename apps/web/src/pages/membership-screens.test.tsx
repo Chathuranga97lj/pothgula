@@ -96,6 +96,19 @@ describe('applying (FR-AUT-03, FR-AUT-16)', () => {
       'POST /applications': { status: 201, body: { userId: 9 } },
       'POST /auth/sign-in': () => ({ body: { token: 'tok', user: me } }),
       'GET /auth/me': () => ({ body: { user: me, warnings: [] } }),
+      'GET /me/dashboard': {
+        body: {
+          today: '2026-11-09',
+          items: [
+            {
+              kind: 'application_waiting',
+              tone: 'info',
+              branchName: 'Kesbewa',
+              feeCents: 50_000,
+            },
+          ],
+        },
+      },
     });
     renderApp('/sign-in');
     await userEvent.click(await screen.findByRole('link', { name: 'Apply for membership' }));
@@ -120,6 +133,7 @@ describe('applying (FR-AUT-03, FR-AUT-16)', () => {
     await userEvent.click(send);
 
     expect(await screen.findByText('Your application is waiting for approval')).toBeInTheDocument();
+    expect(screen.getByText(/Visit the Kesbewa branch .* Rs 500.00/)).toBeInTheDocument();
     expect(api.calls.find((c) => c.route === 'POST /applications')?.body).toMatchObject({
       whatsappPhone: '0771234567',
       introducedByPhone: '0712223333',

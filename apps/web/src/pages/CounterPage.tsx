@@ -145,7 +145,7 @@ function IssuePanel({ initialMember }: { initialMember: number | null }) {
             </div>
             {standing && (
               <>
-                <StandingBanner standing={standing} />
+                <StandingBanner standing={standing} state={m.state} />
                 <p className="mt-3 text-sm font-medium" data-testid="holding">
                   {t('counter.holding', { count: standing.openLoans, max: standing.maxBooks })}
                 </p>

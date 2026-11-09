@@ -8,6 +8,7 @@ import { CataloguePage } from './pages/CataloguePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { CounterPage } from './pages/CounterPage';
+import { CallListPage, DuePage } from './pages/DuePage';
 import { HomePage } from './pages/HomePage';
 import { LoanPage } from './pages/LoanPage';
 import { MemberPage } from './pages/MemberPage';
@@ -51,6 +52,22 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <CounterPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="due"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <DuePage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="due/calls"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <CallListPage />
               </RequireRole>
             }
           />

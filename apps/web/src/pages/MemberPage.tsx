@@ -50,7 +50,7 @@ export function MemberPage() {
 
       {loans.data && (
         <div className="mb-5">
-          <StandingBanner standing={loans.data.standing} />
+          <StandingBanner standing={loans.data.standing} state={m.state} />
         </div>
       )}
 

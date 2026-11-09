@@ -6,7 +6,7 @@ import {
 } from '@pothgula/shared';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import { api, ApiError, tokenStore } from './client';
+import { api, downloadFile } from './client';
 
 export const MEMBERS_KEY = ['members'] as const;
 export const memberKey = (id: number) => ['members', 'one', id] as const;
@@ -55,22 +55,6 @@ export function useOwnMembership(enabled: boolean) {
  * Downloads an export (FR-AUT-19). It needs the session token, so it is fetched
  * and handed to the browser as a file, rather than opened as a plain link.
  */
-export async function downloadMemberExport(id: number, format: 'txt' | 'pdf'): Promise<void> {
-  const token = tokenStore.get();
-  const res = await fetch(`/api/members/${id}/export?format=${format}`, {
-    headers: token ? { authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { code?: string; message?: string } | null;
-    throw new ApiError(res.status, body?.code ?? 'http_error', body?.message ?? res.statusText);
-  }
-  const name = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1];
-  const url = URL.createObjectURL(await res.blob());
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name ?? `member-${id}.${format}`;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+export function downloadMemberExport(id: number, format: 'txt' | 'pdf'): Promise<void> {
+  return downloadFile(`/members/${id}/export?format=${format}`, `member-${id}.${format}`);
 }
