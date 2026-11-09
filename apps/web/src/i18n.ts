@@ -1,13 +1,29 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from './locales/en.json';
-import si from './locales/si.json';
 
-/** NFR-04: English and Sinhala at launch; Tamil is added as one more file. */
-export const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'si', label: 'සිංහල' },
-] as const;
+type Messages = { languageName: string } & Record<string, unknown>;
+
+/**
+ * NFR-04: English and Sinhala at launch. Every file in `locales/` is a language,
+ * named by its own `languageName`, so Tamil arrives as `ta.json` alone, with no
+ * change to the software (docs/translating.md).
+ */
+const files = import.meta.glob<Messages>('./locales/*.json', { eager: true, import: 'default' });
+const resources = Object.fromEntries(
+  Object.entries(files).map(([path, messages]) => [
+    path.replace(/^.*\/(\w+)\.json$/, '$1'),
+    { translation: messages },
+  ]),
+);
+
+/** English first, then Sinhala, then any others by code. */
+const ORDER = ['en', 'si'];
+export const LANGUAGES = Object.keys(resources)
+  .sort((a, b) => {
+    const rank = (c: string) => (ORDER.includes(c) ? ORDER.indexOf(c) : ORDER.length);
+    return rank(a) - rank(b) || a.localeCompare(b);
+  })
+  .map((code) => ({ code, label: (files[`./locales/${code}.json`] as Messages).languageName }));
 
 const LANGUAGE_KEY = 'pothgula.language';
 
@@ -21,7 +37,7 @@ function savedLanguage(): string {
 }
 
 void i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, si: { translation: si } },
+  resources,
   lng: savedLanguage(),
   fallbackLng: 'en',
   interpolation: { escapeValue: false },

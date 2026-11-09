@@ -1,9 +1,10 @@
 {
+  "languageName": "English",
+  "language": "Language",
   "app": {
     "name": "Pothgula",
     "tagline": "Library lending and membership"
   },
-  "language": "Language",
   "common": {
     "loading": "Loading…",
     "cancel": "Cancel",
