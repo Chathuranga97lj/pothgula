@@ -4,8 +4,13 @@ import { createDb } from '../db/client';
 import { seedDemo } from '../db/seed';
 
 async function main(): Promise<void> {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Refusing to load demonstration data into a production database (NFR-17)');
+  // NFR-17: invented data never goes near the real installation. A public
+  // demonstration runs the production build, so it must say so explicitly.
+  if (process.env.NODE_ENV === 'production' && process.env.POTHGULA_DEMO !== 'yes') {
+    throw new Error(
+      'Refusing to load demonstration data into a production database (NFR-17). ' +
+        'For a public demonstration with invented data only, set POTHGULA_DEMO=yes.',
+    );
   }
   const handle = createDb(databaseUrl());
   try {
