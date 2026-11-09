@@ -12,17 +12,20 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { api } from '../api/client';
 import { errorMessage } from '../api/errors';
+import { useMemberLoans } from '../api/loans';
 import { downloadMemberExport, MEMBERS_KEY, memberKey, useMember } from '../api/members';
 import { branchKey, useBranches } from '../api/queries';
 import { useMe } from '../auth/auth';
+import { LoanTable, StandingBanner } from '../components/loans';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 import { StateBadge } from './MembersPage';
 
-/** FR-AUT-17, FR-AUT-19, FR-MEM-02, FR-MEM-09, FR-MEM-10. */
+/** FR-AUT-17, FR-AUT-19, FR-MEM-02, FR-MEM-09, FR-MEM-10, FR-CIR-09, FR-CIR-15. */
 export function MemberPage() {
   const { t } = useTranslation();
   const id = Number(useParams().id);
   const member = useMember(id);
+  const loans = useMemberLoans(Number.isInteger(id) && id > 0 ? id : null);
   const [notice, setNotice] = useState<{ tone: 'success' | 'warning'; text: ReactNode } | null>(
     null,
   );
@@ -44,6 +47,12 @@ export function MemberPage() {
         </PageTitle>
         <ExportButtons id={m.id} />
       </div>
+
+      {loans.data && (
+        <div className="mb-5">
+          <StandingBanner standing={loans.data.standing} />
+        </div>
+      )}
 
       {notice && (
         <div className="mb-5">
@@ -84,6 +93,7 @@ export function MemberPage() {
         </div>
       </div>
 
+      <Books member={m} loans={loans} />
       <Payments member={m} />
     </>
   );
@@ -449,6 +459,46 @@ function ExportButtons({ id }: { id: number }) {
       <p className="text-xs text-stone-600">{t('members.exportNote')}</p>
       {error && <Alert tone="error">{error}</Alert>}
     </div>
+  );
+}
+
+/** FR-CIR-09: the whole borrowing history, with a way to the counter. */
+function Books({
+  member,
+  loans,
+}: {
+  member: MemberDetail;
+  loans: ReturnType<typeof useMemberLoans>;
+}) {
+  const { t } = useTranslation();
+  const standing = loans.data?.standing;
+  return (
+    <Card className="mt-6 p-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
+        <h2 className="font-semibold">
+          {t('loans.title')}
+          {standing && (
+            <span className="ml-2 text-sm font-normal text-stone-600">
+              {t('counter.holding', { count: standing.openLoans, max: standing.maxBooks })}
+            </span>
+          )}
+        </h2>
+        {member.status === 'active' && (
+          <Link
+            to={`/counter?member=${member.id}`}
+            className="inline-flex min-h-10 items-center rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+          >
+            {t('counter.issueBook')}
+          </Link>
+        )}
+      </div>
+      {loans.isError && (
+        <div className="p-5">
+          <Alert tone="error">{errorMessage(t, loans.error)}</Alert>
+        </div>
+      )}
+      {loans.data && <LoanTable loans={loans.data.loans} staff />}
+    </Card>
   );
 }
 

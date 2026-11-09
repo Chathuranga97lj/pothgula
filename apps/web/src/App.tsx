@@ -7,7 +7,9 @@ import { BranchPage } from './pages/BranchPage';
 import { CataloguePage } from './pages/CataloguePage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
+import { CounterPage } from './pages/CounterPage';
 import { HomePage } from './pages/HomePage';
+import { LoanPage } from './pages/LoanPage';
 import { MemberPage } from './pages/MemberPage';
 import { MembersPage } from './pages/MembersPage';
 import { MyMembershipPage } from './pages/MyMembershipPage';
@@ -41,6 +43,22 @@ export function App() {
             element={
               <RequireRole roles={['member']}>
                 <MyMembershipPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="counter"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <CounterPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="loans/:id"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <LoanPage />
               </RequireRole>
             }
           />

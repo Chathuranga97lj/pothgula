@@ -70,6 +70,19 @@ function asStaff(extra: Record<string, Route> = {}) {
     'GET /library': { body: { name: 'Library', logoImageId: null } },
     'GET /branches': { body: branches },
     'GET /branches/1': { body: branchDetail },
+    'GET /members/9/loans': {
+      body: {
+        standing: {
+          openLoans: 0,
+          maxBooks: 2,
+          overdueLoans: 0,
+          lateReturns: 0,
+          lateReturnMonths: 12,
+          frequentlyLate: false,
+        },
+        loans: [],
+      },
+    },
     ...extra,
   });
 }
@@ -247,6 +260,19 @@ describe('my membership (FR-MEM-09, FR-AUT-21)', () => {
       'GET /library': { body: { name: 'Library', logoImageId: null } },
       'GET /branches': { body: branches },
       'GET /me/membership': { body: mine },
+      'GET /me/loans': {
+        body: {
+          standing: {
+            openLoans: 0,
+            maxBooks: 2,
+            overdueLoans: 0,
+            lateReturns: 0,
+            lateReturnMonths: 12,
+            frequentlyLate: false,
+          },
+          loans: [],
+        },
+      },
       'PATCH /me/profile': (body) => ({ body: { ...mine, ...(body as object) } }),
     });
     renderApp('/');

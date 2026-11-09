@@ -8,8 +8,10 @@ import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { errorMessage } from '../api/errors';
+import { useOwnLoans } from '../api/loans';
 import { OWN_MEMBERSHIP_KEY, useOwnMembership } from '../api/members';
 import { useBranches } from '../api/queries';
+import { LoanTable } from '../components/loans';
 import { PersonFields, personBody, type PersonForm } from '../components/PersonFields';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 import { StateBadge } from './MembersPage';
@@ -83,6 +85,7 @@ export function MyMembershipPage() {
         {t('my.title')} <StateBadge state={m.state} />
       </PageTitle>
       {m.expireAt && <p className="mb-4 text-stone-700">{t('my.expires', { date: m.expireAt })}</p>}
+      {!pending && <MyBooks />}
       <Card>
         <form onSubmit={submit} className="space-y-5" noValidate>
           {error && <Alert tone="error">{error}</Alert>}
@@ -135,5 +138,32 @@ export function MyMembershipPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+/** FR-CIR-04: the member's books, due dates and late returns. No acknowledgement is asked. */
+function MyBooks() {
+  const { t } = useTranslation();
+  const loans = useOwnLoans(true);
+  if (loans.isError) return <Alert tone="error">{errorMessage(t, loans.error)}</Alert>;
+  if (!loans.data) return null;
+  const { standing } = loans.data;
+  return (
+    <Card className="mb-6 p-0">
+      <h2 className="px-5 pt-5 font-semibold">{t('my.books')}</h2>
+      {standing.overdueLoans > 0 && (
+        <div className="px-5 pt-3">
+          <Alert tone="error" title={t('loans.overdueTitle', { count: standing.overdueLoans })}>
+            {t('my.overdueBody')}
+          </Alert>
+        </div>
+      )}
+      {standing.lateReturns > 0 && (
+        <p className="px-5 pt-3 text-sm text-stone-700">
+          {t('my.lateReturns', { count: standing.lateReturns, months: standing.lateReturnMonths })}
+        </p>
+      )}
+      <LoanTable loans={loans.data.loans} staff={false} />
+    </Card>
   );
 }

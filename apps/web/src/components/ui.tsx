@@ -5,7 +5,7 @@
  */
 import {
   type ButtonHTMLAttributes,
-  type InputHTMLAttributes,
+  type ComponentProps,
   type ReactNode,
   type SelectHTMLAttributes,
   useId,
@@ -47,7 +47,7 @@ const CONTROL =
   'block w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-base text-stone-900 ' +
   'focus:border-emerald-700 focus:outline-2 focus:outline-emerald-700/30 aria-invalid:border-red-600';
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({ className, ...props }: ComponentProps<'input'>) {
   return <input className={cx(CONTROL, className)} {...props} />;
 }
 
