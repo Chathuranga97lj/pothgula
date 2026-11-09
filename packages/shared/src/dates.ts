@@ -45,12 +45,22 @@ export function daysBetween(from: string, to: string): number {
  * one, so a membership never gains a day (FR-MEM-01).
  */
 export function addYears(isoDate: string, years: number): string {
+  return addMonths(isoDate, years * 12);
+}
+
+/**
+ * The same day of the month `months` later (or earlier, if negative), kept
+ * within the target month: 31 March minus one month is 28 (or 29) February.
+ */
+export function addMonths(isoDate: string, months: number): string {
   toUtcMidnight(isoDate);
   const [y, m, d] = isoDate.split('-').map(Number) as [number, number, number];
-  const year = y + years;
-  const lastDay = new Date(Date.UTC(year, m, 0)).getUTCDate();
+  const index = y * 12 + (m - 1) + months;
+  const year = Math.floor(index / 12);
+  const month = index - year * 12 + 1;
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const pad = (n: number, width = 2) => String(n).padStart(width, '0');
-  return `${pad(year, 4)}-${pad(m)}-${pad(Math.min(d, lastDay))}`;
+  return `${pad(year, 4)}-${pad(month)}-${pad(Math.min(d, lastDay))}`;
 }
 
 /** Whole years of age on a given date (FR-AUT-18). */
