@@ -1,10 +1,11 @@
 import { passwordProblems } from '@pothgula/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { api } from '../api/client';
 import { errorMessage, passwordProblemsOf } from '../api/errors';
-import { useAuth, useMe } from '../auth/auth';
+import { ME_KEY, useAuth, useMe } from '../auth/auth';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 
 /** FR-AUT-10, FR-AUT-12, FR-AUT-15. */
@@ -12,6 +13,7 @@ export function ChangePasswordPage() {
   const { t } = useTranslation();
   const { user } = useMe();
   const { refresh } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -36,6 +38,11 @@ export function ChangePasswordPage() {
         method: 'POST',
         body: { currentPassword: current, newPassword: next },
       });
+      queryClient.setQueryData(
+        ME_KEY,
+        (me: { user: { mustChangePassword: boolean } } | undefined) =>
+          me ? { ...me, user: { ...me.user, mustChangePassword: false } } : me,
+      );
       setDone(true);
       setCurrent('');
       setNext('');
