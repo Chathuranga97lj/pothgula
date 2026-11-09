@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, daysBetween, todayColombo } from './dates.js';
+import { addDays, addMonths, addYears, daysBetween, todayColombo } from './dates.js';
 
 describe('todayColombo', () => {
   it('uses Colombo time (UTC+5:30), not UTC', () => {
@@ -26,5 +26,20 @@ describe('addDays / daysBetween', () => {
   it('rejects malformed or impossible dates', () => {
     expect(() => addDays('2026-02-30', 1)).toThrow(RangeError);
     expect(() => addDays('6/11/2026', 1)).toThrow(RangeError);
+  });
+});
+
+describe('addMonths / addYears', () => {
+  it('keeps the day of the month, within the target month', () => {
+    expect(addMonths('2026-11-09', -12)).toBe('2025-11-09');
+    expect(addMonths('2026-03-31', -1)).toBe('2026-02-28');
+    expect(addMonths('2028-03-31', -1)).toBe('2028-02-29');
+    expect(addMonths('2026-12-15', 1)).toBe('2027-01-15');
+    expect(addMonths('2026-01-15', -1)).toBe('2025-12-15');
+  });
+
+  it('never gives a membership an extra day from 29 February', () => {
+    expect(addYears('2028-02-29', 1)).toBe('2029-02-28');
+    expect(addYears('2026-11-06', 1)).toBe('2027-11-06');
   });
 });
