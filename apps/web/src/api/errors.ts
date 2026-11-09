@@ -9,8 +9,12 @@ export function errorMessage(t: TFunction, error: unknown): string {
       ?.retryAfterSeconds;
     return t('errors.account_locked', { minutes: Math.max(1, Math.ceil((seconds ?? 900) / 60)) });
   }
+  // A refused issue (FR-CIR-02) carries the values its message needs, such as the limit.
+  const refusals = (error.details as { refusals?: { code: string; params?: object }[] } | undefined)
+    ?.refusals;
+  const params = refusals?.find((r) => r.code === error.code)?.params ?? {};
   const key = `errors.${error.code}`;
-  return t(key, { defaultValue: error.message });
+  return t(key, { ...params, defaultValue: error.message });
 }
 
 /** The password problems the API reported, if that is what went wrong. */
