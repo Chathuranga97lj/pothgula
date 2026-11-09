@@ -1,18 +1,21 @@
 import type { MemberSummary } from '@pothgula/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { errorMessage } from '../api/errors';
 import { useApplications, useMemberSearch, useMembershipOverview } from '../api/members';
 import { useBranches } from '../api/queries';
 import { Alert, Card, Input, PageTitle } from '../components/ui';
 
-type Tab = 'waiting' | 'search' | 'lists' | 'rejected';
+const TABS = ['waiting', 'search', 'lists', 'rejected'] as const;
+type Tab = (typeof TABS)[number];
 
 /** FR-AUT-18, FR-MEM-03: the waiting list, finding a member, and the membership lists. */
 export function MembersPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>('waiting');
+  const [params] = useSearchParams();
+  const asked = params.get('tab');
+  const [tab, setTab] = useState<Tab>(TABS.find((x) => x === asked) ?? 'waiting');
   const waiting = useApplications('pending');
 
   const tabs: { id: Tab; label: string }[] = [

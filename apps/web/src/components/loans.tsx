@@ -4,6 +4,7 @@ import {
   type IssueRefusal,
   type Loan,
   type LoanStanding,
+  type MembershipState,
   type MemberSummary,
   todayColombo,
 } from '@pothgula/shared';
@@ -16,28 +17,61 @@ import { StateBadge } from '../pages/MembersPage';
 import { Alert, Field, Input } from './ui';
 
 /**
- * FR-CIR-15, FR-NOT-11 (loan parts): what staff must see first on a member's
- * record — overdue books, and the frequently-late mark. It blocks nothing by
- * itself; the overdue block is enforced when issuing.
+ * FR-NOT-11: what staff must see first on a member's record — a suspension, any
+ * overdue book, a pending application, the frequently-late mark or any late
+ * return in the period. It blocks nothing by itself; the borrowing rules are
+ * enforced when issuing.
  */
-export function StandingBanner({ standing }: { standing: LoanStanding }) {
+export function StandingBanner({
+  standing,
+  state,
+}: {
+  standing: LoanStanding;
+  state?: MembershipState;
+}) {
   const { t } = useTranslation();
-  if (standing.overdueLoans === 0 && !standing.frequentlyLate) return null;
-  return (
-    <div className="space-y-3" data-testid="standing">
-      {standing.overdueLoans > 0 && (
-        <Alert tone="error" title={t('loans.overdueTitle', { count: standing.overdueLoans })}>
-          {t('loans.overdueBody')}
-        </Alert>
-      )}
-      {standing.frequentlyLate && (
-        <Alert tone="warning" title={t('loans.frequentlyLate')}>
-          {t('loans.frequentlyLateBody', {
+  const notes = [
+    state === 'suspended' && (
+      <Alert key="suspended" tone="error" title={t('standing.suspended')}>
+        {t('standing.suspendedBody')}
+      </Alert>
+    ),
+    standing.overdueLoans > 0 && (
+      <Alert
+        key="overdue"
+        tone="error"
+        title={t('loans.overdueTitle', { count: standing.overdueLoans })}
+      >
+        {t('loans.overdueBody')}
+      </Alert>
+    ),
+    state === 'pending' && (
+      <Alert key="pending" tone="info" title={t('standing.pending')}>
+        {t('standing.pendingBody')}
+      </Alert>
+    ),
+    standing.frequentlyLate ? (
+      <Alert key="late" tone="warning" title={t('loans.frequentlyLate')}>
+        {t('loans.frequentlyLateBody', {
+          count: standing.lateReturns,
+          months: standing.lateReturnMonths,
+        })}
+      </Alert>
+    ) : (
+      standing.lateReturns > 0 && (
+        <Alert key="late" tone="info">
+          {t('standing.lateReturns', {
             count: standing.lateReturns,
             months: standing.lateReturnMonths,
           })}
         </Alert>
-      )}
+      )
+    ),
+  ].filter(Boolean);
+  if (notes.length === 0) return null;
+  return (
+    <div className="space-y-3" data-testid="standing">
+      {notes}
     </div>
   );
 }

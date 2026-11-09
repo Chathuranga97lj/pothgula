@@ -101,3 +101,32 @@ export async function api<S extends z.ZodType | undefined = undefined>(
 
   return (options.schema ? options.schema.parse(data) : data) as never;
 }
+
+/**
+ * Fetches a file the API makes (an export, a sheet to print) and hands it to the
+ * browser to save. It needs the session token, so it cannot be a plain link.
+ */
+export async function downloadFile(path: string, fallbackName: string): Promise<void> {
+  const token = tokenStore.get();
+  let res: Response;
+  try {
+    res = await fetch(`/api${path}`, {
+      headers: token ? { authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new ApiError(0, 'network_error', 'The server cannot be reached.');
+  }
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { code?: string; message?: string } | null;
+    throw new ApiError(res.status, body?.code ?? 'http_error', body?.message ?? res.statusText);
+  }
+  const name = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1];
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name ?? fallbackName;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

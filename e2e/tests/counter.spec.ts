@@ -3,15 +3,15 @@ import { expect, type Page, test } from '@playwright/test';
 import { E2E } from '../fixtures';
 
 /**
- * M6: the counter, end to end. The member starts with a book six days overdue,
+ * M6 and M7: the day's panel, the counter and the member's own panel, end to end. The member starts with a book six days overdue,
  * so they are refused until it comes back (R21); it is taken back with the
  * late notice shown first (FR-CIR-04), and then a book is issued (FR-CIR-01).
  */
 test.describe.configure({ mode: 'serial' });
 
-async function signIn(page: Page) {
+async function signIn(page: Page, phone: string = E2E.librarian.whatsappPhone) {
   await page.goto('/sign-in');
-  await page.getByLabel('WhatsApp number').fill(E2E.librarian.whatsappPhone);
+  await page.getByLabel('WhatsApp number').fill(phone);
   await page.getByLabel('Password').fill(E2E.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
   await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
@@ -34,7 +34,20 @@ async function expectNoSidewaysScroll(page: Page) {
 
 test('a librarian refuses, takes back late, then issues', async ({ page }) => {
   await signIn(page);
-  await page.getByRole('link', { name: 'Counter' }).click();
+
+  await test.step('the day opens on the overdue book and who to call', async () => {
+    const panel = page.getByTestId('panel-KS');
+    await expect(panel.getByRole('link')).toHaveText(['1 book overdue']);
+    await page.getByRole('link', { name: 'Call list (1 member)' }).click();
+    await expect(page.getByRole('heading', { name: 'Call list', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: E2E.member.fullName })).toBeVisible();
+    await expect(page.getByRole('link', { name: E2E.member.whatsappPhone })).toHaveAttribute(
+      'href',
+      `tel:${E2E.member.whatsappPhone}`,
+    );
+  });
+
+  await page.getByRole('link', { name: 'Counter', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Counter' })).toBeVisible();
 
   await test.step('the overdue book blocks borrowing', async () => {
@@ -85,14 +98,31 @@ test('a librarian refuses, takes back late, then issues', async ({ page }) => {
     await expect(page.getByLabel('Book number')).toBeFocused();
   });
 
-  await test.step("the member's record shows both loans", async () => {
+  await test.step("the member's record shows both loans, and a late return", async () => {
     await page.getByRole('link', { name: E2E.member.fullName }).click();
     const rows = page.getByRole('row');
     await expect(rows.filter({ hasText: E2E.shelfCopy })).toContainText('Out');
     await expect(rows.filter({ hasText: E2E.overdueCopy })).toContainText(
       `${E2E.overdueDays} days late`,
     );
+    await expect(page.getByTestId('standing')).toContainText('1 late return in the last 12 months');
   });
+
+  await test.step("the day's panel has caught up", async () => {
+    await page.getByRole('link', { name: 'Home', exact: true }).click();
+    await expect(page.getByTestId('panel-KS').getByRole('link')).toHaveText([
+      '1 book came back late today',
+    ]);
+    await page.getByRole('link', { name: 'Due books', exact: true }).click();
+    await expect(page.getByText('Nothing is overdue.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Taken back late today (1)' })).toBeVisible();
+  });
+});
+
+test("the member's own panel", async ({ page }) => {
+  await signIn(page, E2E.member.whatsappPhone);
+  await expect(page.getByRole('heading', { name: 'For your attention 1' })).toBeVisible();
+  await expect(page.getByText('1 late return in the last 12 months')).toBeVisible();
 });
 
 test('the counter screens fit a 390 px phone', async ({ page }) => {
@@ -120,4 +150,14 @@ test('the counter screens fit a 390 px phone', async ({ page }) => {
   await page.getByRole('row').filter({ hasText: E2E.shelfCopy }).getByRole('link').first().click();
   await expect(page.getByRole('heading', { name: 'Correct this loan' })).toBeVisible();
   await expectNoSidewaysScroll(page);
+
+  for (const [path, heading] of [
+    ['/', 'Needs attention'],
+    ['/due', 'Due and overdue books'],
+    ['/due/calls', 'Call list'],
+  ] as const) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { name: heading }).first()).toBeVisible();
+    await expectNoSidewaysScroll(page);
+  }
 });

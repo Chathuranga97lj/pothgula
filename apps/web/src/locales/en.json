@@ -34,7 +34,8 @@
     "members": "Members",
     "myMembership": "My membership",
     "catalogue": "Catalogue",
-    "counter": "Counter"
+    "counter": "Counter",
+    "due": "Due books"
   },
   "signIn": {
     "title": "Sign in",
@@ -68,18 +69,13 @@
   "home": {
     "welcome": "Welcome, {{name}}",
     "lead": {
-      "member": "Your loans, due dates and library notices will appear here.",
-      "admin": "Today's work at your branch will appear here.",
-      "super_admin": "The whole library's work will appear here."
+      "member": "What needs your attention, and your books.",
+      "admin": "Today's work at your branch.",
+      "super_admin": "Today's work across the library."
     },
     "fewerThanTwoTitle": "Only one super admin",
     "fewerThanTwoBody": "The library needs at least two active super admins, so that one can always help the other.",
-    "addSuperAdmin": "Add a second super admin",
-    "pendingTitle": "Your application is waiting for approval",
-    "pendingBody": "Visit your home branch with proof of identity and the first year's fee. You can browse the catalogue meanwhile.",
-    "comingTitle": "More is on the way",
-    "comingBody": "Branches, the catalogue, issuing and returns arrive in the next releases.",
-    "pendingLink": "Check or correct your application."
+    "addSuperAdmin": "Add a second super admin"
   },
   "staff": {
     "title": "Staff",
@@ -182,7 +178,8 @@
     "invalid_loan_dates": "A book cannot come back before it was issued.",
     "date_in_future": "That date has not happened yet.",
     "backdate_too_old": "Paper slips can be entered up to 7 days back.",
-    "nothing_to_change": "Nothing is different from what the loan already says."
+    "nothing_to_change": "Nothing is different from what the loan already says.",
+    "branch_required": "Choose the branch first."
   },
   "images": {
     "uploading": "Uploading…",
@@ -582,5 +579,115 @@
     "voidReason": "Reason for voiding",
     "void": "Void the loan",
     "voided": "The loan is void."
+  },
+  "today": {
+    "counter": "Go to the counter",
+    "dueLists": "Due and overdue books",
+    "suspendedTop": "Suspended members",
+    "noBranches": "There are no branches yet.",
+    "needsAttention": "Needs attention",
+    "quiet": "Nothing needs attention today.",
+    "callList_one": "Call list ({{count}} member)",
+    "callList_other": "Call list ({{count}} members)",
+    "items": {
+      "suspended_one": "{{count}} suspended member",
+      "suspended_other": "{{count}} suspended members",
+      "overdue_one": "{{count}} book overdue",
+      "overdue_other": "{{count}} books overdue",
+      "due_today_one": "{{count}} book due back today",
+      "due_today_other": "{{count}} books due back today",
+      "applications_waiting_one": "{{count}} application waiting for approval",
+      "applications_waiting_other": "{{count}} applications waiting for approval",
+      "due_soon_one": "{{count}} book due within {{days}} days",
+      "due_soon_other": "{{count}} books due within {{days}} days",
+      "returned_late_today_one": "{{count}} book came back late today",
+      "returned_late_today_other": "{{count}} books came back late today",
+      "expiring_this_month_one": "{{count}} membership ends this month",
+      "expiring_this_month_other": "{{count}} memberships end this month"
+    }
+  },
+  "sheets": {
+    "daily-loans": "Print the daily loans sheet",
+    "call-list": "Print the call list"
+  },
+  "panel": {
+    "title": "For your attention",
+    "quiet": "Nothing needs your attention. Enjoy your books.",
+    "myMembership": "Your books and membership",
+    "suspended": {
+      "title": "Your membership is suspended",
+      "body": "You cannot borrow until it is lifted. Please speak to the librarian at your branch."
+    },
+    "overdue": {
+      "title_one": "{{title}} is {{count}} day late",
+      "title_other": "{{title}} is {{count}} days late",
+      "body": "It was due back on {{date}} ({{accession}}). Nothing more can be borrowed until it is returned."
+    },
+    "expired": {
+      "title": "Your membership has expired",
+      "body": "It ended on {{date}}. Renew it at your branch to borrow again."
+    },
+    "dueSoon": {
+      "today": "{{title}} is due back today",
+      "title_one": "{{title}} is due back tomorrow",
+      "title_other": "{{title}} is due back in {{count}} days",
+      "body": "Due on {{date}} ({{accession}}). If you need it longer, ask at your branch before then."
+    },
+    "expiring": {
+      "today": "Your membership ends today",
+      "title_one": "Your membership ends tomorrow",
+      "title_other": "Your membership ends in {{count}} days",
+      "body": "It runs until {{date}}. Renew it at your branch to keep borrowing."
+    },
+    "lateReturns": {
+      "title_one": "{{count}} late return in the last {{months}} months",
+      "title_other": "{{count}} late returns in the last {{months}} months",
+      "body": "Bringing books back on time keeps them moving for everyone."
+    },
+    "application": {
+      "title": "Your application is waiting for approval",
+      "body": "Visit the {{branch}} branch with proof of identity. A librarian will check your details and approve your membership there.",
+      "bodyFee": "Visit the {{branch}} branch with proof of identity and the first year's fee, Rs {{fee}}. A librarian will check your details and approve your membership there.",
+      "link": "Check or correct your application."
+    }
+  },
+  "due": {
+    "title": "Due and overdue books",
+    "lead": "Overdue books first, then everything due soon. Click a column heading to sort.",
+    "branch": "Branch",
+    "allBranches": "All branches",
+    "overdue": "Overdue",
+    "soon_one": "Due within {{count}} day",
+    "soon_other": "Due within {{count}} days",
+    "noneOverdue": "Nothing is overdue.",
+    "noneSoon_one": "Nothing is due within {{count}} day.",
+    "noneSoon_other": "Nothing is due within {{count}} days.",
+    "lateToday": "Taken back late today",
+    "today": "Today",
+    "extended": "extended",
+    "homeBranch": "member of {{code}}",
+    "copyBranch": "copy of {{code}}",
+    "otherPhone": "other",
+    "columns": {
+      "due": "Due",
+      "member": "Member",
+      "phones": "Phone",
+      "book": "Book",
+      "accession": "Book number"
+    }
+  },
+  "calls": {
+    "title": "Call list",
+    "lead": "Members holding overdue books, the longest overdue first. Nothing is sent by the system: call or message each person by hand.",
+    "none": "Nobody is holding an overdue book.",
+    "dueOn": "due {{date}}"
+  },
+  "standing": {
+    "suspended": "Suspended",
+    "suspendedBody": "This member cannot borrow, request or extend until a super admin lifts the suspension.",
+    "pending": "Application waiting",
+    "pendingBody": "Not yet a member: approve the application before lending anything.",
+    "lateReturns_one": "{{count}} late return in the last {{months}} months.",
+    "lateReturns_other": "{{count}} late returns in the last {{months}} months."
   }
 }

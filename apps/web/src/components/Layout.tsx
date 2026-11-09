@@ -63,6 +63,9 @@ export function Layout() {
                   <NavLink to="/counter" className={navClass}>
                     {t('nav.counter')}
                   </NavLink>
+                  <NavLink to="/due" className={navClass}>
+                    {t('nav.due')}
+                  </NavLink>
                   <NavLink to="/members" className={navClass}>
                     {t('nav.members')}
                   </NavLink>
