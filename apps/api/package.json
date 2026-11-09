@@ -4,6 +4,11 @@
   "private": true,
   "description": "Pothgula API (NestJS).",
   "license": "MIT",
+  "files": [
+    "dist",
+    "drizzle",
+    "assets"
+  ],
   "scripts": {
     "build": "nest build",
     "dev": "nest start --watch --preserveWatchOutput",

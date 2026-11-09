@@ -97,3 +97,45 @@ jobs:
             e2e/playwright-report/
             e2e/test-results/
           retention-days: 7
+
+  # NFR-08, NFR-13: the production setup file on a clean machine — build, start,
+  # first super admin, sign in through the web server, then a backup and a
+  # restore rehearsal.
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Settings
+        run: |
+          printf 'SITE_ADDRESS=:80\nPOSTGRES_PASSWORD=%s\nHTTP_PORT=8080\nHTTPS_PORT=8443\n' \
+            "$(openssl rand -hex 24)" > .env
+
+      - name: Build and start
+        run: docker compose up -d --build --wait --wait-timeout 300
+
+      - name: Sign in through the web server
+        run: |
+          curl -fsS http://localhost:8080/api/health
+          curl -fsS -o /dev/null http://localhost:8080/counter
+          out=$(docker compose exec -T api node dist/cli/create-super-admin.js --name "CI Admin" --phone 0770001234)
+          pw=$(echo "$out" | sed -n 's/Temporary password: //p')
+          curl -fsS -X POST http://localhost:8080/api/auth/sign-in -H 'content-type: application/json' \
+            -d "{\"whatsappPhone\":\"0770001234\",\"password\":\"$pw\"}" > /dev/null
+
+      - name: Backup and restore rehearsal
+        run: |
+          docker compose exec -T backup sh /scripts/backup-now.sh
+          docker compose exec -T backup sh /scripts/restore-rehearsal.sh
+
+      - name: Logs
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop
+        if: always()
+        run: docker compose down -v

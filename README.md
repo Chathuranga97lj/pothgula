@@ -4,7 +4,7 @@ A free and open-source web system for lending and membership in a small library 
 
 The requirements are in [`docs/requirements-v3.1.html`](docs/requirements-v3.1.html) (PDF: [`docs/Pothgula-Requirements-v3.1.pdf`](docs/Pothgula-Requirements-v3.1.pdf)); the technology choices and their reasons are in [`docs/tech-stack-decision.html`](docs/tech-stack-decision.html).
 
-> **Status:** in development — Phase 1 ("the counter works"). Not yet ready for real library data.
+> **Status:** Phase 1 ("the counter works") is complete as v0.1.0, awaiting the library's review. To install it, see [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 
@@ -24,7 +24,8 @@ Nothing in the system depends on a paid service (requirement NFR-11): no SMS, em
 apps/api         NestJS API
 apps/web         React front end (builds to static files)
 packages/shared  Zod schemas, accession-number and date rules
-infra/           Compose files, and later backup/restore scripts and the setup guide
+infra/           Production setup (compose.yml, Caddyfile, Dockerfiles), backup and restore scripts
+e2e/             Playwright browser tests
 docs/            Requirements and design records
 ```
 
@@ -57,7 +58,14 @@ Checks run in CI on every pull request:
 
 ```sh
 pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build
+pnpm e2e    # Playwright, on a throwaway database (needs pnpm db:up)
 ```
+
+CI also installs the production setup from `infra/compose.yml` on a clean machine and rehearses a backup and restore.
+
+## Installing for a library
+
+[`docs/setup.md`](docs/setup.md): one setup file, free HTTPS, nightly backups kept 30 days, a weekly copy to a library computer, and the restore rehearsal.
 
 ## Licence
 

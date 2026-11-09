@@ -4,6 +4,9 @@
   "private": true,
   "description": "Schemas, types and rules shared by the Pothgula API and web app.",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "exports": {
     ".": {
