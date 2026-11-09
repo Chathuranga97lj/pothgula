@@ -16,6 +16,8 @@ pnpm --filter @pothgula/api db:generate -- --name <what>   # after editing src/d
 pnpm --filter @pothgula/api create-super-admin --name "…" --phone 07…   # first super admin (server only)
 pnpm dev                            # API :3000 (/api prefix), web :5173 proxying /api
 pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build   # what CI runs (DB tests need Docker)
+pnpm e2e                            # build, then Playwright on a throwaway pothgula_e2e database (needs pnpm db:up;
+                                    # once: pnpm --filter @pothgula/e2e exec playwright install chromium)
 ```
 
 Database rules live in the database: column checks and partial unique indexes in `apps/api/src/db/schema.ts`; triggers (append-only log, no deletes, fixed codes) and the `copy_availability` view in hand-written `apps/api/drizzle/0001_rules.sql`. Every data change goes through `UnitOfWork.run(actor, (tx, log) => …)`, which refuses to commit without an activity-log entry. Integration tests clone a migrated template database per file (`apps/api/test/db.ts`); HTTP tests use `startApp()` in `apps/api/test/app.ts`.
@@ -26,7 +28,7 @@ Lending: `apps/api/src/circulation`. Reasons a copy cannot be issued are the sha
 
 Images: accept uploads only through `@ImageUpload()` + `processImage()` (format read from the bytes, re-encoded, resized) + `storeImage()` inside the unit of work; serve them only from `GET /api/images/:id`. Money: convert typed amounts with `parseRupees()` / `formatRupees()` from shared — never `parseFloat` × 100. The library name and logo live in the single-row `library` table, not on branches.
 
-Web conventions: call the API through `api(path, { schema })` in `apps/web/src/api/client.ts` (adds the bearer token, parses with the shared schema, throws `ApiError` with the API's code); show failures with `errorMessage(t, err)`, which translates `errors.<code>`. Every visible string lives in `src/locales/en.json` and `si.json` — add both. Screens behind sign-in sit under `<RequireAuth>`; role-limited ones also under `<RequireRole>` (the API enforces the same rule). UI building blocks are in `src/components/ui.tsx`. Screen tests render the whole app with `renderApp(path)` against `fakeApi({...})`.
+Web conventions: call the API through `api(path, { schema })` in `apps/web/src/api/client.ts` (adds the bearer token, parses with the shared schema, throws `ApiError` with the API's code); show failures with `errorMessage(t, err)`, which translates `errors.<code>`. Every visible string lives in `src/locales/en.json` and `si.json` — add both. Screens behind sign-in sit under `<RequireAuth>`; role-limited ones also under `<RequireRole>` (the API enforces the same rule). UI building blocks are in `src/components/ui.tsx`. Screen tests render the whole app with `renderApp(path)` against `fakeApi({...})`. Browser tests (`e2e/`, Playwright) run the built API and web app on a database that `apps/api/test/e2e-prepare.ts` recreates each run (fixed accounts and an overdue loan; keep `e2e/fixtures.ts` in step); they are a CI job of their own, not part of `pnpm test`.
 
 Layout: `apps/api` (NestJS), `apps/web` (React), `packages/shared` (Zod schemas, `parseAccession`/`formatAccession`, `todayColombo`/`addDays`), `infra/`, `docs/`.
 
