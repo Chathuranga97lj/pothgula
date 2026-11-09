@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "e2e": "pnpm build && pnpm --filter @pothgula/e2e e2e",
     "db:up": "docker compose -f infra/compose.dev.yml up -d",
     "db:down": "docker compose -f infra/compose.dev.yml down"
   },

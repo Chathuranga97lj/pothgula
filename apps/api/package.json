@@ -17,7 +17,8 @@
     "db:seed": "tsx src/cli/seed.ts",
     "create-super-admin": "tsx src/cli/create-super-admin.ts",
     "reset-super-admin": "tsx src/cli/reset-super-admin.ts",
-    "jobs": "tsx src/cli/jobs.ts"
+    "jobs": "tsx src/cli/jobs.ts",
+    "e2e:prepare": "tsx test/e2e-prepare.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.4.0",
