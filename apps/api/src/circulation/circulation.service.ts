@@ -6,7 +6,6 @@ import {
   daysBetween,
   daysLate,
   type IssueCheck,
-  isOverdue,
   type Loan,
   loanStanding,
   type LoanStanding,
@@ -25,6 +24,7 @@ import type { Db, Queryable, Tx } from '../db/client';
 import { DB } from '../db/db.module';
 import { appUser, borrow, branchSetting, copy, title } from '../db/schema';
 import { issueRefusals, REFUSAL_MESSAGES } from './issue-rules';
+import { loanQuery, type LoanRow, toLoan } from './loan-view';
 
 type BorrowRow = typeof borrow.$inferSelect;
 type CopyRow = typeof copy.$inferSelect;
@@ -450,22 +450,7 @@ export class CirculationService {
   }
 
   private loanRows(q: Queryable, where: SQL) {
-    return q
-      .select({
-        borrow,
-        accessionNo: copy.accessionNo,
-        titleId: copy.titleId,
-        title: title.title,
-        writer: title.writer,
-        memberName: appUser.fullName,
-        memberPhone: appUser.whatsappPhone,
-      })
-      .from(borrow)
-      .innerJoin(copy, eq(copy.id, borrow.copyId))
-      .innerJoin(title, eq(title.id, copy.titleId))
-      .innerJoin(appUser, eq(appUser.id, borrow.userId))
-      .where(where)
-      .orderBy(desc(borrow.borrowDate), desc(borrow.id));
+    return loanQuery(q).where(where).orderBy(desc(borrow.borrowDate), desc(borrow.id));
   }
 
   private async loan(q: Queryable, id: number): Promise<Loan> {
@@ -473,37 +458,6 @@ export class CirculationService {
     if (!row) throw loanNotFound();
     return toLoan(row, todayColombo());
   }
-}
-
-type LoanRow = Awaited<ReturnType<CirculationService['loanRows']>>[number];
-
-function toLoan(r: LoanRow, today: string): Loan {
-  const b = r.borrow;
-  const voided = b.voidedAt !== null;
-  const dates = { dueDate: b.dueDate, returnedOn: b.returnedOn, voided };
-  return {
-    id: b.id,
-    copyId: b.copyId,
-    accessionNo: r.accessionNo,
-    titleId: r.titleId,
-    title: r.title,
-    writer: r.writer,
-    memberId: b.userId,
-    memberName: r.memberName,
-    memberPhone: r.memberPhone,
-    branchId: b.branchId,
-    borrowDate: b.borrowDate,
-    dueDate: b.dueDate,
-    originalDueDate: b.originalDueDate,
-    returnedOn: b.returnedOn,
-    status: voided ? 'void' : b.returnedOn ? 'returned' : 'open',
-    overdue: isOverdue(dates, today),
-    daysLate: daysLate(dates, today),
-    isBackdated: b.isBackdated,
-    returnBackdated: b.returnBackdated,
-    voidedAt: b.voidedAt?.toISOString() ?? null,
-    voidReason: b.voidReason,
-  };
 }
 
 function standingOf(rows: LoanRow[], today: string, rules: Rules): LoanStanding {

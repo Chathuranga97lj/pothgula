@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { BranchesModule } from './branches/branches.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { CirculationModule } from './circulation/circulation.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { ErrorFilter } from './common/error.filter';
 import { DbModule } from './db/db.module';
 import { HealthController } from './health/health.controller';
@@ -24,6 +25,7 @@ import { StaffModule } from './staff/staff.module';
     JobsModule,
     CatalogueModule,
     CirculationModule,
+    DashboardModule,
   ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],
