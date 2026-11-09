@@ -359,7 +359,10 @@ export const borrow = pgTable(
     receivedBy: integer('received_by').references(() => appUser.id),
     /** When it was keyed in; differs from the dates above for back-dated entries (FR-CIR-14). */
     enteredAt: instant('entered_at').notNull().defaultNow(),
+    /** The issue was entered later from paper, with its real date (FR-CIR-14). */
     isBackdated: boolean('is_backdated').notNull().default(false),
+    /** The take-back was entered later from paper, with its real date (FR-CIR-14). */
+    returnBackdated: boolean('return_backdated').notNull().default(false),
     voidedAt: instant('voided_at'),
     voidedBy: integer('voided_by').references(() => appUser.id),
     voidReason: text('void_reason'),
@@ -376,6 +379,10 @@ export const borrow = pgTable(
     check(
       'borrow_received_when_returned',
       sql`(${t.returnedOn} IS NULL) = (${t.receivedBy} IS NULL)`,
+    ),
+    check(
+      'borrow_return_backdated_when_returned',
+      sql`NOT ${t.returnBackdated} OR ${t.returnedOn} IS NOT NULL`,
     ),
     check(
       'borrow_void_complete',

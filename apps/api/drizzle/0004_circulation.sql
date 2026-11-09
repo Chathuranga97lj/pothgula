@@ -1,0 +1,2 @@
+ALTER TABLE "borrow" ADD COLUMN "return_backdated" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "borrow" ADD CONSTRAINT "borrow_return_backdated_when_returned" CHECK (NOT "borrow"."return_backdated" OR "borrow"."returned_on" IS NOT NULL);
