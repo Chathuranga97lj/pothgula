@@ -17,7 +17,8 @@ export interface LogEntry {
   after?: unknown;
 }
 
-export type Log = (entry: LogEntry) => Promise<void>;
+/** Writes one entry, or several in one statement (a bulk import). */
+export type Log = (entry: LogEntry | LogEntry[]) => Promise<void>;
 
 export class UnloggedChangeError extends Error {
   constructor() {
@@ -47,13 +48,19 @@ export class UnitOfWork {
    * no commit.
    */
   runAs<T>(
-    work: (tx: Tx, logAs: (actor: Actor, entry: LogEntry) => Promise<void>) => Promise<T>,
+    work: (
+      tx: Tx,
+      logAs: (actor: Actor, entry: LogEntry | LogEntry[]) => Promise<void>,
+    ) => Promise<T>,
   ): Promise<T> {
     return this.db.transaction(async (tx) => {
       let entries = 0;
-      const logAs = async (actor: Actor, entry: LogEntry) => {
-        await tx.insert(activityLog).values(toRow(actor, entry));
-        entries += 1;
+      const logAs = async (actor: Actor, entry: LogEntry | LogEntry[]) => {
+        const list = Array.isArray(entry) ? entry : [entry];
+        for (let i = 0; i < list.length; i += 1000) {
+          await tx.insert(activityLog).values(list.slice(i, i + 1000).map((e) => toRow(actor, e)));
+        }
+        entries += list.length;
       };
       const result = await work(tx, logAs);
       if (entries === 0) throw new UnloggedChangeError();

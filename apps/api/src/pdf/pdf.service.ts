@@ -132,4 +132,22 @@ export class PdfService {
     };
     return pdfmake.createPdf(doc).getBuffer();
   }
+
+  /** A sheet without the branded header and footer, for labels cut from the page. */
+  async renderBare(opts: {
+    title: string;
+    content: object[];
+    pageMargins: number[];
+  }): Promise<Buffer> {
+    configure();
+    return pdfmake
+      .createPdf({
+        pageSize: 'A4',
+        pageMargins: opts.pageMargins,
+        defaultStyle: { font: 'NotoSans', fontSize: 10 },
+        info: { title: opts.title, creator: 'Pothgula', producer: 'Pothgula' },
+        content: opts.content,
+      })
+      .getBuffer();
+  }
 }

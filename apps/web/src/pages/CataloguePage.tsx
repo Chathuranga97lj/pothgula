@@ -34,12 +34,20 @@ export function CataloguePage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <PageTitle lead={t('catalogue.lead')}>{t('catalogue.title')}</PageTitle>
         {isStaff && (
-          <Link
-            to="/titles/new"
-            className="inline-flex min-h-10 items-center rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
-          >
-            {t('catalogue.addTitle')}
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/catalogue/import"
+              className="inline-flex min-h-10 items-center rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-900 hover:bg-stone-50"
+            >
+              {t('catalogue.import')}
+            </Link>
+            <Link
+              to="/titles/new"
+              className="inline-flex min-h-10 items-center rounded-md bg-emerald-800 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-900"
+            >
+              {t('catalogue.addTitle')}
+            </Link>
+          </div>
         )}
       </div>
 

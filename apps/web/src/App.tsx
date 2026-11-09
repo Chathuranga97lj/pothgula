@@ -10,6 +10,7 @@ import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { CounterPage } from './pages/CounterPage';
 import { CallListPage, DuePage } from './pages/DuePage';
 import { HomePage } from './pages/HomePage';
+import { ImportPage } from './pages/ImportPage';
 import { LoanPage } from './pages/LoanPage';
 import { MemberPage } from './pages/MemberPage';
 import { MembersPage } from './pages/MembersPage';
@@ -35,6 +36,14 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <NewTitlePage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="catalogue/import"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <ImportPage />
               </RequireRole>
             }
           />
