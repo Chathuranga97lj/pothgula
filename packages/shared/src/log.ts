@@ -140,7 +140,8 @@ function show(value: unknown): string {
       ? '—'
       : typeof value === 'string'
         ? value
-        : JSON.stringify(value);
+        : // A space after each comma, so long values can wrap on screen and in a PDF.
+          JSON.stringify(value).replace(/,(?=["{[])/g, ', ');
   return text.length > MAX_VALUE_CHARS ? `${text.slice(0, MAX_VALUE_CHARS - 1)}…` : text;
 }
 

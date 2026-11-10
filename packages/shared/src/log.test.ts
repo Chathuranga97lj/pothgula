@@ -24,6 +24,12 @@ describe('describeChange', () => {
     expect(describeChange(null, null)).toEqual([]);
     expect(describeChange('a', 'b')).toEqual(['a → b']);
   });
+
+  it('spaces out nested values so they can wrap', () => {
+    expect(describeChange(null, { filter: { from: '2026-01-01', action: 'borrow' } })).toEqual([
+      'filter: {"from":"2026-01-01", "action":"borrow"}',
+    ]);
+  });
 });
 
 describe('logFilterSchema', () => {

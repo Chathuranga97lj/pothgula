@@ -18,6 +18,7 @@ import { MembersPage } from './pages/MembersPage';
 import { MyMembershipPage } from './pages/MyMembershipPage';
 import { NewTitlePage } from './pages/NewTitlePage';
 import { RegisterMemberPage } from './pages/RegisterMemberPage';
+import { ReportPage, ReportsPage } from './pages/ReportsPage';
 import { SignInPage } from './pages/SignInPage';
 import { StaffPage } from './pages/StaffPage';
 import { TitlePage } from './pages/TitlePage';
@@ -134,6 +135,22 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <CategoriesPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="reports"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <ReportsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="reports/:kind"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <ReportPage />
               </RequireRole>
             }
           />
