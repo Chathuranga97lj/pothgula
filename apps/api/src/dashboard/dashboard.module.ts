@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { PdfModule } from '../pdf/pdf.module';
 import { RequestsModule } from '../requests/requests.module';
+import { NoticesModule } from '../notices/notices.module';
 import { SettlementsModule } from '../settlements/settlements.module';
 import { MemberDashboardController, StaffDashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
 @Module({
-  imports: [PdfModule, RequestsModule, SettlementsModule],
+  imports: [PdfModule, RequestsModule, SettlementsModule, NoticesModule],
   controllers: [StaffDashboardController, MemberDashboardController],
   providers: [DashboardService],
 })

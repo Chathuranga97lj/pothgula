@@ -50,6 +50,9 @@ export function Layout() {
               <NavLink to="/" end className={navClass}>
                 {t('nav.home')}
               </NavLink>
+              <NavLink to="/notices" className={navClass}>
+                {t('nav.notices')}
+              </NavLink>
               <NavLink to="/catalogue" className={navClass}>
                 {t('nav.catalogue')}
               </NavLink>

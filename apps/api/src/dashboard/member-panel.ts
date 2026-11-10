@@ -7,6 +7,8 @@ import {
   type MemberPanelItem,
   MEMBERSHIP_WARNING_DAYS,
   SETTLEMENT_CLOSING_DAYS,
+  type Closure,
+  type Notice,
   type Settlement,
 } from '@pothgula/shared';
 
@@ -19,6 +21,10 @@ export interface MemberFacts {
   requests?: BookRequest[];
   /** Open lost-book settlements (FR-LST-03). */
   settlements?: Settlement[];
+  /** Closures at the home branch in the coming week (FR-NOT-08). */
+  closures?: Closure[];
+  /** Important notices and events not opened yet (FR-PUB-07). */
+  important?: Notice[];
   rules: { memberDueWarningDays: number; frequentLateCount: number; frequentLateMonths: number };
   branchName: string;
   feeCents: number;
@@ -148,6 +154,27 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
       tone: 'info',
       ...ref(l),
       originalDueDate: l.originalDueDate,
+    });
+  }
+
+  // FR-NOT-08: the home branch closed on a day this week; tomorrow's or today's more prominent.
+  for (const c of facts.closures ?? []) {
+    items.push({
+      kind: 'closure',
+      tone: daysBetween(today, c.date) <= 1 ? 'warning' : 'info',
+      date: c.date,
+      reason: c.reason,
+      branchName: facts.branchName,
+    });
+  }
+  // FR-PUB-07: important notices and events, until opened.
+  for (const n of facts.important ?? []) {
+    items.push({
+      kind: 'notice',
+      tone: 'info',
+      noticeId: n.id,
+      noticeKind: n.kind,
+      title: n.title,
     });
   }
 

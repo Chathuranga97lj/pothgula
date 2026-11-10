@@ -14,14 +14,19 @@ import type { Log } from '../audit/unit-of-work';
 
 const ACCEPTED = new Set(['png', 'jpeg', 'webp']);
 
-export type ImagePurpose = 'logo';
+export type ImagePurpose = 'logo' | 'notice';
 
-/** Logos: kept as PNG (transparency, and pdfmake embeds PNG and JPEG only). */
-const PROFILES: Record<ImagePurpose, { max: number; thumb: number }> = {
-  logo: { max: 512, thumb: 128 },
+/**
+ * Logos: kept as PNG (transparency, and pdfmake embeds PNG and JPEG only).
+ * Notice pictures: photographs, so JPEG at 1200 pixels — around 150 KB (FR-PUB-05).
+ */
+const PROFILES: Record<ImagePurpose, { max: number; thumb: number; jpeg: boolean }> = {
+  logo: { max: 512, thumb: 128, jpeg: false },
+  notice: { max: 1200, thumb: 360, jpeg: true },
 };
 
 export interface ProcessedImage {
+  mimeType: 'image/png' | 'image/jpeg';
   data: Buffer;
   thumbnail: Buffer;
   width: number;
@@ -45,16 +50,21 @@ export async function processImage(input: Buffer, purpose: ImagePurpose): Promis
   }
 
   const profile = PROFILES[purpose];
-  const resize = (size: number) =>
-    sharp(input, { limitInputPixels: 50_000_000 })
+  const resize = (size: number) => {
+    const scaled = sharp(input, { limitInputPixels: 50_000_000 })
       .rotate() // respect the camera's orientation, then drop the metadata
-      .resize(size, size, { fit: 'inside', withoutEnlargement: true })
-      .png({ compressionLevel: 9 })
-      .toBuffer({ resolveWithObject: true });
+      .resize(size, size, { fit: 'inside', withoutEnlargement: true });
+    // A photograph has no transparency to keep: flatten it onto white for JPEG.
+    const encoded = profile.jpeg
+      ? scaled.flatten({ background: '#ffffff' }).jpeg({ quality: 82, mozjpeg: true })
+      : scaled.png({ compressionLevel: 9 });
+    return encoded.toBuffer({ resolveWithObject: true });
+  };
 
   try {
     const [main, thumb] = await Promise.all([resize(profile.max), resize(profile.thumb)]);
     return {
+      mimeType: profile.jpeg ? 'image/jpeg' : 'image/png',
       data: main.data,
       thumbnail: thumb.data,
       width: main.info.width,
@@ -78,7 +88,7 @@ export async function storeImage(
     .values({
       data: processed.data,
       thumbnail: processed.thumbnail,
-      mimeType: 'image/png',
+      mimeType: processed.mimeType,
       width: processed.width,
       height: processed.height,
       bytes: processed.data.length,

@@ -64,6 +64,13 @@
       "when": 1794298312553,
       "tag": "0008_lost_books",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794307100704,
+      "tag": "0009_hours_notices",
+      "breakpoints": true
     }
   ]
 }

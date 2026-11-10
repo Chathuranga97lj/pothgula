@@ -196,7 +196,7 @@ const loanRef = {
   dueDate: isoDate,
 };
 
-/** Most urgent first. Closure items arrive with M13. */
+/** Most urgent first. */
 export const memberPanelItemSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('suspended'), tone: z.literal('urgent') }),
   // FR-LST-03, FR-LST-14: an open lost-book settlement, the amount and the days left.
@@ -270,6 +270,22 @@ export const memberPanelItemSchema = z.discriminatedUnion('kind', [
     tone: z.literal('warning'),
     expireAt: isoDate,
     daysLeft: z.number().int().nonnegative(),
+  }),
+  // FR-NOT-08: the home branch closed on a day in the coming week.
+  z.object({
+    kind: z.literal('closure'),
+    tone: z.enum(['warning', 'info']),
+    date: isoDate,
+    reason: z.string(),
+    branchName: z.string(),
+  }),
+  // FR-PUB-07: an important notice or event, until the member has opened it.
+  z.object({
+    kind: z.literal('notice'),
+    tone: z.literal('info'),
+    noticeId: z.number().int(),
+    noticeKind: z.enum(['notice', 'event']),
+    title: z.string(),
   }),
   z.object({
     kind: z.literal('late_returns'),
