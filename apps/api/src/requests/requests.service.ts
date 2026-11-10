@@ -9,6 +9,7 @@ import {
   OPEN_REQUEST_STATUSES,
   type RequestBoard,
   type RequestStatus,
+  nextOpenDay,
   todayColombo,
 } from '@pothgula/shared';
 import { and, asc, desc, eq, inArray, isNull, ne, or, type SQL, sql } from 'drizzle-orm';
@@ -26,6 +27,7 @@ import { appUser, bookRequest, borrow, branch, branchSetting, copy, title } from
 import { MembersService } from '../members/members.service';
 import { REFUSAL_MESSAGES } from '../circulation/issue-rules';
 import { REQUEST_MESSAGES, type RequestRefusal, requestRefusals } from './request-rules';
+import { timetable } from '../schedule/hours.service';
 import { effectiveStatus, isSettling, settlementStanding } from '../settlements/suspension';
 
 type RequestRow = typeof bookRequest.$inferSelect;
@@ -264,8 +266,9 @@ export class RequestsService {
           .select({ holdDays: branchSetting.holdDays })
           .from(branchSetting)
           .where(eq(branchSetting.branchId, r.toBranchId));
-        // M13 moves a last day that falls on a closed day to the next opening day.
-        const holdUntil = addDays(today, s?.holdDays ?? 7);
+        // A hold never ends on a day the branch is closed: it runs to the next opening day.
+        const last = addDays(today, s?.holdDays ?? 7);
+        const holdUntil = nextOpenDay(last, await timetable(tx, r.toBranchId, last, 31));
         await tx
           .update(bookRequest)
           .set({ status: 'held', arrivedAt: now, holdUntil })

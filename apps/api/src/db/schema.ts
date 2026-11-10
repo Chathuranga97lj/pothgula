@@ -26,7 +26,9 @@ import {
   pgTable,
   pgView,
   primaryKey,
+  smallint,
   text,
+  time,
   timestamp,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
@@ -88,6 +90,8 @@ export const settlementStatus = pgEnum('settlement_status', [
 ]);
 export const lossKind = pgEnum('loss_kind', ['lost', 'damaged']);
 export const settlementPaymentKind = pgEnum('settlement_payment_kind', ['payment', 'reversal']);
+/** §12: a notice, or an event with a date and time. */
+export const noticeKind = pgEnum('notice_kind', ['notice', 'event']);
 export const imageMime = pgEnum('image_mime', ['image/png', 'image/jpeg', 'image/webp']);
 
 // ─── The library, branches and categories (§5) ─────────────────────────────
@@ -753,6 +757,123 @@ export const settlementPayment = pgTable(
     uniqueIndex('settlement_payment_reversed_once').on(t.reversesPaymentId),
     index('settlement_payment_settlement_idx').on(t.settlementId),
   ],
+);
+
+// ─── Opening hours (§11) ───────────────────────────────────────────────────
+
+/** FR-SCH-01: a branch's weekly pattern, one row per weekday (1 Monday … 7 Sunday). */
+export const branchSchedule = pgTable(
+  'branch_schedule',
+  {
+    branchId: integer('branch_id')
+      .notNull()
+      .references(() => branch.id),
+    weekday: smallint('weekday').notNull(),
+    /** Both null: closed that day. */
+    openTime: time('open_time'),
+    closeTime: time('close_time'),
+    updatedBy: integer('updated_by')
+      .notNull()
+      .references(() => appUser.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.branchId, t.weekday] }),
+    check('branch_schedule_weekday', sql`${t.weekday} BETWEEN 1 AND 7`),
+    check(
+      'branch_schedule_times',
+      sql`(${t.openTime} IS NULL) = (${t.closeTime} IS NULL)
+        AND (${t.openTime} IS NULL OR ${t.openTime} < ${t.closeTime})`,
+    ),
+  ],
+);
+
+/**
+ * FR-SCH-02: a date the branch is closed, overriding the weekly pattern. A
+ * closure entered by mistake is withdrawn, not deleted (R12).
+ */
+export const branchClosure = pgTable(
+  'branch_closure',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    branchId: integer('branch_id')
+      .notNull()
+      .references(() => branch.id),
+    closedOn: day('closed_on').notNull(),
+    reason: text('reason').notNull(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => appUser.id),
+    createdAt: createdAt(),
+    withdrawnAt: instant('withdrawn_at'),
+    withdrawnBy: integer('withdrawn_by').references(() => appUser.id),
+  },
+  (t) => [
+    check('branch_closure_reason', sql`btrim(${t.reason}) <> ''`),
+    check('branch_closure_withdrawn', sql`(${t.withdrawnAt} IS NULL) = (${t.withdrawnBy} IS NULL)`),
+    /** One standing closure per branch and date. */
+    uniqueIndex('branch_closure_one_per_day')
+      .on(t.branchId, t.closedOn)
+      .where(sql`${t.withdrawnAt} IS NULL`),
+  ],
+);
+
+// ─── Notices and events (§12) ──────────────────────────────────────────────
+
+/** FR-PUB-01 to FR-PUB-07. Never deleted: withdrawn, and can be shown again (R12). */
+export const notice = pgTable(
+  'notice',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    kind: noticeKind('kind').notNull(),
+    /** Null: published for every branch. */
+    branchId: integer('branch_id').references(() => branch.id),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    imageId: integer('image_id').references(() => image.id),
+    eventDate: day('event_date'),
+    startTime: time('start_time'),
+    endTime: time('end_time'),
+    venue: text('venue'),
+    showFrom: day('show_from'),
+    showUntil: day('show_until'),
+    isImportant: boolean('is_important').notNull().default(false),
+    withdrawnAt: instant('withdrawn_at'),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => appUser.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check('notice_text', sql`btrim(${t.title}) <> '' AND btrim(${t.body}) <> ''`),
+    check(
+      'notice_event',
+      sql`(${t.kind} = 'event') = (${t.eventDate} IS NOT NULL AND ${t.startTime} IS NOT NULL)
+        AND (${t.kind} = 'event' OR (${t.endTime} IS NULL AND ${t.venue} IS NULL))
+        AND (${t.endTime} IS NULL OR ${t.endTime} > ${t.startTime})`,
+    ),
+    check(
+      'notice_shown',
+      sql`${t.showFrom} IS NULL OR ${t.showUntil} IS NULL OR ${t.showUntil} >= ${t.showFrom}`,
+    ),
+    index('notice_branch_idx').on(t.branchId, t.createdAt),
+  ],
+);
+
+/** FR-PUB-07: a member has opened an important notice, so it leaves their panel. */
+export const noticeRead = pgTable(
+  'notice_read',
+  {
+    noticeId: integer('notice_id')
+      .notNull()
+      .references(() => notice.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => appUser.id),
+    readAt: instant('read_at').notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.noticeId, t.userId] })],
 );
 
 // ─── Activity log (§14) ────────────────────────────────────────────────────

@@ -14,6 +14,8 @@ import { api } from '../api/client';
 import { errorMessage } from '../api/errors';
 import { BRANCHES_KEY, branchKey } from '../api/queries';
 import { useMe } from '../auth/auth';
+import { useHours } from '../api/schedule';
+import { HoursCard, HoursEditor } from '../components/hours';
 import { ImageUploadButton, imageForm, Logo } from '../components/images';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 
@@ -77,7 +79,23 @@ export function BranchPage() {
       </div>
 
       <Settings branch={b} canEdit={canEdit} onSaved={saved} />
+      <BranchHoursSection branchId={b.id} />
     </>
+  );
+}
+
+/** FR-SCH-01, FR-SCH-02: the branch's own staff (and super admins) set its hours. */
+function BranchHoursSection({ branchId }: { branchId: number }) {
+  const { user } = useMe();
+  const hours = useHours(branchId);
+  const mayEdit = user.userType === 'super_admin' || user.branchId === branchId;
+  if (!hours.data) return null;
+  return mayEdit ? (
+    <HoursEditor key={hours.data.branch.id} hours={hours.data} />
+  ) : (
+    <div className="mt-6 max-w-md">
+      <HoursCard branchId={branchId} />
+    </div>
   );
 }
 

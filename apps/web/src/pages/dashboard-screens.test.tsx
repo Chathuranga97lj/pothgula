@@ -109,6 +109,20 @@ function signedIn(me: object, extra: Record<string, Route> = {}) {
     'GET /auth/me': { body: { user: me, warnings: [] } },
     'GET /library': { body: { name: 'Library', logoImageId: null } },
     'GET /branches': { body: branches },
+    // The member's home also shows the branch's hours and notices (M13).
+    'GET /branches/1/hours': {
+      body: {
+        branch: { id: 1, code: 'KS', name: 'Kesbewa' },
+        configured: false,
+        week: [],
+        closures: [],
+        today,
+        status: { kind: 'unknown' },
+      },
+    },
+    'GET /notices': {
+      body: { branch: { id: 1, code: 'KS', name: 'Kesbewa' }, notices: [], events: [] },
+    },
     ...extra,
   });
 }

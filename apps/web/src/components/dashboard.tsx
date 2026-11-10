@@ -264,6 +264,23 @@ function MemberItem({ item }: { item: MemberPanelItem }) {
               })}
         </Alert>
       );
+    case 'closure':
+      return (
+        <Alert
+          tone={tone}
+          title={t('panel.closure.title', { date: item.date, branch: item.branchName })}
+        >
+          {item.reason}
+        </Alert>
+      );
+    case 'notice':
+      return (
+        <Alert tone={tone} title={t(`panel.notice.${item.noticeKind}`)}>
+          <Link to={`/notices/${item.noticeId}`} className="font-medium underline">
+            {item.title}
+          </Link>
+        </Alert>
+      );
     case 'loan_overdue':
       return (
         <Alert

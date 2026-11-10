@@ -11,6 +11,7 @@ import {
   endOfMonth,
   type MemberDashboard,
   type StaffCounts,
+  CLOSURE_WARNING_DAYS,
   SETTLEMENT_CLOSING_DAYS,
   type StaffDashboard,
   staffPanel,
@@ -32,6 +33,8 @@ import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
 import { appUser, bookSettlement, borrow, branch, branchSetting, copy, title } from '../db/schema';
 import { RequestsService } from '../requests/requests.service';
+import { NoticesService } from '../notices/notices.service';
+import { timetable } from '../schedule/hours.service';
 import { SettlementsService } from '../settlements/settlements.service';
 import { memberPanel } from './member-panel';
 
@@ -54,6 +57,7 @@ export class DashboardService {
     @Inject(DB) private readonly db: Db,
     private readonly requests: RequestsService,
     private readonly settlements: SettlementsService,
+    private readonly notices: NoticesService,
   ) {}
 
   // ─── Staff (FR-NOT-03, FR-NOT-07, FR-NOT-09) ───────────────────────────────
@@ -276,6 +280,10 @@ export class DashboardService {
         loans: rows.map((r) => toLoan(r, today)),
         requests: await this.requests.mine(ctx),
         settlements: await this.settlements.openFor(this.db, user.id, today),
+        // FR-NOT-08: closures at the home branch in the coming week.
+        closures: (await timetable(this.db, user.branchId!, today, CLOSURE_WARNING_DAYS)).closures,
+        // FR-PUB-07: important notices not opened yet.
+        important: await this.notices.unopenedImportant(ctx, user.branchId!),
         rules: {
           memberDueWarningDays: home?.memberDueWarningDays ?? 5,
           frequentLateCount: home?.frequentLateCount ?? 3,

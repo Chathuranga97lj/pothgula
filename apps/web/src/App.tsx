@@ -21,6 +21,7 @@ import { NewTitlePage } from './pages/NewTitlePage';
 import { RegisterMemberPage } from './pages/RegisterMemberPage';
 import { ReportPage, ReportsPage } from './pages/ReportsPage';
 import { RequestPage } from './pages/RequestPage';
+import { ManageNoticesPage, NoticeEditPage, NoticePage, NoticesPage } from './pages/NoticesPage';
 import { RequestsPage } from './pages/RequestsPage';
 import { SettlementPage } from './pages/SettlementPage';
 import { SettlementsPage } from './pages/SettlementsPage';
@@ -56,6 +57,32 @@ export function App() {
             }
           />
           <Route path="titles/:id" element={<TitlePage />} />
+          <Route path="notices" element={<NoticesPage />} />
+          <Route
+            path="notices/manage"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <ManageNoticesPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="notices/new"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <NoticeEditPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="notices/:id/edit"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <NoticeEditPage />
+              </RequireRole>
+            }
+          />
+          <Route path="notices/:id" element={<NoticePage />} />
           <Route
             path="my-membership"
             element={

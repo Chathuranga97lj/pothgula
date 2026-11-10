@@ -40,7 +40,8 @@
     "log": "Activity log",
     "reports": "Reports",
     "requests": "Requests",
-    "lostBooks": "Lost books"
+    "lostBooks": "Lost books",
+    "notices": "Hours and notices"
   },
   "signIn": {
     "title": "Sign in",
@@ -223,7 +224,13 @@
     "copy_lost_use_found": "This copy was declared lost. A super admin returns it to the shelf with “Found”.",
     "super_admin_only": "Only a super admin can do this.",
     "no_receipt": "No money changed hands for this, so there is no receipt.",
-    "payment_not_found": "That payment does not exist."
+    "payment_not_found": "That payment does not exist.",
+    "already_closed": "The branch is already closed on those dates.",
+    "date_in_past": "Closures are recorded for today or later.",
+    "closure_not_found": "That closure does not exist.",
+    "notice_not_found": "That notice does not exist, or is not shown now.",
+    "notice_withdrawn": "This notice is already withdrawn.",
+    "notice_not_withdrawn": "This notice is not withdrawn."
   },
   "images": {
     "uploading": "Uploading…",
@@ -760,6 +767,13 @@
       "body_other": "{{count}} days left, until {{date}} ({{accession}}). Bring a copy of the same book, or pay the amount at your branch. Meanwhile you may borrow one book.",
       "passed": "Not settled in time: {{title}} — {{amount}}",
       "passedBody": "The time to settle ended on {{date}}. Borrowing is suspended until you bring a copy of the same book or pay the amount at your branch."
+    },
+    "closure": {
+      "title": "{{branch}} is closed on {{date}}"
+    },
+    "notice": {
+      "notice": "An important notice",
+      "event": "An important event"
     }
   },
   "due": {
@@ -942,7 +956,10 @@
       "request": "Books between branches",
       "settlement": "Lost books",
       "tariff": "Lost-book tariff",
-      "receipt": "Receipts"
+      "receipt": "Receipts",
+      "hours": "Opening hours",
+      "closure": "Closures",
+      "notice": "Notices and events"
     },
     "entities": {
       "app_user": "Person",
@@ -961,7 +978,8 @@
       "book_request": "Request",
       "book_settlement": "Lost-book settlement",
       "settlement_payment": "Lost-book payment",
-      "lost_tariff": "Tariff amount"
+      "lost_tariff": "Tariff amount",
+      "notice": "Notice"
     },
     "hideHistory": "Hide history",
     "moreFields_one": "and {{count}} more field",
@@ -1098,6 +1116,20 @@
     },
     "receipt": {
       "print": "Receipt printed"
+    },
+    "hours": {
+      "update": "Opening hours changed"
+    },
+    "closure": {
+      "add": "Closure added",
+      "withdraw": "Closure withdrawn"
+    },
+    "notice": {
+      "publish": "Notice published",
+      "update": "Notice edited",
+      "withdraw": "Notice withdrawn",
+      "restore": "Notice shown again",
+      "image": "Notice picture changed"
     }
   },
   "reports": {
@@ -1525,5 +1557,93 @@
   },
   "receipts": {
     "print": "Receipt"
+  },
+  "hours": {
+    "title": "Opening hours — {{branch}}",
+    "unknown": "Opening hours have not been set yet.",
+    "openUntil": "Open until {{time}}",
+    "opensAt": "Opens at {{time}} today",
+    "closedToday": "Closed today",
+    "closedBecause": "Closed today: {{reason}}",
+    "nextOpen": "Opens again {{date}} at {{time}}",
+    "closed": "Closed",
+    "closures": "Closed on",
+    "days": {
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+      "7": "Sunday"
+    },
+    "editTitle": "Opening hours",
+    "editLead": "The weekly pattern, and dates the branch is closed. Members see both on their dashboard; every change is logged.",
+    "weekly": "Every week",
+    "opens": "{{day}} opens",
+    "closes": "{{day}} closes",
+    "saveWeek": "Save the weekly hours",
+    "saved": "Opening hours saved.",
+    "addClosure": "Close on a date, or a run of dates",
+    "from": "From",
+    "to": "To (optional)",
+    "toHint": "For one day, leave this empty.",
+    "reason": "Reason",
+    "reasonHint": "Members see it: a Poya day, a public holiday, stock-taking.",
+    "close": "Close the branch",
+    "closureAdded": "Closure added.",
+    "reopen": "Open after all"
+  },
+  "notices": {
+    "title": "Hours and notices",
+    "lead": "Opening hours, events and notices, for your branch or any other.",
+    "branch": "Branch",
+    "manage": "Manage notices",
+    "manageLead": "Every notice and event you can change, whatever its state.",
+    "manageOne": "Manage",
+    "new": "New notice or event",
+    "newLead": "Members of the branch see it on their dashboard.",
+    "events": "Events",
+    "notices": "Notices",
+    "none": "Nothing at the moment.",
+    "past": "past",
+    "important": "Important",
+    "everyBranch": "Every branch",
+    "ownBranch": "Your branch",
+    "byOn": "By {{name}}, {{date}}",
+    "kindLabel": "What it is",
+    "kind": {
+      "notice": "Notice",
+      "event": "Event"
+    },
+    "forBranch": "For",
+    "titleLabel": "Title",
+    "bodyLabel": "Text",
+    "bodyHint": "A paragraph. A web address in it becomes a link.",
+    "eventDate": "Date",
+    "venue": "Place (optional)",
+    "startTime": "Starts",
+    "endTime": "Ends (optional)",
+    "showFrom": "Show from (optional)",
+    "showFromHint": "Empty: straight away.",
+    "showUntil": "Hide after (optional)",
+    "showUntilHint": "Empty: until withdrawn (an event drops off a week after its date).",
+    "importantHint": "Important: it also appears in each member’s panel until they open it.",
+    "publish": "Publish",
+    "save": "Save changes",
+    "saved": "Saved.",
+    "edit": "Edit",
+    "withdraw": "Withdraw",
+    "restore": "Show again",
+    "withdrawn": "Withdrawn. It is kept and can be shown again.",
+    "addImage": "Add a picture",
+    "replaceImage": "Replace the picture",
+    "removeImage": "Remove the picture",
+    "state": {
+      "shown": "Shown",
+      "scheduled": "Not yet shown",
+      "ended": "No longer shown",
+      "withdrawn": "Withdrawn"
+    }
   }
 }
