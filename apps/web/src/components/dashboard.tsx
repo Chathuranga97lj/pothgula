@@ -92,6 +92,8 @@ function itemTarget(kind: StaffAlert, branchId: number, many: boolean): string {
       return '/members?tab=lists';
     case 'applications_waiting':
       return '/members';
+    case 'lost_in_transit':
+      return `/reports/missing${many ? `?branchId=${branchId}` : ''}`;
     case 'suspended':
     case 'settlements_passed':
     case 'settlements_closing':
@@ -109,8 +111,11 @@ export function StaffToday({ superAdmin }: { superAdmin: boolean }) {
   if (!dash.data) return <p className="text-stone-600">{t('common.loading')}</p>;
   const { branches } = dash.data;
   const many = branches.length > 1;
-  // FR-NOT-09: a super admin sees suspended members at the very top.
-  const suspended = superAdmin ? branches.filter((b) => b.counts.suspended > 0) : [];
+  // FR-NOT-09: a super admin sees suspended members and books lost on the road at the very top.
+  const TOP = ['suspended', 'lost_in_transit', 'transit_overdue'] as const;
+  const top = superAdmin
+    ? branches.flatMap((b) => TOP.filter((kind) => b.counts[kind] > 0).map((kind) => ({ b, kind })))
+    : [];
 
   return (
     <div className="space-y-6">
@@ -129,13 +134,13 @@ export function StaffToday({ superAdmin }: { superAdmin: boolean }) {
         </Link>
       </div>
 
-      {suspended.length > 0 && (
-        <Alert tone="error" title={t('today.suspendedTop')}>
+      {top.length > 0 && (
+        <Alert tone="error" title={t('today.topTitle')}>
           <ul className="space-y-1">
-            {suspended.map((b) => (
-              <li key={b.branchId}>
-                <Link to={`/lost-books?branch=${b.branchId}`} className="underline">
-                  {b.branchCode} — {t('today.items.suspended', { count: b.counts.suspended })}
+            {top.map(({ b, kind }) => (
+              <li key={`${b.branchId}-${kind}`}>
+                <Link to={itemTarget(kind, b.branchId, true)} className="underline">
+                  {b.branchCode} — {t(`today.items.${kind}`, { count: b.counts[kind] })}
                 </Link>
               </li>
             ))}
@@ -163,7 +168,14 @@ function BranchPanel({
   hideSuspended: boolean;
 }) {
   const { t } = useTranslation();
-  const items = b.items.filter((i) => !(hideSuspended && i.kind === 'suspended'));
+  // A super admin has these at the top of the page already.
+  const items = b.items.filter(
+    (i) =>
+      !(
+        hideSuspended &&
+        (i.kind === 'suspended' || i.kind === 'lost_in_transit' || i.kind === 'transit_overdue')
+      ),
+  );
   return (
     <Card>
       {many && (

@@ -230,7 +230,9 @@
     "closure_not_found": "That closure does not exist.",
     "notice_not_found": "That notice does not exist, or is not shown now.",
     "notice_withdrawn": "This notice is already withdrawn.",
-    "notice_not_withdrawn": "This notice is not withdrawn."
+    "notice_not_withdrawn": "This notice is not withdrawn.",
+    "payment_not_reversible": "Only a renewal fee can be reversed; a first fee is part of the approval.",
+    "reversal_not_latest": "Only the latest renewal can be reversed; a later one depends on it."
   },
   "images": {
     "uploading": "Uploading…",
@@ -647,7 +649,6 @@
   "today": {
     "counter": "Go to the counter",
     "dueLists": "Due and overdue books",
-    "suspendedTop": "Suspended members",
     "noBranches": "There are no branches yet.",
     "needsAttention": "Needs attention",
     "quiet": "Nothing needs attention today.",
@@ -689,8 +690,11 @@
       "settlements_closing_one": "{{count}} lost-book window closing within 14 days",
       "settlements_closing_other": "{{count}} lost-book windows closing within 14 days",
       "settlements_open_one": "{{count}} lost book not yet settled",
-      "settlements_open_other": "{{count}} lost books not yet settled"
-    }
+      "settlements_open_other": "{{count}} lost books not yet settled",
+      "lost_in_transit_one": "{{count}} book lost on the way between branches, not found",
+      "lost_in_transit_other": "{{count}} books lost on the way between branches, not found"
+    },
+    "topTitle": "Needs a super admin"
   },
   "sheets": {
     "daily-loans": "Print the daily loans sheet",
@@ -1013,7 +1017,8 @@
     "membership": {
       "renew": "Membership renewed",
       "first_fee": "First fee taken",
-      "fee_waived": "First fee waived"
+      "fee_waived": "First fee waived",
+      "reverse": "Membership fee reversed"
     },
     "account": {
       "deactivate": "Account deactivated",
@@ -1645,5 +1650,11 @@
       "ended": "No longer shown",
       "withdrawn": "Withdrawn"
     }
+  },
+  "payments": {
+    "validTo": "valid to {{date}}",
+    "reverse": "Reverse",
+    "reverseLead": "The payment stays on the record with a reversing entry beside it, and the membership goes back to the expiry it had before.",
+    "reverseReason": "Why it is reversed"
   }
 }

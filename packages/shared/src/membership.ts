@@ -132,6 +132,9 @@ export const renewRequestSchema = z.object({
 });
 export type RenewRequest = z.infer<typeof renewRequestSchema>;
 
+/** FR-MEM-05: a fee taken by mistake is corrected by a reversing entry, with the reason. */
+export const reverseFeeSchema = z.object({ reason: z.string().trim().min(1).max(500) });
+
 // ─── Responses ──────────────────────────────────────────────────────────────
 
 /** A line on the waiting list or a search result (FR-AUT-18). */
@@ -163,6 +166,8 @@ export const membershipPaymentSchema = z.object({
   reason: z.string().nullable(),
   extendsTo: isoDate.nullable(),
   collectedBy: z.number().int(),
+  /** A reversing entry: the payment it reverses (FR-MEM-05). */
+  reversesPaymentId: z.number().int().nullable(),
 });
 export type MembershipPayment = z.infer<typeof membershipPaymentSchema>;
 

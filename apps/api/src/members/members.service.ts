@@ -394,6 +394,85 @@ export class MembersService {
     });
   }
 
+  /**
+   * FR-MEM-05: a renewal taken by mistake (the wrong member, a fee twice) is
+   * reversed, never edited (super admin). Only the latest renewal still standing
+   * can be, and the membership goes back to the expiry it had before it. A first
+   * fee is not reversed: it is part of the approval.
+   */
+  async reverseFee(
+    ctx: AuthContext,
+    id: number,
+    paymentId: number,
+    reason: string,
+  ): Promise<MemberDetail> {
+    if (ctx.user.userType !== 'super_admin') {
+      throw AppError.forbidden('super_admin_only', 'Only a super admin can do this.');
+    }
+    const target = await this.memberFor(ctx, id);
+    return this.uow.run(ctx.actor, async (tx, log) => {
+      const all = await tx
+        .select()
+        .from(membershipPayment)
+        .where(eq(membershipPayment.userId, id))
+        .orderBy(asc(membershipPayment.paidOn), asc(membershipPayment.id))
+        .for('update');
+      const p = all.find((x) => x.id === paymentId);
+      if (!p) throw AppError.notFound('payment_not_found', 'No such payment.');
+      if (p.kind !== 'fee') {
+        throw AppError.unprocessable(
+          'payment_not_reversible',
+          p.kind === 'first_fee'
+            ? 'A first fee is part of the approval and is not reversed.'
+            : 'Only a renewal fee can be reversed.',
+        );
+      }
+      const reversed = new Set(all.map((x) => x.reversesPaymentId).filter((x) => x !== null));
+      if (reversed.has(p.id)) {
+        throw AppError.conflict('payment_reversed', 'That payment has already been reversed.');
+      }
+      // What still stands, in order: each extends the membership from the one before.
+      const standing = all.filter(
+        (x) => x.kind !== 'reversal' && !reversed.has(x.id) && x.extendsTo !== null,
+      );
+      if (standing.at(-1)?.id !== p.id) {
+        throw AppError.conflict(
+          'reversal_not_latest',
+          'Only the latest renewal can be reversed; a later one depends on it.',
+        );
+      }
+      const previous = standing.at(-2)?.extendsTo ?? null;
+      const today = todayColombo();
+      const [reversal] = await tx
+        .insert(membershipPayment)
+        .values({
+          userId: id,
+          kind: 'reversal',
+          amountCents: -p.amountCents,
+          paidOn: today,
+          collectedBy: ctx.user.id,
+          reason,
+          extendsTo: previous,
+          reversesPaymentId: p.id,
+        })
+        .returning();
+      const [after] = await tx
+        .update(appUser)
+        .set({ expireAt: previous })
+        .where(eq(appUser.id, id))
+        .returning();
+      await log({
+        action: 'membership.reverse',
+        entity: 'membership_payment',
+        entityId: reversal!.id,
+        branchId: target.branchId,
+        before: { expireAt: target.expireAt, paymentId: p.id, amountCents: p.amountCents },
+        after: { expireAt: previous, reason },
+      });
+      return this.detailOf(tx, after!);
+    });
+  }
+
   /** FR-MEM-03: paid in the last 30 days, expiring in the next 30, already expired. */
   async overview(ctx: AuthContext): Promise<MembershipOverview> {
     const scope = branchScope(ctx.user);
