@@ -124,7 +124,9 @@ describe('the staff dashboard (FR-NOT-03, FR-NOT-07, FR-NOT-09)', () => {
       suspended: 1,
       overdue: 2,
       overdueMembers: 1,
+      extensions_urgent: 0,
       due_today: 1,
+      extensions_waiting: 0,
       applications_waiting: 1,
       due_soon: 2,
       returned_late_today: 1,
@@ -171,7 +173,7 @@ describe('the due lists (FR-NOT-04, FR-NOT-12)', () => {
       copyBranchCode: 'KS',
       daysLate: 6,
       overdue: true,
-      extended: false,
+      extensionStatus: 'none',
     });
     const all = [...b.overdue, ...b.dueSoon, ...b.returnedLateToday];
     expect(ids(all)).not.toContain(loans.voided);

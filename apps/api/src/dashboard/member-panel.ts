@@ -54,6 +54,16 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
     items.push({ kind: 'membership_expired', tone: 'urgent', expireAt: expiry });
   }
 
+  // FR-CIR-12: a declined request, with the reason, ahead of the due-soon warnings.
+  for (const l of open.filter((x) => x.extensionStatus === 'declined')) {
+    items.push({
+      kind: 'extension_declined',
+      tone: 'warning',
+      ...ref(l),
+      reason: l.extensionReason ?? '',
+    });
+  }
+
   const soon = open
     .map((l) => ({ l, daysLeft: daysBetween(today, l.dueDate) }))
     .filter((x) => x.daysLeft >= 0 && x.daysLeft <= facts.rules.memberDueWarningDays)
@@ -66,8 +76,25 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
     items.push({ kind: 'membership_expiring', tone: 'warning', expireAt: expiry, daysLeft: left });
   }
 
+  for (const l of open.filter((x) => x.extensionStatus === 'requested')) {
+    items.push({ kind: 'extension_pending', tone: 'info', ...ref(l) });
+  }
+  for (const l of open.filter((x) => x.extensionStatus === 'approved')) {
+    items.push({
+      kind: 'extension_approved',
+      tone: 'info',
+      ...ref(l),
+      originalDueDate: l.originalDueDate,
+    });
+  }
+
   const standing = loanStanding(
-    facts.loans.map((l) => ({ dueDate: l.dueDate, returnedOn: l.returnedOn, voided: false })),
+    facts.loans.map((l) => ({
+      dueDate: l.dueDate,
+      returnedOn: l.returnedOn,
+      voided: false,
+      extensionStatus: l.extensionStatus,
+    })),
     today,
     { maxBooks: 1, ...facts.rules },
   );

@@ -19,8 +19,10 @@ const counts = (over: Record<string, number> = {}) => ({
   suspended: 0,
   overdue: 0,
   overdueMembers: 0,
+  extensions_urgent: 0,
   due_today: 0,
   applications_waiting: 0,
+  extensions_waiting: 0,
   due_soon: 0,
   returned_late_today: 0,
   expiring_this_month: 0,
@@ -29,8 +31,10 @@ const counts = (over: Record<string, number> = {}) => ({
 const TONES: Record<string, string> = {
   suspended: 'urgent',
   overdue: 'urgent',
+  extensions_urgent: 'urgent',
   due_today: 'warning',
   applications_waiting: 'warning',
+  extensions_waiting: 'warning',
   due_soon: 'info',
   returned_late_today: 'info',
   expiring_this_month: 'info',
@@ -71,7 +75,10 @@ const dueLoan = (over: Record<string, unknown> = {}) => ({
   returnBackdated: false,
   voidedAt: null,
   voidReason: null,
-  extended: false,
+  extensionStatus: 'none',
+  extensionRequestedAt: null,
+  extensionDecidedAt: null,
+  extensionReason: null,
   ...over,
 });
 const overdueLoan = (id: number, memberId: number, name: string, daysLate: number) =>
@@ -229,7 +236,7 @@ describe('the due lists (FR-NOT-12, FR-NOT-04)', () => {
             memberOtherPhone: '0112345678',
             dueDate: addDays(today, 3),
             title: 'A book',
-            extended: true,
+            extensionStatus: 'approved',
           }),
         ],
         returnedLateToday: [

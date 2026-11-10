@@ -56,6 +56,10 @@ const loan = (over: Record<string, unknown> = {}) => ({
   returnBackdated: false,
   voidedAt: null,
   voidReason: null,
+  extensionStatus: 'none',
+  extensionRequestedAt: null,
+  extensionDecidedAt: null,
+  extensionReason: null,
   ...over,
 });
 const standing = (over: Record<string, unknown> = {}) => ({

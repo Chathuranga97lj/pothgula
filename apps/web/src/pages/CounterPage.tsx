@@ -301,7 +301,14 @@ function ReturnPanel() {
 
   // FR-CIR-04: how late it is on the day it actually came back.
   const late = loan
-    ? daysLate({ dueDate: loan.dueDate, returnedOn: paper ?? todayColombo() }, todayColombo())
+    ? daysLate(
+        {
+          dueDate: loan.dueDate,
+          returnedOn: paper ?? todayColombo(),
+          extensionStatus: loan.extensionStatus,
+        },
+        todayColombo(),
+      )
     : 0;
 
   return (

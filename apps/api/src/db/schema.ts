@@ -57,6 +57,13 @@ export const userStatus = pgEnum('user_status', [
 ]);
 export const copyCondition = pgEnum('copy_condition', ['useable', 'not_useable', 'missing']);
 export const paymentKind = pgEnum('payment_kind', ['fee', 'first_fee', 'waiver', 'reversal']);
+/** FR-CIR-10 to FR-CIR-13: where a loan's one extension stands. */
+export const extensionStatus = pgEnum('extension_status', [
+  'none',
+  'requested',
+  'approved',
+  'declined',
+]);
 export const imageMime = pgEnum('image_mime', ['image/png', 'image/jpeg', 'image/webp']);
 
 // ─── The library, branches and categories (§5) ─────────────────────────────
@@ -366,10 +373,32 @@ export const borrow = pgTable(
     voidedAt: instant('voided_at'),
     voidedBy: integer('voided_by').references(() => appUser.id),
     voidReason: text('void_reason'),
+    /** FR-CIR-10 to FR-CIR-13: the loan's one extension, requested by the member or granted by staff. */
+    extensionStatus: extensionStatus('extension_status').notNull().default('none'),
+    /** When the member asked; null when staff granted it directly (FR-CIR-11). */
+    extensionRequestedAt: instant('extension_requested_at'),
+    extensionDecidedAt: instant('extension_decided_at'),
+    extensionDecidedBy: integer('extension_decided_by').references(() => appUser.id),
+    /** Why it was declined; the member sees it (FR-CIR-12). */
+    extensionReason: text('extension_reason'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
+    check(
+      'borrow_extension',
+      sql`CASE ${t.extensionStatus}
+        WHEN 'none' THEN ${t.extensionRequestedAt} IS NULL AND ${t.extensionDecidedAt} IS NULL
+          AND ${t.extensionDecidedBy} IS NULL AND ${t.extensionReason} IS NULL
+        WHEN 'requested' THEN ${t.extensionRequestedAt} IS NOT NULL
+          AND ${t.extensionDecidedAt} IS NULL AND ${t.extensionDecidedBy} IS NULL
+          AND ${t.extensionReason} IS NULL
+        WHEN 'approved' THEN ${t.extensionDecidedAt} IS NOT NULL
+          AND ${t.extensionDecidedBy} IS NOT NULL AND ${t.extensionReason} IS NULL
+        WHEN 'declined' THEN ${t.extensionDecidedAt} IS NOT NULL
+          AND ${t.extensionDecidedBy} IS NOT NULL AND ${t.extensionReason} IS NOT NULL
+      END`,
+    ),
     check(
       'borrow_dates',
       sql`${t.dueDate} > ${t.borrowDate} AND ${t.originalDueDate} > ${t.borrowDate}
@@ -397,6 +426,12 @@ export const borrow = pgTable(
     index('borrow_open_due_idx')
       .on(t.branchId, t.dueDate)
       .where(sql`${t.returnedOn} IS NULL AND ${t.voidedAt} IS NULL`),
+    /** FR-CIR-12: the requests waiting for staff. */
+    index('borrow_extension_waiting_idx')
+      .on(t.branchId, t.dueDate)
+      .where(
+        sql`${t.extensionStatus} = 'requested' AND ${t.returnedOn} IS NULL AND ${t.voidedAt} IS NULL`,
+      ),
   ],
 );
 

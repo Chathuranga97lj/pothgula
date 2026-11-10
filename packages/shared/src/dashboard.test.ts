@@ -27,7 +27,10 @@ const loan = (over: Partial<DueLoan>): DueLoan => ({
   returnBackdated: false,
   voidedAt: null,
   voidReason: null,
-  extended: false,
+  extensionStatus: 'none',
+  extensionRequestedAt: null,
+  extensionDecidedAt: null,
+  extensionReason: null,
   ...over,
 });
 
@@ -66,8 +69,10 @@ describe('staffPanel', () => {
     suspended: 0,
     overdue: 0,
     overdueMembers: 0,
+    extensions_urgent: 0,
     due_today: 0,
     applications_waiting: 0,
+    extensions_waiting: 0,
     due_soon: 0,
     returned_late_today: 0,
     expiring_this_month: 0,
@@ -80,6 +85,25 @@ describe('staffPanel', () => {
       { kind: 'overdue', tone: 'urgent', count: 2 },
       { kind: 'due_soon', tone: 'info', count: 4 },
     ]);
+  });
+
+  it('puts urgent extension requests after overdue books, and the rest after applications', () => {
+    const items = staffPanel({
+      ...none,
+      overdue: 1,
+      extensions_urgent: 1,
+      due_today: 1,
+      applications_waiting: 1,
+      extensions_waiting: 3,
+    });
+    expect(items.map((i) => i.kind)).toEqual([
+      'overdue',
+      'extensions_urgent',
+      'due_today',
+      'applications_waiting',
+      'extensions_waiting',
+    ]);
+    expect(items[1]!.tone).toBe('urgent');
   });
 
   it('is empty on a quiet day', () => {

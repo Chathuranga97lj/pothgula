@@ -145,7 +145,8 @@ export class ReportsService {
         GROUP BY ${sets('c.branch_id')}`),
       this.rows<Counts>(sql`
         SELECT b.branch_id, count(*)::int AS on_loan,
-          (count(*) FILTER (WHERE b.due_date < ${s.today}::date))::int AS overdue
+          (count(*) FILTER (WHERE b.due_date < ${s.today}::date
+            AND b.extension_status <> 'requested'))::int AS overdue
         FROM borrow b
         WHERE b.returned_on IS NULL AND b.voided_at IS NULL AND ${this.inScope(s, sql`b.branch_id`)}
         GROUP BY ${sets('b.branch_id')}`),
@@ -302,11 +303,13 @@ export class ReportsService {
       borrow_date: string;
       due_date: string;
       original_due_date: string;
+      extension_status: string;
       days_late: number;
     }>(sql`
       SELECT b.id, c.accession_no, t.title, u.full_name AS member, u.whatsapp_phone AS phone,
-        br.branch_code, b.borrow_date::text, b.due_date::text, b.original_due_date::text,
-        greatest(0, ${s.today}::date - b.due_date)::int AS days_late
+        br.branch_code, b.borrow_date::text, b.due_date::text, b.original_due_date::text, b.extension_status,
+        CASE WHEN b.extension_status = 'requested' THEN 0
+          ELSE greatest(0, ${s.today}::date - b.due_date) END::int AS days_late
       FROM borrow b
       JOIN copy c ON c.id = b.copy_id
       JOIN title t ON t.id = c.title_id
@@ -344,7 +347,7 @@ export class ReportsService {
             l.borrow_date,
             l.due_date,
             l.days_late,
-            l.due_date === l.original_due_date ? null : l.original_due_date,
+            l.extension_status === 'approved' ? l.original_due_date : null,
           ],
           { link: `/loans/${l.id}` },
         ),
@@ -443,7 +446,7 @@ export class ReportsService {
 
   private async late(s: Scope): Promise<Body> {
     const returnedLate = sql`
-      b.voided_at IS NULL AND b.returned_on > b.due_date
+      b.voided_at IS NULL AND b.returned_on > b.due_date AND b.extension_status <> 'requested'
       AND b.returned_on BETWEEN ${s.from}::date AND ${s.to}::date
       AND ${this.inScope(s, sql`b.branch_id`)}`;
     const [people, branches] = await Promise.all([

@@ -14,8 +14,6 @@ export const dueLoanSchema = loanSchema.extend({
   memberOtherPhone: z.string().nullable(),
   memberBranchCode: z.string(),
   copyBranchCode: z.string(),
-  /** The due date was moved on from the original (FR-CIR-10, from M10). */
-  extended: z.boolean(),
 });
 export type DueLoan = z.infer<typeof dueLoanSchema>;
 
@@ -84,8 +82,12 @@ export function callList(overdue: DueLoan[]): CallListEntry[] {
 export const STAFF_ALERTS = [
   'suspended',
   'overdue',
+  // FR-CIR-13: undecided within two days of the due date.
+  'extensions_urgent',
   'due_today',
   'applications_waiting',
+  // FR-CIR-12: every extension request waiting for a decision.
+  'extensions_waiting',
   'due_soon',
   'returned_late_today',
   'expiring_this_month',
@@ -98,8 +100,10 @@ export type AlertTone = (typeof ALERT_TONES)[number];
 export const STAFF_ALERT_TONE: Record<StaffAlert, AlertTone> = {
   suspended: 'urgent',
   overdue: 'urgent',
+  extensions_urgent: 'urgent',
   due_today: 'warning',
   applications_waiting: 'warning',
+  extensions_waiting: 'warning',
   due_soon: 'info',
   returned_late_today: 'info',
   expiring_this_month: 'info',
@@ -110,8 +114,10 @@ export const staffCountsSchema = z.object({
   overdue: z.number().int(),
   /** Members holding an overdue book: the length of the call list. */
   overdueMembers: z.number().int(),
+  extensions_urgent: z.number().int(),
   due_today: z.number().int(),
   applications_waiting: z.number().int(),
+  extensions_waiting: z.number().int(),
   /** Due from today to today + warningDays (includes today's). */
   due_soon: z.number().int(),
   returned_late_today: z.number().int(),
@@ -158,7 +164,7 @@ const loanRef = {
   dueDate: isoDate,
 };
 
-/** Most urgent first. Extension, request, settlement and closure items arrive with M10–M13. */
+/** Most urgent first. Request, settlement and closure items arrive with M11–M13. */
 export const memberPanelItemSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('suspended'), tone: z.literal('urgent') }),
   z.object({
@@ -173,6 +179,20 @@ export const memberPanelItemSchema = z.discriminatedUnion('kind', [
     tone: z.literal('warning'),
     ...loanRef,
     daysLeft: z.number().int().nonnegative(),
+  }),
+  // FR-CIR-12: the member's extension request, waiting or decided, while the book is out.
+  z.object({
+    kind: z.literal('extension_declined'),
+    tone: z.literal('warning'),
+    ...loanRef,
+    reason: z.string(),
+  }),
+  z.object({ kind: z.literal('extension_pending'), tone: z.literal('info'), ...loanRef }),
+  z.object({
+    kind: z.literal('extension_approved'),
+    tone: z.literal('info'),
+    ...loanRef,
+    originalDueDate: isoDate,
   }),
   z.object({
     kind: z.literal('membership_expiring'),

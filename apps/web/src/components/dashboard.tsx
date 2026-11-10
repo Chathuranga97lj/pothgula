@@ -78,6 +78,9 @@ function itemTarget(kind: StaffAlert, branchId: number, many: boolean): string {
     case 'due_soon':
     case 'returned_late_today':
       return `/due${branch}`;
+    case 'extensions_urgent':
+    case 'extensions_waiting':
+      return `/extensions${branch}`;
     case 'expiring_this_month':
       return '/members?tab=lists';
     case 'applications_waiting':
@@ -261,6 +264,24 @@ function MemberItem({ item }: { item: MemberPanelItem }) {
           {t('panel.dueSoon.body', { date: item.dueDate, accession: item.accessionNo })}
         </Alert>
       );
+    case 'extension_pending':
+      return (
+        <Alert tone={tone} title={t('panel.extensionPending.title', { title: item.title })}>
+          {t('panel.extensionPending.body', { date: item.dueDate })}
+        </Alert>
+      );
+    case 'extension_approved':
+      return (
+        <Alert tone={tone} title={t('panel.extensionApproved.title', { title: item.title })}>
+          {t('panel.extensionApproved.body', { date: item.dueDate, from: item.originalDueDate })}
+        </Alert>
+      );
+    case 'extension_declined':
+      return (
+        <Alert tone={tone} title={t('panel.extensionDeclined.title', { title: item.title })}>
+          {t('panel.extensionDeclined.body', { reason: item.reason, date: item.dueDate })}
+        </Alert>
+      );
     case 'membership_expiring':
       return (
         <Alert
@@ -364,8 +385,14 @@ export function DueTable({ loans, today }: { loans: DueLoan[]; today: string }) 
                     {t('loans.daysLate', { count: l.daysLate })}
                   </span>
                 )}
-                {l.extended && (
+                {/* FR-NOT-12: whether an extension has been asked for or granted. */}
+                {l.extensionStatus === 'approved' && (
                   <span className="block text-xs text-stone-600">{t('due.extended')}</span>
+                )}
+                {l.extensionStatus === 'requested' && (
+                  <span className="block text-xs text-amber-800">
+                    {t('due.extensionRequested')}
+                  </span>
                 )}
               </td>
               <td className="px-3 py-2">

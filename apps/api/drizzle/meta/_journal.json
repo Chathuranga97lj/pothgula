@@ -43,6 +43,13 @@
       "when": 1794286672441,
       "tag": "0005_log_archive",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794291636551,
+      "tag": "0006_extensions",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,7 @@ import { Link } from 'react-router';
 import { errorMessage } from '../api/errors';
 import { useMemberSearch } from '../api/members';
 import { StateBadge } from '../pages/MembersPage';
+import { ExtensionNote, OwnExtension } from './extensions';
 import { Alert, Field, Input } from './ui';
 
 /**
@@ -207,6 +208,7 @@ export function PaperDate({
 export function LoanTable({ loans, staff }: { loans: Loan[]; staff: boolean }) {
   const { t } = useTranslation();
   if (loans.length === 0) return <p className="p-5 text-stone-600">{t('loans.none')}</p>;
+  if (!staff) return <OwnLoanList loans={loans} />;
   return (
     <div className="overflow-x-auto">
       <table className="mt-3 w-full min-w-[640px] text-left text-sm">
@@ -236,7 +238,10 @@ export function LoanTable({ loans, staff }: { loans: Loan[]; staff: boolean }) {
                 {l.borrowDate}
                 {l.isBackdated && <PaperMark />}
               </td>
-              <td className="px-4 py-2 tabular-nums">{l.dueDate}</td>
+              <td className="px-4 py-2 tabular-nums">
+                {l.dueDate}
+                <ExtensionNote loan={l} />
+              </td>
               <td className="px-4 py-2 tabular-nums">
                 {l.returnedOn ?? '—'}
                 {l.returnBackdated && <PaperMark />}
@@ -254,6 +259,44 @@ export function LoanTable({ loans, staff }: { loans: Loan[]; staff: boolean }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+/**
+ * The member's own books, one block each, so that everything — the extension
+ * button included — fits a phone without scrolling sideways (FR-CIR-04, FR-CIR-10).
+ */
+function OwnLoanList({ loans }: { loans: Loan[] }) {
+  const { t } = useTranslation();
+  return (
+    <ul className="mt-3 divide-y divide-stone-100 border-t border-stone-200">
+      {loans.map((l) => (
+        <li
+          key={l.id}
+          className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 py-3 text-sm"
+        >
+          <div className="min-w-0">
+            <p className="font-medium">{l.title}</p>
+            <p className="font-mono text-xs text-stone-600">{l.accessionNo}</p>
+            <p className="mt-1 text-stone-700 tabular-nums">
+              {t('loans.borrowed')} {l.borrowDate} · {t('loans.due')}{' '}
+              {l.returnedOn ? l.dueDate : <strong>{l.dueDate}</strong>}
+              {l.returnedOn && ` · ${t('loans.returned')} ${l.returnedOn}`}
+            </p>
+            <ExtensionNote loan={l} />
+          </div>
+          <div className="text-right">
+            <LoanStatusBadge loan={l} />
+            {l.daysLate > 0 && (
+              <span className="mt-1 block text-xs font-medium text-red-800">
+                {t('loans.daysLate', { count: l.daysLate })}
+              </span>
+            )}
+            <OwnExtension loan={l} />
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
