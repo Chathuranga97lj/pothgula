@@ -8,6 +8,7 @@ import { errorMessage } from '../api/errors';
 import { LOANS_KEY, loanKey, useLoan } from '../api/loans';
 import { useMe } from '../auth/auth';
 import { LoanStatusBadge, MemberPicker } from '../components/loans';
+import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 
 /** FR-CIR-05: one loan, its corrections, and (super admin) voiding it. */
@@ -76,6 +77,9 @@ export function LoanPage() {
             )}
           </div>
         )}
+      </div>
+      <div className="mt-6">
+        <History entity="borrow" entityId={l.id} />
       </div>
     </>
   );

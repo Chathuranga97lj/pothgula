@@ -125,8 +125,17 @@ export async function downloadFile(
     throw new ApiError(0, 'network_error', 'The server cannot be reached.');
   }
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { code?: string; message?: string } | null;
-    throw new ApiError(res.status, body?.code ?? 'http_error', body?.message ?? res.statusText);
+    const body = (await res.json().catch(() => null)) as {
+      code?: string;
+      message?: string;
+      details?: unknown;
+    } | null;
+    throw new ApiError(
+      res.status,
+      body?.code ?? 'http_error',
+      body?.message ?? res.statusText,
+      body?.details,
+    );
   }
   const name = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1];
   saveBlob(await res.blob(), name ?? fallbackName);

@@ -36,7 +36,8 @@
     "myMembership": "My membership",
     "catalogue": "Catalogue",
     "counter": "Counter",
-    "due": "Due books"
+    "due": "Due books",
+    "log": "Activity log"
   },
   "signIn": {
     "title": "Sign in",
@@ -184,7 +185,8 @@
     "file_required": "Choose the file first.",
     "import_has_errors": "Some rows still need correcting; check the file again.",
     "duplicates_unreviewed": "Decide every probable duplicate before importing.",
-    "bad_decision": "A decision does not match the file. Check the file again and decide afresh."
+    "bad_decision": "A decision does not match the file. Check the file again and decide afresh.",
+    "export_too_large": "{{count}} entries match, but one file can carry {{limit}}. Narrow the dates or the filter."
   },
   "images": {
     "uploading": "Uploading…",
@@ -770,5 +772,174 @@
     "newNumber": "New number",
     "more_one": "And {{count}} more in the downloaded list.",
     "more_other": "And {{count}} more in the downloaded list."
+  },
+  "log": {
+    "title": "Activity log",
+    "leadAdmin": "Everything done at your branch, newest first. Nothing here can be changed or deleted.",
+    "leadSuper": "Everything done at every branch, newest first. Nothing here can be changed or deleted.",
+    "filter": "Filter the log",
+    "from": "From",
+    "to": "To",
+    "role": "Role",
+    "anyone": "Anyone",
+    "system": "The system",
+    "branch": "Branch",
+    "everyBranch": "Every branch",
+    "action": "Kind of action",
+    "anyAction": "Any action",
+    "recordKind": "Kind of record",
+    "anyRecord": "Any record",
+    "recordNo": "Record number",
+    "person": "Person (account number)",
+    "personHint": "Or select a name in the list.",
+    "show": "Show",
+    "clear": "Clear filter",
+    "readNote": "Each new search, export and history you open is itself written to the log, so others can see who looked.",
+    "badFilter": "Some of the filter is not valid.",
+    "badRange": "The start date is after the end date.",
+    "needKind": "Choose the kind of record for a record number.",
+    "entries": "Entries",
+    "exportAs": "Take away as a file",
+    "export": {
+      "txt": "Text file",
+      "csv": "Spreadsheet (CSV)",
+      "pdf": "PDF"
+    },
+    "none": "No entries match.",
+    "shown_one": "Showing {{count}} entry.",
+    "shown_other": "Showing {{count}} entries.",
+    "older": "Show older",
+    "open": "Open",
+    "onlyThisPerson": "Show only this person",
+    "onlyThisRecord": "Show only this record",
+    "redacted": "Personal values removed on {{date}} (unsuccessful application).",
+    "history": "History",
+    "showHistory": "Show history",
+    "historyNote": "Every change to this record, from the activity log. Opening it is recorded.",
+    "openInLog": "Open in the activity log",
+    "groups": {
+      "auth": "Signing in and passwords",
+      "application": "Applications",
+      "member": "Members",
+      "membership": "Membership and fees",
+      "account": "Accounts",
+      "staff": "Staff",
+      "super_admin": "Super admin set-up",
+      "borrow": "Lending",
+      "title": "Titles",
+      "copy": "Copies",
+      "category": "Categories",
+      "branch": "Branches and settings",
+      "library": "Library name and logo",
+      "image": "Images",
+      "import": "Catalogue import",
+      "log": "Reading the log",
+      "job": "Scheduled jobs"
+    },
+    "entities": {
+      "app_user": "Person",
+      "membership_payment": "Payment",
+      "borrow": "Loan",
+      "title": "Title",
+      "copy": "Copy",
+      "category": "Category",
+      "branch": "Branch",
+      "branch_setting": "Branch settings",
+      "library": "Library",
+      "image": "Image",
+      "import": "Import",
+      "activity_log": "Activity log",
+      "job": "Job"
+    },
+    "hideHistory": "Hide history",
+    "moreFields_one": "and {{count}} more field",
+    "moreFields_other": "and {{count}} more fields"
+  },
+  "logActions": {
+    "auth": {
+      "signin": "Signed in",
+      "signin_failed": "Failed sign-in",
+      "signout": "Signed out",
+      "locked": "Account locked after failed sign-ins",
+      "password_change": "Changed own password",
+      "password_reset": "Reset a password"
+    },
+    "application": {
+      "create": "Applied for membership",
+      "update": "Application edited",
+      "approve": "Application approved",
+      "reject": "Application rejected",
+      "reopen": "Application reopened",
+      "anonymise": "Applicant anonymised",
+      "anonymise_skipped": "Anonymising skipped"
+    },
+    "member": {
+      "register": "Member registered at the counter",
+      "update_own": "Edited own details",
+      "export": "Member's details exported"
+    },
+    "membership": {
+      "renew": "Membership renewed",
+      "first_fee": "First fee taken",
+      "fee_waived": "First fee waived"
+    },
+    "account": {
+      "deactivate": "Account deactivated",
+      "reactivate": "Account reactivated"
+    },
+    "staff": {
+      "create": "Staff account created"
+    },
+    "super_admin": {
+      "bootstrap": "First super admin created",
+      "server_reset": "Super admin password reset on the server"
+    },
+    "borrow": {
+      "issue": "Book issued",
+      "issue_backdated": "Book issued (paper slip)",
+      "return": "Book taken back",
+      "return_backdated": "Book taken back (paper slip)",
+      "correct": "Loan corrected",
+      "void": "Loan voided"
+    },
+    "title": {
+      "create": "Title added",
+      "update": "Title edited",
+      "merge": "Titles merged"
+    },
+    "copy": {
+      "create": "Copy added",
+      "update": "Copy edited",
+      "withdraw": "Copy withdrawn",
+      "reinstate": "Copy reinstated",
+      "move": "Copy moved to another branch"
+    },
+    "category": {
+      "create": "Category created",
+      "update": "Category renamed",
+      "retire": "Category retired",
+      "reinstate": "Category brought back"
+    },
+    "branch": {
+      "create": "Branch created",
+      "update": "Branch edited",
+      "logo": "Branch logo changed",
+      "settings": "Branch settings changed"
+    },
+    "library": {
+      "rename": "Library renamed",
+      "logo": "Library logo changed"
+    },
+    "image": {
+      "upload": "Image uploaded"
+    },
+    "import": {
+      "commit": "Old catalogue imported"
+    },
+    "log": {
+      "read": "Read the log",
+      "export": "Exported the log",
+      "archive": "Old entries archived"
+    }
   }
 }

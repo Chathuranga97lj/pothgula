@@ -12,6 +12,7 @@ import { CallListPage, DuePage } from './pages/DuePage';
 import { HomePage } from './pages/HomePage';
 import { ImportPage } from './pages/ImportPage';
 import { LoanPage } from './pages/LoanPage';
+import { LogPage } from './pages/LogPage';
 import { MemberPage } from './pages/MemberPage';
 import { MembersPage } from './pages/MembersPage';
 import { MyMembershipPage } from './pages/MyMembershipPage';
@@ -133,6 +134,14 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <CategoriesPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="log"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <LogPage />
               </RequireRole>
             }
           />
