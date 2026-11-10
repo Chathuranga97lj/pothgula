@@ -13,4 +13,5 @@ export * from './membership.js';
 export * from './money.js';
 export * from './password.js';
 export * from './phone.js';
+export * from './reports.js';
 export * from './roles.js';

@@ -14,6 +14,7 @@ import { ImagesController } from './images/images.controller';
 import { JobsModule } from './jobs/jobs.module';
 import { LogModule } from './log/log.module';
 import { MembersModule } from './members/members.module';
+import { ReportsModule } from './reports/reports.module';
 import { StaffModule } from './staff/staff.module';
 
 @Module({
@@ -30,6 +31,7 @@ import { StaffModule } from './staff/staff.module';
     DashboardModule,
     ImportModule,
     LogModule,
+    ReportsModule,
   ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],

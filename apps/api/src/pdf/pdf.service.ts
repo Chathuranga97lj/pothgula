@@ -112,7 +112,9 @@ export class PdfService {
           {
             stack: [
               txt(branding.libraryName, { fontSize: 13, bold: true, color: '#164537' }),
-              txt(branding.branchName, { fontSize: 9, color: '#5c6763' }),
+              ...(branding.branchName
+                ? [txt(branding.branchName, { fontSize: 9, color: '#5c6763' })]
+                : []),
             ],
             margin: [0, 6, 0, 0],
           },
