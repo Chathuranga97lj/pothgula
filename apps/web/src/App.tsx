@@ -9,6 +9,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { CounterPage } from './pages/CounterPage';
 import { CallListPage, DuePage } from './pages/DuePage';
+import { ExtensionsPage } from './pages/ExtensionsPage';
 import { HomePage } from './pages/HomePage';
 import { ImportPage } from './pages/ImportPage';
 import { LoanPage } from './pages/LoanPage';
@@ -79,6 +80,14 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <CallListPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="extensions"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <ExtensionsPage />
               </RequireRole>
             }
           />

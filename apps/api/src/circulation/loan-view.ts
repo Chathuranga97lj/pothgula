@@ -1,7 +1,13 @@
 import { daysLate, isOverdue, type Loan } from '@pothgula/shared';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { Queryable } from '../db/client';
 import { appUser, borrow, copy, title } from '../db/schema';
+
+/**
+ * The SQL side of `isOverdue` and `daysLate`: a loan with an extension request
+ * waiting is neither overdue nor late (FR-CIR-13). Add it wherever SQL decides lateness.
+ */
+export const notProtectedByRequest = sql`${borrow.extensionStatus} <> 'requested'`;
 
 /** A loan with its copy, title and member, ready for `toLoan`; add `.where()`. */
 export function loanQuery(q: Queryable) {
@@ -37,7 +43,12 @@ export interface LoanRow {
 export function toLoan(r: LoanRow, today: string): Loan {
   const b = r.borrow;
   const voided = b.voidedAt !== null;
-  const dates = { dueDate: b.dueDate, returnedOn: b.returnedOn, voided };
+  const dates = {
+    dueDate: b.dueDate,
+    returnedOn: b.returnedOn,
+    voided,
+    extensionStatus: b.extensionStatus,
+  };
   return {
     id: b.id,
     copyId: b.copyId,
@@ -60,5 +71,9 @@ export function toLoan(r: LoanRow, today: string): Loan {
     returnBackdated: b.returnBackdated,
     voidedAt: b.voidedAt?.toISOString() ?? null,
     voidReason: b.voidReason,
+    extensionStatus: b.extensionStatus,
+    extensionRequestedAt: b.extensionRequestedAt?.toISOString() ?? null,
+    extensionDecidedAt: b.extensionDecidedAt?.toISOString() ?? null,
+    extensionReason: b.extensionReason,
   };
 }

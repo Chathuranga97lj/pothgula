@@ -70,3 +70,33 @@ describe('accession input', () => {
     expect(accessionInputSchema.safeParse('KS-A1').success).toBe(false);
   });
 });
+
+describe('an extension request waiting (FR-CIR-13)', () => {
+  const waiting = {
+    dueDate: '2026-11-01',
+    returnedOn: null,
+    extensionStatus: 'requested' as const,
+  };
+
+  it('keeps the loan from being overdue or late while it waits', () => {
+    expect(isOverdue(waiting, today)).toBe(false);
+    expect(daysLate(waiting, today)).toBe(0);
+    expect(daysLate({ ...waiting, returnedOn: '2026-11-05' }, today)).toBe(0);
+  });
+
+  it('protects nothing once decided', () => {
+    for (const extensionStatus of ['none', 'approved', 'declined'] as const) {
+      expect(isOverdue({ ...waiting, extensionStatus }, today)).toBe(true);
+      expect(daysLate({ ...waiting, extensionStatus }, today)).toBe(8);
+    }
+  });
+
+  it('is not counted as a late return in the standing', () => {
+    const s = loanStanding([{ ...waiting, returnedOn: '2026-11-05', voided: false }], today, {
+      maxBooks: 2,
+      frequentLateCount: 1,
+      frequentLateMonths: 12,
+    });
+    expect(s).toMatchObject({ lateReturns: 0, overdueLoans: 0 });
+  });
+});

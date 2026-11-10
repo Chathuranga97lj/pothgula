@@ -13,35 +13,55 @@ import { addMonths, daysBetween } from './dates.js';
 export const BACKDATE_MAX_DAYS = 7;
 
 /**
+ * FR-CIR-10 to FR-CIR-13: where a loan's one extension stands. `requested` is a
+ * member's request waiting for staff; staff can also grant one directly.
+ */
+export const EXTENSION_STATUSES = ['none', 'requested', 'approved', 'declined'] as const;
+export type ExtensionStatus = (typeof EXTENSION_STATUSES)[number];
+
+/** FR-CIR-13: a request still undecided this close to the due date is urgent. */
+export const EXTENSION_URGENT_DAYS = 2;
+
+/** The dates that decide lateness, and the extension that can suspend it. */
+export interface LoanDates {
+  dueDate: string;
+  returnedOn: string | null;
+  voided?: boolean;
+  extensionStatus?: ExtensionStatus;
+}
+
+/**
+ * FR-CIR-13: a request made in time (one can only be made up to the due date)
+ * protects the member while it waits: the loan is neither overdue nor late.
+ */
+const protectedByRequest = (loan: LoanDates) => loan.extensionStatus === 'requested';
+
+/**
  * Days late: from the due date to the day it came back, or to today while it is
  * still out. A book returned on its due date is not late. A voided loan is never late.
  */
-export function daysLate(
-  loan: { dueDate: string; returnedOn: string | null; voided?: boolean },
-  today: string,
-): number {
-  if (loan.voided) return 0;
+export function daysLate(loan: LoanDates, today: string): number {
+  if (loan.voided || protectedByRequest(loan)) return 0;
   return Math.max(0, daysBetween(loan.dueDate, loan.returnedOn ?? today));
 }
 
-/** Still out and past its due date (FR-CIR-02). */
-export function isOverdue(
-  loan: { dueDate: string; returnedOn: string | null; voided?: boolean },
-  today: string,
-): boolean {
-  return !loan.voided && loan.returnedOn === null && loan.dueDate < today;
+/** Still out and past its due date (FR-CIR-02), and no extension request waiting (FR-CIR-13). */
+export function isOverdue(loan: LoanDates, today: string): boolean {
+  return (
+    !loan.voided && !protectedByRequest(loan) && loan.returnedOn === null && loan.dueDate < today
+  );
 }
 
 /** Where a member stands with their loans, as shown at the top of their record. */
 export function loanStanding(
-  loans: { dueDate: string; returnedOn: string | null; voided: boolean }[],
+  loans: (LoanDates & { voided: boolean })[],
   today: string,
   rules: { maxBooks: number; frequentLateCount: number; frequentLateMonths: number },
 ): LoanStanding {
   const counted = loans.filter((l) => !l.voided);
   const since = addMonths(today, -rules.frequentLateMonths);
   const lateReturns = counted.filter(
-    (l) => l.returnedOn !== null && l.returnedOn > l.dueDate && l.returnedOn > since,
+    (l) => daysLate(l, today) > 0 && l.returnedOn !== null && l.returnedOn > since,
   ).length;
   return {
     openLoans: counted.filter((l) => l.returnedOn === null).length,
@@ -111,6 +131,24 @@ export type CorrectLoanRequest = z.input<typeof correctLoanRequestSchema>;
 /** FR-CIR-05: a loan entered entirely by mistake (super admin). */
 export const voidLoanRequestSchema = z.object({ reason: reasonField });
 
+/** FR-CIR-10: declining an extension needs a reason, which the member sees. */
+export const declineExtensionRequestSchema = z.object({ reason: reasonField });
+
+/**
+ * Why an extension cannot be requested, granted or decided (FR-CIR-10, FR-CIR-11).
+ * Each is also an error code, translated by the web app.
+ */
+export const EXTENSION_REFUSALS = [
+  'loan_not_open',
+  'extension_requested',
+  'extension_used',
+  'no_extension_request',
+  'loan_overdue',
+  'member_suspended',
+  'other_book_overdue',
+] as const;
+export type ExtensionRefusalCode = (typeof EXTENSION_REFUSALS)[number];
+
 // ─── Responses ──────────────────────────────────────────────────────────────
 
 /**
@@ -169,6 +207,13 @@ export const loanSchema = z.object({
   returnBackdated: z.boolean(),
   voidedAt: z.iso.datetime().nullable(),
   voidReason: z.string().nullable(),
+  /** FR-CIR-10 to FR-CIR-12: the loan's one extension. */
+  extensionStatus: z.enum(EXTENSION_STATUSES),
+  /** When the member asked; null when staff granted it directly. */
+  extensionRequestedAt: z.iso.datetime().nullable(),
+  extensionDecidedAt: z.iso.datetime().nullable(),
+  /** Why it was declined. */
+  extensionReason: z.string().nullable(),
 });
 export type Loan = z.infer<typeof loanSchema>;
 

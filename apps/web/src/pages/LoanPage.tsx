@@ -8,6 +8,7 @@ import { errorMessage } from '../api/errors';
 import { LOANS_KEY, loanKey, useLoan } from '../api/loans';
 import { useMe } from '../auth/auth';
 import { LoanStatusBadge, MemberPicker } from '../components/loans';
+import { ExtensionCard } from '../components/extensions';
 import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 
@@ -71,6 +72,7 @@ export function LoanPage() {
         </Card>
         {l.status !== 'void' && (
           <div className="space-y-6">
+            <ExtensionCard loan={l} onDone={setNotice} />
             <Correct loan={l} onDone={() => setNotice(t('loans.corrected'))} />
             {user.userType === 'super_admin' && (
               <Void loan={l} onDone={() => setNotice(t('loans.voided'))} />

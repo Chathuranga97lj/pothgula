@@ -154,7 +154,11 @@ export class CirculationService {
         .update(borrow)
         .set({ returnedOn, receivedBy: ctx.user.id, returnBackdated: backdated })
         .where(eq(borrow.id, id));
-      const late = daysLate({ dueDate: loan.dueDate, returnedOn }, returnedOn);
+      // A request still waiting protects the loan: it is not late (FR-CIR-13).
+      const late = daysLate(
+        { dueDate: loan.dueDate, returnedOn, extensionStatus: loan.extensionStatus },
+        returnedOn,
+      );
       await log({
         action: backdated ? 'borrow.return_backdated' : 'borrow.return',
         entity: 'borrow',
@@ -466,6 +470,7 @@ function standingOf(rows: LoanRow[], today: string, rules: Rules): LoanStanding 
       dueDate: r.borrow.dueDate,
       returnedOn: r.borrow.returnedOn,
       voided: r.borrow.voidedAt !== null,
+      extensionStatus: r.borrow.extensionStatus,
     })),
     today,
     rules,

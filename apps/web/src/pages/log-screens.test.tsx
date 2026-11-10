@@ -230,6 +230,10 @@ describe("a record's history (FR-LOG-09)", () => {
     returnBackdated: false,
     voidedAt: null,
     voidReason: null,
+    extensionStatus: 'none',
+    extensionRequestedAt: null,
+    extensionDecidedAt: null,
+    extensionReason: null,
   };
 
   it('reads the log only when the history is opened, since opening it is recorded', async () => {

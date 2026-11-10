@@ -188,7 +188,13 @@
     "duplicates_unreviewed": "Decide every probable duplicate before importing.",
     "bad_decision": "A decision does not match the file. Check the file again and decide afresh.",
     "export_too_large": "{{count}} entries match, but one file can carry {{limit}}. Narrow the dates or the filter.",
-    "report_not_found": "There is no such report."
+    "report_not_found": "There is no such report.",
+    "loan_not_open": "This book is not out on loan.",
+    "extension_requested": "An extension has already been asked for on this loan.",
+    "extension_used": "This loan has already had its one extension.",
+    "no_extension_request": "There is no extension request waiting on this loan.",
+    "loan_overdue": "This book is already overdue, so it can no longer be extended.",
+    "other_book_overdue": "Another book on this card is overdue; it must come back first."
   },
   "images": {
     "uploading": "Uploading…",
@@ -613,7 +619,11 @@
       "returned_late_today_one": "{{count}} book came back late today",
       "returned_late_today_other": "{{count}} books came back late today",
       "expiring_this_month_one": "{{count}} membership ends this month",
-      "expiring_this_month_other": "{{count}} memberships end this month"
+      "expiring_this_month_other": "{{count}} memberships end this month",
+      "extensions_urgent_one": "{{count}} extension request due within two days",
+      "extensions_urgent_other": "{{count}} extension requests due within two days",
+      "extensions_waiting_one": "{{count}} extension request waiting",
+      "extensions_waiting_other": "{{count}} extension requests waiting"
     }
   },
   "sheets": {
@@ -641,7 +651,7 @@
       "today": "{{title}} is due back today",
       "title_one": "{{title}} is due back tomorrow",
       "title_other": "{{title}} is due back in {{count}} days",
-      "body": "Due on {{date}} ({{accession}}). If you need it longer, ask at your branch before then."
+      "body": "Due on {{date}} ({{accession}}). If you need it longer, ask for more time under \"Your books and membership\" before then."
     },
     "expiring": {
       "today": "Your membership ends today",
@@ -659,6 +669,18 @@
       "body": "Visit the {{branch}} branch with proof of identity. A librarian will check your details and approve your membership there.",
       "bodyFee": "Visit the {{branch}} branch with proof of identity and the first year's fee, Rs {{fee}}. A librarian will check your details and approve your membership there.",
       "link": "Check or correct your application."
+    },
+    "extensionPending": {
+      "title": "You asked for more time with {{title}}",
+      "body": "The librarian will decide soon. Until then it is not counted late, even after {{date}}."
+    },
+    "extensionApproved": {
+      "title": "More time with {{title}}",
+      "body": "It is now due back on {{date}} (it was {{from}})."
+    },
+    "extensionDeclined": {
+      "title": "No extension for {{title}}",
+      "body": "{{reason}} Please bring it back by {{date}}."
     }
   },
   "due": {
@@ -684,7 +706,8 @@
       "phones": "Phone",
       "book": "Book",
       "accession": "Book number"
-    }
+    },
+    "extensionRequested": "extension requested"
   },
   "calls": {
     "title": "Call list",
@@ -902,7 +925,12 @@
       "return": "Book taken back",
       "return_backdated": "Book taken back (paper slip)",
       "correct": "Loan corrected",
-      "void": "Loan voided"
+      "void": "Loan voided",
+      "extension_request": "Asked for an extension",
+      "extension_cancel": "Withdrew an extension request",
+      "extension_approve": "Extension approved",
+      "extension_decline": "Extension declined",
+      "extension_grant": "Extension granted by staff"
     },
     "title": {
       "create": "Title added",
@@ -1035,6 +1063,40 @@
       "age41to60": "41–60",
       "over60": "61 and over",
       "unknown": "Not recorded"
+    }
+  },
+  "extensions": {
+    "title": "Extension",
+    "listTitle": "Extension requests",
+    "listLead": "Members asking for more time, the soonest due first. While a request waits, the book is not counted late.",
+    "noneWaiting": "No extension requests are waiting.",
+    "ask": "Ask for more time",
+    "withdraw": "Withdraw the request",
+    "declinedBecause": "Not extended: {{reason}}",
+    "approve": "Approve",
+    "decline": "Decline",
+    "reason": "Reason for declining",
+    "reasonHint": "The member sees this on their dashboard.",
+    "confirmDecline": "Decline the request",
+    "urgent": "Urgent",
+    "dueOn": "Due {{date}}",
+    "wasDue": "Was due {{date}}",
+    "askedOn": "asked {{date}}",
+    "waitingSince": "The member asked on {{date}}; it is waiting for a decision.",
+    "approvedOn": "Extended on {{date}}: due {{to}} instead of {{from}}.",
+    "grantedAtCounter": "Granted by staff.",
+    "declinedOn": "Declined on {{date}}: {{reason}}",
+    "grantLead": "If the member asks in person or by telephone, grant it here. One extension per loan, under the same rules.",
+    "grant": "Grant one extension",
+    "granted": "Extended.",
+    "approvedNotice": "Extension approved.",
+    "declinedNotice": "Extension declined. The member will see the reason.",
+    "approvedFor": "{{title}} extended: now due {{date}}.",
+    "declinedFor": "Extension for {{title}} declined.",
+    "note": {
+      "requested": "extension asked for",
+      "approved": "extended, was {{date}}",
+      "declined": "extension declined"
     }
   }
 }

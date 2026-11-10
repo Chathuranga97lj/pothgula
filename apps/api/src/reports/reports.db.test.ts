@@ -120,6 +120,14 @@ beforeAll(async () => {
       branchId: opts.branchId ?? ks,
       borrowDate: day(borrowed),
       dueDate: opts.due === undefined ? original : day(opts.due),
+      // A moved due date is an approved extension (FR-CIR-10).
+      ...(opts.due === undefined
+        ? {}
+        : {
+            extensionStatus: 'approved' as const,
+            extensionDecidedAt: new Date(),
+            extensionDecidedBy: bossId,
+          }),
       originalDueDate: original,
       issuedBy: bossId,
       returnedOn: opts.returned === undefined ? null : day(opts.returned),

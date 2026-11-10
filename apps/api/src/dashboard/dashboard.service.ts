@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  addDays,
+  EXTENSION_URGENT_DAYS,
   type BranchDue,
   type BranchRef,
   callList,
@@ -15,7 +17,7 @@ import {
 import { and, asc, eq, inArray, isNull, or, type SQL, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { AuthContext } from '../auth/auth-context';
-import { loanColumns, loanQuery, toLoan } from '../circulation/loan-view';
+import { loanColumns, loanQuery, notProtectedByRequest, toLoan } from '../circulation/loan-view';
 import { AppError } from '../common/app-error';
 import { assertBranchAccess } from '../common/scope';
 import type { Db } from '../db/client';
@@ -50,7 +52,8 @@ export class DashboardService {
     if (ids.length === 0) return { today, monthEnd, branches: [] };
 
     const open = isNull(borrow.returnedOn);
-    const overdue = and(open, sql`${borrow.dueDate} < ${today}`);
+    const overdue = and(open, sql`${borrow.dueDate} < ${today}`, notProtectedByRequest);
+    const waiting = and(open, eq(borrow.extensionStatus, 'requested'));
     const loans = await this.db
       .select({
         branchId: borrow.branchId,
@@ -66,7 +69,15 @@ export class DashboardService {
           ),
         ),
         returnedLateToday: countWhere(
-          and(eq(borrow.returnedOn, today), sql`${borrow.returnedOn} > ${borrow.dueDate}`),
+          and(
+            eq(borrow.returnedOn, today),
+            sql`${borrow.returnedOn} > ${borrow.dueDate}`,
+            notProtectedByRequest,
+          ),
+        ),
+        extensionsWaiting: countWhere(waiting),
+        extensionsUrgent: countWhere(
+          and(waiting, sql`${borrow.dueDate} <= ${addDays(today, EXTENSION_URGENT_DAYS)}`),
         ),
       })
       .from(borrow)
@@ -107,8 +118,10 @@ export class DashboardService {
           suspended: p?.suspended ?? 0,
           overdue: l?.overdue ?? 0,
           overdueMembers: l?.overdueMembers ?? 0,
+          extensions_urgent: l?.extensionsUrgent ?? 0,
           due_today: l?.dueToday ?? 0,
           applications_waiting: p?.pending ?? 0,
+          extensions_waiting: l?.extensionsWaiting ?? 0,
           due_soon: l?.dueSoon ?? 0,
           returned_late_today: l?.returnedLateToday ?? 0,
           expiring_this_month: p?.expiring ?? 0,
@@ -133,7 +146,11 @@ export class DashboardService {
             isNull(borrow.returnedOn),
             sql`${borrow.dueDate} <= ${today}::date + ${branchSetting.staffDueWarningDays}`,
           ),
-          and(eq(borrow.returnedOn, today), sql`${borrow.returnedOn} > ${borrow.dueDate}`),
+          and(
+            eq(borrow.returnedOn, today),
+            sql`${borrow.returnedOn} > ${borrow.dueDate}`,
+            notProtectedByRequest,
+          ),
         ),
       )!,
       today,
@@ -175,6 +192,7 @@ export class DashboardService {
         eq(borrow.branchId, b.branchId),
         isNull(borrow.returnedOn),
         sql`${borrow.dueDate} < ${today}`,
+        notProtectedByRequest,
       )!,
       today,
     );
@@ -246,7 +264,6 @@ export class DashboardService {
       memberOtherPhone: r.memberOtherPhone,
       memberBranchCode: r.memberBranchCode,
       copyBranchCode: r.copyBranchCode,
-      extended: r.borrow.dueDate !== r.borrow.originalDueDate,
     }));
   }
 
