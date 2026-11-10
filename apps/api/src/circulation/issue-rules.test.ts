@@ -94,4 +94,14 @@ describe('copies travelling for other-branch requests (FR-REQ-04, FR-REQ-05)', (
     expect(codes(facts({ standing: one, openRequests: 1 }))).toEqual(['member_at_limit']);
     expect(codes(facts({ standing: one, openRequests: 0 }))).toEqual([]);
   });
+
+  it('allows one book while a lost-book settlement is open (FR-LST-04)', () => {
+    const none = facts({ settlingMaxBooks: 1 });
+    expect(codes(none)).toEqual([]);
+    const one = facts({ standing: { ...facts().standing, openLoans: 1 }, settlingMaxBooks: 1 });
+    expect(issueRefusals(one)).toEqual([{ code: 'member_settling', params: { max: 1 } }]);
+    // A setting no lower than the normal limit changes nothing.
+    const same = facts({ standing: { ...facts().standing, openLoans: 2 }, settlingMaxBooks: 2 });
+    expect(codes(same)).toEqual(['member_at_limit']);
+  });
 });

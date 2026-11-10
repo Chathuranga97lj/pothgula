@@ -18,6 +18,7 @@ import type { Db, Queryable, Tx } from '../db/client';
 import { DB } from '../db/db.module';
 import { branch, category, copy, title } from '../db/schema';
 import { allocateAccessionNumbers } from './accession';
+import { writtenOff } from '../settlements/settlements.service';
 
 const PAGE = 50;
 
@@ -242,6 +243,18 @@ export class CatalogueService {
     return this.uow.run(ctx.actor, async (tx, log) => {
       const before = await this.lockCopy(tx, copyId);
       assertBranchAccess(ctx.user, before.branchId);
+      // FR-LST-12: a copy written off as lost comes back only through a super admin's "found".
+      if (
+        before.condition === 'missing' &&
+        changes.condition !== undefined &&
+        changes.condition !== 'missing' &&
+        (await writtenOff(tx, copyId))
+      ) {
+        throw AppError.conflict(
+          'copy_lost_use_found',
+          'This copy was declared lost; a super admin returns it with Found.',
+        );
+      }
       const [after] = await tx.update(copy).set(changes).where(eq(copy.id, copyId)).returning();
       await log({
         action: 'copy.update',

@@ -14,13 +14,18 @@ export interface IssueFacts {
    * one this copy fulfils: each will become a book in hand (FR-CIR-06).
    */
   openRequests?: number;
+  /**
+   * FR-LST-04: while a lost-book settlement is open the member may hold this
+   * many books (the branch's `maxBooksWhileSettling`); absent when none is open.
+   */
+  settlingMaxBooks?: number;
 }
 
 /**
  * FR-CIR-02, FR-CIR-06, FR-MEM-04, FR-AUT-16, R21: every reason this copy
  * cannot go to this member, the book's first. An empty list means it may.
- *
- * M12 adds the one-book limit while a lost-book settlement is open.
+ * A settlement past its window makes the member suspended (FR-LST-15): pass
+ * their status through `effectiveStatus` first.
  */
 export function issueRefusals(f: IssueFacts): IssueRefusal[] {
   const refusals: IssueRefusal[] = [];
@@ -64,7 +69,10 @@ export function issueRefusals(f: IssueFacts): IssueRefusal[] {
   }
 
   if (f.standing.overdueLoans > 0) add('member_overdue', { count: f.standing.overdueLoans });
-  if (f.standing.openLoans + (f.openRequests ?? 0) >= f.standing.maxBooks) {
+  const holding = f.standing.openLoans + (f.openRequests ?? 0);
+  if (f.settlingMaxBooks !== undefined && f.settlingMaxBooks < f.standing.maxBooks) {
+    if (holding >= f.settlingMaxBooks) add('member_settling', { max: f.settlingMaxBooks });
+  } else if (holding >= f.standing.maxBooks) {
     add('member_at_limit', { max: f.standing.maxBooks });
   }
   return refusals;
@@ -86,4 +94,5 @@ export const REFUSAL_MESSAGES: Record<IssueRefusalCode, string> = {
   member_expired: 'This membership has expired; the annual fee is due.',
   member_overdue: 'This member has an overdue book; it must come back first.',
   member_at_limit: 'This member already has as many books as allowed.',
+  member_settling: 'While a lost book is being settled, this member may hold fewer books.',
 };

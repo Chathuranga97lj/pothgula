@@ -24,6 +24,7 @@ import { assertBranchAccess } from '../common/scope';
 import type { Db, Queryable, Tx } from '../db/client';
 import { DB } from '../db/db.module';
 import { appUser, bookRequest, borrow, branchSetting, copy, title } from '../db/schema';
+import { effectiveStatus, isSettling, settlementStanding } from '../settlements/suspension';
 import { issueRefusals, REFUSAL_MESSAGES } from './issue-rules';
 import { loanQuery, type LoanRow, toLoan } from './loan-view';
 
@@ -33,6 +34,7 @@ type CopyRow = typeof copy.$inferSelect;
 interface Rules {
   loanDays: number;
   maxBooks: number;
+  maxBooksWhileSettling: number;
   frequentLateCount: number;
   frequentLateMonths: number;
 }
@@ -40,6 +42,11 @@ interface Rules {
 const memberNotFound = () => AppError.notFound('member_not_found', 'No such member.');
 const copyNotFound = () => AppError.notFound('copy_not_found', 'No copy has that number.');
 const loanNotFound = () => AppError.notFound('loan_not_found', 'No such loan.');
+const lostLoanFixed = () =>
+  AppError.conflict(
+    'loan_lost',
+    'This loan ended with the book declared lost; its settlement deals with it now.',
+  );
 const requestLoanFixed = () =>
   AppError.conflict(
     'loan_from_request',
@@ -168,6 +175,7 @@ export class CirculationService {
       const loan = await this.lockLoan(tx, id);
       assertBranchAccess(ctx.user, loan.branchId);
       if (loan.voidedAt) throw AppError.conflict('loan_void', 'This loan has been voided.');
+      if (loan.lostDeclaredAt) throw lostLoanFixed();
       if (loan.returnedOn) {
         throw AppError.conflict('already_returned', 'This book has already been taken back.');
       }
@@ -238,6 +246,7 @@ export class CirculationService {
       const loan = await this.lockLoan(tx, id);
       assertBranchAccess(ctx.user, loan.branchId);
       if (loan.voidedAt) throw AppError.conflict('loan_void', 'A voided loan is not corrected.');
+      if (loan.lostDeclaredAt) throw lostLoanFixed();
       const today = todayColombo();
       const changes: Partial<BorrowRow> = {};
       const [request] = await tx
@@ -352,6 +361,7 @@ export class CirculationService {
     return this.uow.run(ctx.actor, async (tx, log) => {
       const loan = await this.lockLoan(tx, id);
       if (loan.voidedAt) throw AppError.conflict('loan_void', 'This loan is already void.');
+      if (loan.lostDeclaredAt) throw lostLoanFixed();
       // A loan entered by mistake never collected its held copy: it is held again.
       const [request] = await tx
         .select()
@@ -418,6 +428,8 @@ export class CirculationService {
     const t = await q.select().from(title).where(eq(title.id, c.titleId));
     const today = todayColombo();
     const standing = standingOf(loans, today, rules);
+    // FR-LST-04, FR-LST-15: an open settlement lowers the limit; a passed window suspends.
+    const settling = await settlementStanding(q, member.id, today);
     // FR-REQ-05, FR-CIR-06: who a held copy waits for, and the member's other open requests.
     const [held] = await q
       .select({ id: bookRequest.id, userId: bookRequest.userId })
@@ -450,10 +462,11 @@ export class CirculationService {
       standing,
       refusals: issueRefusals({
         copy: { state, branchId: c.branchId, heldFor: held?.userId ?? null },
-        member,
+        member: { ...member, status: effectiveStatus(member.status, settling) },
         borrowDate,
         standing,
         openRequests: open.length,
+        ...(isSettling(settling) ? { settlingMaxBooks: rules.maxBooksWhileSettling } : {}),
       }),
     };
   }
@@ -501,13 +514,22 @@ export class CirculationService {
       .select({
         loanDays: branchSetting.loanDays,
         maxBooks: branchSetting.maxBooks,
+        maxBooksWhileSettling: branchSetting.maxBooksWhileSettling,
         frequentLateCount: branchSetting.frequentLateCount,
         frequentLateMonths: branchSetting.frequentLateMonths,
       })
       .from(branchSetting)
       .where(eq(branchSetting.branchId, branchId));
     // Every branch is created with its settings row; these are the v3.1 defaults.
-    return row ?? { loanDays: 14, maxBooks: 2, frequentLateCount: 3, frequentLateMonths: 12 };
+    return (
+      row ?? {
+        loanDays: 14,
+        maxBooks: 2,
+        maxBooksWhileSettling: 1,
+        frequentLateCount: 3,
+        frequentLateMonths: 12,
+      }
+    );
   }
 
   /**
@@ -584,6 +606,7 @@ function standingOf(rows: LoanRow[], today: string, rules: Rules): LoanStanding 
       returnedOn: r.borrow.returnedOn,
       voided: r.borrow.voidedAt !== null,
       extensionStatus: r.borrow.extensionStatus,
+      lost: r.borrow.lostDeclaredAt !== null,
     })),
     today,
     rules,

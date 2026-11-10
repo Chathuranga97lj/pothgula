@@ -6,6 +6,8 @@ import {
   loanStanding,
   type MemberPanelItem,
   MEMBERSHIP_WARNING_DAYS,
+  SETTLEMENT_CLOSING_DAYS,
+  type Settlement,
 } from '@pothgula/shared';
 
 export interface MemberFacts {
@@ -15,6 +17,8 @@ export interface MemberFacts {
   loans: Loan[];
   /** Their requests for books from other branches, the latest first (§8). */
   requests?: BookRequest[];
+  /** Open lost-book settlements (FR-LST-03). */
+  settlements?: Settlement[];
   rules: { memberDueWarningDays: number; frequentLateCount: number; frequentLateMonths: number };
   branchName: string;
   feeCents: number;
@@ -41,6 +45,21 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
 
   const items: MemberPanelItem[] = [];
   if (facts.status === 'suspended') items.push({ kind: 'suspended', tone: 'urgent' });
+
+  // FR-LST-03, FR-LST-14: the amount and the days counting down; urgent near the end.
+  const owed = (facts.settlements ?? []).filter((s) => s.status === 'open');
+  for (const s of owed.toSorted((a, b) => a.daysLeft - b.daysLeft)) {
+    items.push({
+      kind: 'settlement',
+      tone: s.daysLeft <= SETTLEMENT_CLOSING_DAYS ? 'urgent' : 'warning',
+      settlementId: s.id,
+      title: s.title,
+      accessionNo: s.accessionNo,
+      amountDueCents: s.amountDueCents,
+      windowEnds: s.windowEnds,
+      daysLeft: s.daysLeft,
+    });
+  }
 
   const open = facts.loans.filter((l) => l.status === 'open');
   const ref = (l: Loan) => ({
@@ -138,6 +157,7 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
       returnedOn: l.returnedOn,
       voided: false,
       extensionStatus: l.extensionStatus,
+      lost: l.status === 'lost',
     })),
     today,
     { maxBooks: 1, ...facts.rules },

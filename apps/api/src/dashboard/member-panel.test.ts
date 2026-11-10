@@ -33,6 +33,7 @@ const loan = (dueDate: string, returnedOn: string | null = null): Loan => {
     extensionRequestedAt: null,
     extensionDecidedAt: null,
     extensionReason: null,
+    settlementId: null,
   };
 };
 const facts = (over: Partial<MemberFacts>): MemberFacts => ({

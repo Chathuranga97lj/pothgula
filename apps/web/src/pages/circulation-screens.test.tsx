@@ -60,6 +60,7 @@ const loan = (over: Record<string, unknown> = {}) => ({
   extensionRequestedAt: null,
   extensionDecidedAt: null,
   extensionReason: null,
+  settlementId: null,
   ...over,
 });
 const standing = (over: Record<string, unknown> = {}) => ({

@@ -9,6 +9,7 @@ import type { Db, Queryable, Tx } from '../db/client';
 import { DB } from '../db/db.module';
 import { appUser, borrow, branchSetting } from '../db/schema';
 import { type ExtensionAction, EXTENSION_MESSAGES, extensionRefusals } from './extension-rules';
+import { effectiveStatus, settlementStanding } from '../settlements/suspension';
 import { loanQuery, toLoan } from './loan-view';
 
 type BorrowRow = typeof borrow.$inferSelect;
@@ -195,7 +196,10 @@ export class ExtensionsService {
           dueDate: loan.dueDate,
           extensionStatus: loan.extensionStatus,
         },
-        memberStatus: member!.status,
+        memberStatus: effectiveStatus(
+          member!.status,
+          await settlementStanding(tx, loan.userId, today),
+        ),
         otherOverdue: await this.otherOverdue(tx, loan, today),
         today,
       });

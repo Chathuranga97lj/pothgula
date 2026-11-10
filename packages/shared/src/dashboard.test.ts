@@ -31,6 +31,7 @@ const loan = (over: Partial<DueLoan>): DueLoan => ({
   extensionRequestedAt: null,
   extensionDecidedAt: null,
   extensionReason: null,
+  settlementId: null,
   ...over,
 });
 
@@ -81,6 +82,9 @@ describe('staffPanel', () => {
     copies_elsewhere: 0,
     due_soon: 0,
     returned_late_today: 0,
+    settlements_passed: 0,
+    settlements_closing: 0,
+    settlements_open: 0,
     expiring_this_month: 0,
   };
 

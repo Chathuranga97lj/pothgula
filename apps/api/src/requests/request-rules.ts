@@ -13,6 +13,8 @@ export interface RequestFacts {
   /** The member's open requests, not counting the one being decided. */
   openRequests: number;
   today: string;
+  /** FR-LST-04: the lower limit while a lost-book settlement is open. */
+  settlingMaxBooks?: number;
 }
 
 /**
@@ -34,6 +36,7 @@ export function requestRefusals(f: RequestFacts): RequestRefusal[] {
     borrowDate: f.today,
     standing: f.standing,
     openRequests: f.openRequests,
+    ...(f.settlingMaxBooks !== undefined ? { settlingMaxBooks: f.settlingMaxBooks } : {}),
   });
   for (const r of asIfIssued) {
     if (r.code.startsWith('member_')) refusals.push(r.code);

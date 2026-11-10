@@ -455,6 +455,7 @@ export class ReportsService {
   private async late(s: Scope): Promise<Body> {
     const returnedLate = sql`
       b.voided_at IS NULL AND b.returned_on > b.due_date AND b.extension_status <> 'requested'
+      AND b.lost_declared_at IS NULL
       AND b.returned_on BETWEEN ${s.from}::date AND ${s.to}::date
       AND ${this.inScope(s, sql`b.branch_id`)}`;
     const [people, branches] = await Promise.all([

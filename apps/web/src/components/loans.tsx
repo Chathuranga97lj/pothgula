@@ -82,11 +82,13 @@ export function LoanStatusBadge({ loan }: { loan: Loan }) {
   const [key, tone] =
     loan.status === 'void'
       ? ['void', 'bg-stone-200 text-stone-700 line-through']
-      : loan.overdue
-        ? ['overdue', 'bg-red-50 text-red-900']
-        : loan.status === 'open'
-          ? ['open', 'bg-sky-50 text-sky-950']
-          : ['returned', 'bg-emerald-50 text-emerald-900'];
+      : loan.status === 'lost'
+        ? ['lost', 'bg-red-50 text-red-900']
+        : loan.overdue
+          ? ['overdue', 'bg-red-50 text-red-900']
+          : loan.status === 'open'
+            ? ['open', 'bg-sky-50 text-sky-950']
+            : ['returned', 'bg-emerald-50 text-emerald-900'];
   return (
     <span className={`rounded px-2 py-0.5 text-xs font-medium whitespace-nowrap ${tone}`}>
       {t(`loans.status.${key}`)}

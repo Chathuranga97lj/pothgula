@@ -26,6 +26,7 @@ import { appUser, bookRequest, borrow, branch, branchSetting, copy, title } from
 import { MembersService } from '../members/members.service';
 import { REFUSAL_MESSAGES } from '../circulation/issue-rules';
 import { REQUEST_MESSAGES, type RequestRefusal, requestRefusals } from './request-rules';
+import { effectiveStatus, isSettling, settlementStanding } from '../settlements/suspension';
 
 type RequestRow = typeof bookRequest.$inferSelect;
 
@@ -335,7 +336,7 @@ export class RequestsService {
       .where(eq(branchSetting.branchId, r.toBranchId));
     const months = rules?.months ?? 12;
     const standing = loanStanding(
-      loans.map((l) => ({ ...l, voided: false })),
+      loans.map((l) => ({ ...l, voided: false, lost: l.status === 'lost' })),
       today,
       { maxBooks: 1, frequentLateCount: 1, frequentLateMonths: months },
     );
@@ -518,6 +519,7 @@ export class RequestsService {
         returnedOn: b.returnedOn,
         voided: b.voidedAt !== null,
         extensionStatus: b.extensionStatus,
+        lost: b.lostDeclaredAt !== null,
       })),
       today,
       {
@@ -526,13 +528,16 @@ export class RequestsService {
         frequentLateMonths: rules?.frequentLateMonths ?? 12,
       },
     );
+    // FR-LST-04, FR-LST-15: an open settlement lowers the limit; a passed window suspends.
+    const settling = await settlementStanding(q, member.id, today);
     return requestRefusals({
-      member,
+      member: { ...member, status: effectiveStatus(member.status, settling) },
       fromBranchId,
       shelfCopies: shelf.rows[0]?.n ?? 0,
       standing,
       openRequests: open.length,
       today,
+      ...(isSettling(settling) ? { settlingMaxBooks: rules?.maxBooksWhileSettling ?? 1 } : {}),
     });
   }
 

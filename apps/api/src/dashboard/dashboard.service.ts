@@ -11,6 +11,7 @@ import {
   endOfMonth,
   type MemberDashboard,
   type StaffCounts,
+  SETTLEMENT_CLOSING_DAYS,
   type StaffDashboard,
   staffPanel,
   todayColombo,
@@ -18,13 +19,20 @@ import {
 import { and, asc, eq, inArray, isNull, or, type SQL, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { AuthContext } from '../auth/auth-context';
-import { loanColumns, loanQuery, notProtectedByRequest, toLoan } from '../circulation/loan-view';
+import {
+  loanColumns,
+  loanQuery,
+  notLost,
+  notProtectedByRequest,
+  toLoan,
+} from '../circulation/loan-view';
 import { AppError } from '../common/app-error';
 import { assertBranchAccess } from '../common/scope';
 import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
-import { appUser, borrow, branch, branchSetting, copy, title } from '../db/schema';
+import { appUser, bookSettlement, borrow, branch, branchSetting, copy, title } from '../db/schema';
 import { RequestsService } from '../requests/requests.service';
+import { SettlementsService } from '../settlements/settlements.service';
 import { memberPanel } from './member-panel';
 
 const memberBranch = alias(branch, 'member_branch');
@@ -45,6 +53,7 @@ export class DashboardService {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly requests: RequestsService,
+    private readonly settlements: SettlementsService,
   ) {}
 
   // ─── Staff (FR-NOT-03, FR-NOT-07, FR-NOT-09) ───────────────────────────────
@@ -78,6 +87,7 @@ export class DashboardService {
             eq(borrow.returnedOn, today),
             sql`${borrow.returnedOn} > ${borrow.dueDate}`,
             notProtectedByRequest,
+            notLost,
           ),
         ),
         extensionsWaiting: countWhere(waiting),
@@ -113,6 +123,23 @@ export class DashboardService {
       .where(and(eq(appUser.userType, 'member'), inArray(appUser.branchId, ids)))
       .groupBy(appUser.branchId);
 
+    // FR-LST-10, FR-LST-14: unsettled lost books at the member's branch.
+    const owed = await this.db
+      .select({
+        branchId: bookSettlement.branchId,
+        open: sql<number>`count(*)`.mapWith(Number),
+        passed: countWhere(sql`${bookSettlement.windowEnds} < ${today}`),
+        closing: countWhere(
+          and(
+            sql`${bookSettlement.windowEnds} >= ${today}`,
+            sql`${bookSettlement.windowEnds} <= ${addDays(today, SETTLEMENT_CLOSING_DAYS)}`,
+          ),
+        ),
+      })
+      .from(bookSettlement)
+      .where(and(eq(bookSettlement.status, 'open'), inArray(bookSettlement.branchId, ids)))
+      .groupBy(bookSettlement.branchId);
+
     // FR-REQ-09: the same lists the requests page shows, counted.
     const board = await this.requests.board(ctx, null);
     const lapsingBy = addDays(today, HOLD_LAPSING_DAYS);
@@ -124,8 +151,12 @@ export class DashboardService {
         const l = loans.find((r) => r.branchId === b.branchId);
         const r = board.branches.find((x) => x.branchId === b.branchId);
         const p = people.find((r) => r.branchId === b.branchId);
+        const o = owed.find((r) => r.branchId === b.branchId);
         const counts: StaffCounts = {
           suspended: p?.suspended ?? 0,
+          settlements_passed: o?.passed ?? 0,
+          settlements_closing: o?.closing ?? 0,
+          settlements_open: o?.open ?? 0,
           overdue: l?.overdue ?? 0,
           overdueMembers: l?.overdueMembers ?? 0,
           transit_overdue: r?.transitOverdue.length ?? 0,
@@ -166,6 +197,7 @@ export class DashboardService {
             eq(borrow.returnedOn, today),
             sql`${borrow.returnedOn} > ${borrow.dueDate}`,
             notProtectedByRequest,
+            notLost,
           ),
         ),
       )!,
@@ -243,6 +275,7 @@ export class DashboardService {
         expireAt: user.expireAt,
         loans: rows.map((r) => toLoan(r, today)),
         requests: await this.requests.mine(ctx),
+        settlements: await this.settlements.openFor(this.db, user.id, today),
         rules: {
           memberDueWarningDays: home?.memberDueWarningDays ?? 5,
           frequentLateCount: home?.frequentLateCount ?? 3,

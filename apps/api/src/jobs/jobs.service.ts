@@ -12,6 +12,7 @@ import { DB } from '../db/db.module';
 import { archiveOldEntries } from '../log/archive';
 import { lapseExpiredHolds } from '../requests/lapse';
 import { anonymiseUnsuccessfulApplications } from '../members/anonymise';
+import { syncSuspensions } from '../settlements/suspension';
 
 const EVERY_MS = 6 * 60 * 60_000;
 const FIRST_RUN_MS = 60_000;
@@ -50,6 +51,14 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     try {
       const ids = await anonymiseUnsuccessfulApplications(this.db, this.uow);
       if (ids.length > 0) this.logger.log(`Anonymised ${ids.length} unsuccessful application(s).`);
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error.stack : String(error));
+    }
+    // Before lapsing holds: a member suspended now has their held copy sent home.
+    try {
+      const run = await syncSuspensions(this.db, this.uow);
+      if (run.suspended.length > 0) this.logger.log(`Suspended ${run.suspended.length} member(s).`);
+      if (run.lifted.length > 0) this.logger.log(`Lifted ${run.lifted.length} suspension(s).`);
     } catch (error) {
       this.logger.error(error instanceof Error ? error.stack : String(error));
     }

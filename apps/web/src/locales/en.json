@@ -39,7 +39,8 @@
     "due": "Due books",
     "log": "Activity log",
     "reports": "Reports",
-    "requests": "Requests"
+    "requests": "Requests",
+    "lostBooks": "Lost books"
   },
   "signIn": {
     "title": "Sign in",
@@ -206,7 +207,21 @@
     "copy_not_on_shelf": "That copy is not on the shelf to send.",
     "hold_not_over": "The hold has not ended yet; the member may still collect it.",
     "loan_from_request": "This loan is a book from another branch; its copy and member cannot change.",
-    "request_moved_on": "The copy has already been sent back to its branch."
+    "request_moved_on": "The copy has already been sent back to its branch.",
+    "member_settling": "While a lost book is being settled, the member may hold {{max}} book at a time.",
+    "loan_lost": "This loan ended with the book declared lost; its settlement deals with it now.",
+    "settlement_not_found": "That settlement does not exist.",
+    "settlement_closed": "This settlement is already closed.",
+    "settlement_not_paid": "There is no payment to reverse.",
+    "amount_required": "There is no tariff amount for this category; enter the amount.",
+    "amount_reason_required": "The amount differs from the tariff; give the reason.",
+    "amount_not_lower": "The new amount must be lower than the amount due, and more than nothing.",
+    "amount_mismatch": "The payment must be the full amount due.",
+    "window_extended": "The window has already been extended once.",
+    "payment_reversed": "That payment has already been reversed.",
+    "copy_not_lost": "This copy is not recorded as missing.",
+    "copy_lost_use_found": "This copy was declared lost. A super admin returns it to the shelf with “Found”.",
+    "super_admin_only": "Only a super admin can do this."
   },
   "images": {
     "uploading": "Uploading…",
@@ -536,7 +551,10 @@
     "mergeInto": "Merge into this",
     "merged": "Merged.",
     "mergedInto": "This entry was merged into another.",
-    "openThatTitle": "Open that entry"
+    "openThatTitle": "Open that entry",
+    "found": "Found",
+    "foundReason": "Where was {{no}} found?",
+    "confirmFound": "Back on the shelf"
   },
   "counter": {
     "title": "Counter",
@@ -587,7 +605,8 @@
       "open": "Out",
       "overdue": "Overdue",
       "returned": "Returned",
-      "void": "Void"
+      "void": "Void",
+      "lost": "Lost"
     },
     "daysLate_one": "{{count}} day late",
     "daysLate_other": "{{count}} days late",
@@ -612,7 +631,9 @@
     "voidLead": "Only for a loan entered entirely by mistake. It stays on the record, marked void, and counts nowhere.",
     "voidReason": "Reason for voiding",
     "void": "Void the loan",
-    "voided": "The loan is void."
+    "voided": "The loan is void.",
+    "lostOn": "Declared lost",
+    "openSettlement": "Open the settlement"
   },
   "today": {
     "counter": "Go to the counter",
@@ -653,7 +674,13 @@
       "requests_arriving_one": "{{count}} book on its way here",
       "requests_arriving_other": "{{count}} books on their way here",
       "copies_elsewhere_one": "{{count}} of our books out at another branch",
-      "copies_elsewhere_other": "{{count}} of our books out at other branches"
+      "copies_elsewhere_other": "{{count}} of our books out at other branches",
+      "settlements_passed_one": "{{count}} lost book past its 100 days, unsettled",
+      "settlements_passed_other": "{{count}} lost books past their 100 days, unsettled",
+      "settlements_closing_one": "{{count}} lost-book window closing within 14 days",
+      "settlements_closing_other": "{{count}} lost-book windows closing within 14 days",
+      "settlements_open_one": "{{count}} lost book not yet settled",
+      "settlements_open_other": "{{count}} lost books not yet settled"
     }
   },
   "sheets": {
@@ -666,7 +693,7 @@
     "myMembership": "Your books and membership",
     "suspended": {
       "title": "Your membership is suspended",
-      "body": "You cannot borrow until it is lifted. Please speak to the librarian at your branch."
+      "body": "A lost book was not settled in time. Bring a copy of the same book or pay the amount at your branch, and borrowing opens again at once."
     },
     "overdue": {
       "title_one": "{{title}} is {{count}} day late",
@@ -724,6 +751,13 @@
       "title": "{{title}} is coming to you",
       "accepted": "{{branch}} has set a copy aside and will send it.",
       "sent": "{{branch}} has sent it; you will be told when it arrives."
+    },
+    "settlement": {
+      "title": "A lost book to settle: {{title}} — {{amount}}",
+      "body_one": "{{count}} day left, until {{date}} ({{accession}}). Bring a copy of the same book, or pay the amount at your branch. Meanwhile you may borrow one book.",
+      "body_other": "{{count}} days left, until {{date}} ({{accession}}). Bring a copy of the same book, or pay the amount at your branch. Meanwhile you may borrow one book.",
+      "passed": "Not settled in time: {{title}} — {{amount}}",
+      "passedBody": "The time to settle ended on {{date}}. Borrowing is suspended until you bring a copy of the same book or pay the amount at your branch."
     }
   },
   "due": {
@@ -760,7 +794,7 @@
   },
   "standing": {
     "suspended": "Suspended",
-    "suspendedBody": "This member cannot borrow, request or extend until a super admin lifts the suspension.",
+    "suspendedBody": "A lost-book settlement passed its window. The member cannot borrow, request or extend until it is settled, or a super admin waives or extends it.",
     "pending": "Application waiting",
     "pendingBody": "Not yet a member: approve the application before lending anything.",
     "lateReturns_one": "{{count}} late return in the last {{months}} months.",
@@ -903,7 +937,9 @@
       "import": "Catalogue import",
       "log": "Reading the log",
       "job": "Scheduled jobs",
-      "request": "Books between branches"
+      "request": "Books between branches",
+      "settlement": "Lost books",
+      "tariff": "Lost-book tariff"
     },
     "entities": {
       "app_user": "Person",
@@ -919,7 +955,10 @@
       "import": "Import",
       "activity_log": "Activity log",
       "job": "Job",
-      "book_request": "Request"
+      "book_request": "Request",
+      "book_settlement": "Lost-book settlement",
+      "settlement_payment": "Lost-book payment",
+      "lost_tariff": "Tariff amount"
     },
     "hideHistory": "Hide history",
     "moreFields_one": "and {{count}} more field",
@@ -946,7 +985,9 @@
     "member": {
       "register": "Member registered at the counter",
       "update_own": "Edited own details",
-      "export": "Member's details exported"
+      "export": "Member's details exported",
+      "suspend": "Member suspended (lost book unsettled)",
+      "unsuspend": "Suspension lifted"
     },
     "membership": {
       "renew": "Membership renewed",
@@ -975,7 +1016,8 @@
       "extension_cancel": "Withdrew an extension request",
       "extension_approve": "Extension approved",
       "extension_decline": "Extension declined",
-      "extension_grant": "Extension granted by staff"
+      "extension_grant": "Extension granted by staff",
+      "lost": "Book declared lost"
     },
     "title": {
       "create": "Title added",
@@ -987,7 +1029,8 @@
       "update": "Copy edited",
       "withdraw": "Copy withdrawn",
       "reinstate": "Copy reinstated",
-      "move": "Copy moved to another branch"
+      "move": "Copy moved to another branch",
+      "found": "Missing copy found"
     },
     "category": {
       "create": "Category created",
@@ -1031,6 +1074,24 @@
       "return_arrive": "Book back on its own shelf",
       "lost": "Book lost on the way",
       "reopen": "Request put back a step"
+    },
+    "settlement": {
+      "declare": "Lost-book settlement opened",
+      "pay": "Lost book paid for",
+      "replace": "Lost book replaced",
+      "waive": "Settlement waived",
+      "reduce": "Settlement amount reduced",
+      "extend": "Settlement window extended",
+      "reverse_payment": "Lost-book payment reversed",
+      "found": "Lost book found"
+    },
+    "tariff": {
+      "update": "Tariff amount changed"
+    },
+    "job": {
+      "suspend_skipped": "Suspension check skipped",
+      "unsuspend_skipped": "Lifting check skipped",
+      "requests_end_skipped": "Request check skipped"
     }
   },
   "reports": {
@@ -1287,5 +1348,146 @@
       "books": "Books out now",
       "noBooks": "None."
     }
+  },
+  "settlements": {
+    "boardTitle": "Lost books",
+    "boardLead": "Books declared lost or ruined while on loan, and what each member still owes. Those past their window come first.",
+    "openTitle": "Not yet settled",
+    "recentTitle": "Settled in the last 30 days",
+    "tariffLink": "The lost-book tariff",
+    "status": {
+      "open": "Open",
+      "passed": "Window passed",
+      "replaced": "Replaced",
+      "paid": "Paid",
+      "waived": "Waived",
+      "found": "Found"
+    },
+    "kind": {
+      "lost": "Lost",
+      "damaged": "Ruined beyond use"
+    },
+    "cleared": {
+      "replaced_one": "Replaced on {{date}}, after {{count}} day",
+      "replaced_other": "Replaced on {{date}}, after {{count}} days",
+      "paid_one": "Paid on {{date}}, after {{count}} day",
+      "paid_other": "Paid on {{date}}, after {{count}} days",
+      "waived_one": "Waived on {{date}}, after {{count}} day",
+      "waived_other": "Waived on {{date}}, after {{count}} days",
+      "found_one": "The book was found on {{date}}, after {{count}} day",
+      "found_other": "The book was found on {{date}}, after {{count}} days"
+    },
+    "daysLeft_one": "{{count}} day left (until {{date}})",
+    "daysLeft_other": "{{count}} days left (until {{date}})",
+    "passedSince_one": "window passed {{count}} day ago ({{date}})",
+    "passedSince_other": "window passed {{count}} days ago ({{date}})",
+    "declaredOn": "declared {{date}}",
+    "bannerTitle_one": "A lost book to settle",
+    "bannerTitle_other": "{{count}} lost books to settle",
+    "bannerOpen": "Until it is settled the member may hold one book at a time.",
+    "bannerPassed": "A window has passed: the member is suspended until it is settled, or a super admin waives or extends it.",
+    "historyTitle": "Lost books",
+    "mineTitle": "Lost books",
+    "mineLead": "Bring a copy of the same book, or pay the amount, at your branch before the date shown. Until then you may borrow one book at a time.",
+    "declareTitle": "Lost or ruined",
+    "declareLead": "If the member has lost the book, or it came back ruined beyond use, declare it here instead of taking it back. The loan ends today and the member owes the book.",
+    "declareStart": "Declare it lost…",
+    "declareConfirm": "Declare lost",
+    "quote": "{{branch}}’s tariff for {{category}} is {{amount}}.",
+    "quoteNone": "{{branch}} has no tariff amount for {{category}}: enter one.",
+    "quoteWindow_one": "The member has {{count}} day, until {{date}}, to settle.",
+    "quoteWindow_other": "The member has {{count}} days, until {{date}}, to settle.",
+    "kindLabel": "What happened",
+    "amountLabel": "Amount (Rs.)",
+    "amountHint": "Leave empty to use the tariff.",
+    "reasonLabel": "What happened, briefly",
+    "reasonHint": "Kept on the record and in the activity log.",
+    "amountReasonLabel": "Why this amount",
+    "amountReasonNeeded": "The amount differs from the tariff, so a reason is needed.",
+    "badAmount": "That is not an amount in rupees.",
+    "badDays": "Enter a whole number of days.",
+    "pageLead": "Owed by {{name}}",
+    "noTariff": "None for this category",
+    "fields": {
+      "member": "Member",
+      "phones": "Phone",
+      "copy": "Book number",
+      "owner": "Owning branch",
+      "kind": "What happened",
+      "reason": "Details",
+      "declared": "Declared",
+      "tariff": "Tariff amount",
+      "set": "Amount set",
+      "amountReason": "Why that amount",
+      "due": "Amount due now",
+      "reductionReason": "Why reduced",
+      "window": "To settle",
+      "extended": "Window extended",
+      "replacement": "Replacement copy",
+      "waiver": "Why waived",
+      "found": "Found",
+      "handledBy": "Settled by"
+    },
+    "extendedBy_one": "by {{count}} day — {{reason}}",
+    "extendedBy_other": "by {{count}} days — {{reason}}",
+    "paymentsTitle": "Payments",
+    "receipt": "receipt {{no}}",
+    "reverse": "Reverse this payment",
+    "reverseReason": "Why it is reversed (a mistake, or a refund)",
+    "clearTitle": "Settle it",
+    "clearLead": "Two ways only: payment of the amount due, or a copy of the same book.",
+    "payTitle": "Payment of {{amount}}",
+    "receiptNo": "Receipt number",
+    "paidOn": "Paid on",
+    "paidOnHint": "Today, or the date on a paper receipt from the last 7 days.",
+    "pay": "Record the payment",
+    "replaceTitle": "A copy of the same book",
+    "replaceLead": "Check that the book in front of you is “{{title}}” and in acceptable condition. It becomes a new copy with a new {{branch}} book number; the lost one stays written off.",
+    "replaceStart": "Accept a copy of the same book…",
+    "replaceSource": "Where it came from (optional)",
+    "replaceSourceHint": "Kept on the new copy. Left empty, it says which copy it replaces.",
+    "replaceConfirm": "Accept it and give it a number",
+    "decisionsTitle": "Super admin",
+    "decisionsLead": "Each decision needs a written reason, and the old and new figures are kept.",
+    "decide": {
+      "reduce": "Reduce the amount",
+      "extend": "Extend the window once",
+      "waive": "Waive it",
+      "found": "The book was found"
+    },
+    "decideLead": {
+      "reduce": "The member then owes the lower amount.",
+      "extend": "Extending a window that has passed lifts the suspension.",
+      "waive": "The member owes nothing more, and any suspension lifts.",
+      "found": "The copy goes back on the shelf. An open settlement closes; a paid one stays, so you can decide about a refund."
+    },
+    "newAmount": "New amount (Rs.)",
+    "extraDays": "Extra days",
+    "decisionReason": "Reason",
+    "foundPaidTitle": "The book was found after it was paid for",
+    "foundPaidBody": "{{amount}} was paid. If the library refunds it, reverse the payment below with the reason; that is the refund.",
+    "done": {
+      "declared": "Declared lost. The settlement is open.",
+      "paid": "Payment recorded. The settlement is closed.",
+      "replaced": "Accepted as copy {{accession}}. The settlement is closed.",
+      "reversed": "Payment reversed.",
+      "reduce": "Amount reduced.",
+      "extend": "Window extended.",
+      "waive": "Settlement waived.",
+      "found": "The copy is back on the shelf."
+    }
+  },
+  "tariff": {
+    "title": "Lost-book tariff — {{branch}}",
+    "lead": "What a member pays for a lost or ruined book, by category, unless they bring a copy of the same book. Every change is kept in the activity log.",
+    "category": "Category",
+    "amount": "Amount (Rs.)",
+    "none": "No amount",
+    "retired": "retired",
+    "changed": "Changed by {{name}} on {{date}}",
+    "blankHint": "Leave a category empty and staff enter the amount when a book is declared lost.",
+    "save": "Save the tariff",
+    "saved": "Tariff saved.",
+    "badAmount": "The amount for {{category}} is not an amount in rupees."
   }
 }

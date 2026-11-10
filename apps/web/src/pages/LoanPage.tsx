@@ -9,6 +9,7 @@ import { LOANS_KEY, loanKey, useLoan } from '../api/loans';
 import { useMe } from '../auth/auth';
 import { LoanStatusBadge, MemberPicker } from '../components/loans';
 import { ExtensionCard } from '../components/extensions';
+import { DeclareLost } from '../components/settlements';
 import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 
@@ -34,7 +35,19 @@ export function LoanPage() {
     ],
     [t('loans.borrowed'), withPaper(l.borrowDate, l.isBackdated, t('loans.paper'))],
     [t('loans.due'), l.dueDate],
-    [t('loans.returned'), withPaper(l.returnedOn ?? '—', l.returnBackdated, t('loans.paper'))],
+    l.status === 'lost'
+      ? [
+          t('loans.lostOn'),
+          <>
+            {l.returnedOn}{' '}
+            {l.settlementId && (
+              <Link to={`/lost-books/${l.settlementId}`} className="ml-1 underline">
+                {t('loans.openSettlement')}
+              </Link>
+            )}
+          </>,
+        ]
+      : [t('loans.returned'), withPaper(l.returnedOn ?? '—', l.returnBackdated, t('loans.paper'))],
     ...(l.daysLate > 0
       ? ([[t('loans.lateness'), t('loans.daysLate', { count: l.daysLate })]] as [
           string,
@@ -70,9 +83,12 @@ export function LoanPage() {
             ))}
           </dl>
         </Card>
-        {l.status !== 'void' && (
+        {l.status !== 'void' && l.status !== 'lost' && (
           <div className="space-y-6">
             <ExtensionCard loan={l} onDone={setNotice} />
+            {l.status === 'open' && (
+              <DeclareLost loan={l} onDone={() => setNotice(t('settlements.done.declared'))} />
+            )}
             <Correct loan={l} onDone={() => setNotice(t('loans.corrected'))} />
             {user.userType === 'super_admin' && (
               <Void loan={l} onDone={() => setNotice(t('loans.voided'))} />

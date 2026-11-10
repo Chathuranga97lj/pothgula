@@ -31,6 +31,9 @@ const counts = (over: Record<string, number> = {}) => ({
   copies_elsewhere: 0,
   due_soon: 0,
   returned_late_today: 0,
+  settlements_passed: 0,
+  settlements_closing: 0,
+  settlements_open: 0,
   expiring_this_month: 0,
   ...over,
 });
@@ -85,6 +88,7 @@ const dueLoan = (over: Record<string, unknown> = {}) => ({
   extensionRequestedAt: null,
   extensionDecidedAt: null,
   extensionReason: null,
+  settlementId: null,
   ...over,
 });
 const overdueLoan = (id: number, memberId: number, name: string, daysLate: number) =>

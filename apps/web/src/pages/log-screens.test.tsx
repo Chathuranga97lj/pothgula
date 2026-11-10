@@ -234,6 +234,7 @@ describe("a record's history (FR-LOG-09)", () => {
     extensionRequestedAt: null,
     extensionDecidedAt: null,
     extensionReason: null,
+    settlementId: null,
   };
 
   it('reads the log only when the history is opened, since opening it is recorded', async () => {

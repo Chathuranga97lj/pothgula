@@ -5,6 +5,7 @@ import { createDb } from '../db/client';
 import { archiveOldEntries } from '../log/archive';
 import { anonymiseUnsuccessfulApplications } from '../members/anonymise';
 import { lapseExpiredHolds } from '../requests/lapse';
+import { syncSuspensions } from '../settlements/suspension';
 
 async function main(): Promise<void> {
   const handle = createDb(databaseUrl());
@@ -12,6 +13,10 @@ async function main(): Promise<void> {
     const uow = new UnitOfWork(handle.db);
     const ids = await anonymiseUnsuccessfulApplications(handle.db, uow);
     console.log(`Anonymised ${ids.length} unsuccessful application(s).`);
+    const sync = await syncSuspensions(handle.db, uow);
+    console.log(
+      `Suspended ${sync.suspended.length} member(s); lifted ${sync.lifted.length} suspension(s).`,
+    );
     const lapsed = await lapseExpiredHolds(handle.db, uow);
     console.log(`Lapsed ${lapsed.length} uncollected hold(s).`);
     const dir = logArchiveDir();
