@@ -11,6 +11,8 @@ remote=$2
 local=$3
 
 mkdir -p "${local}"
-rsync --archive --ignore-existing --include='pothgula-*.dump' --exclude='*' \
+# The nightly dumps, and the activity log archive files (FR-LOG-11) beside them.
+rsync --archive --ignore-existing --include='pothgula-*.dump' \
+  --include='log-archive/' --include='log-archive/activity-log-*' --exclude='*' \
   "${server}:${remote}/" "${local}/"
 echo "Newest here: $(ls -1 "${local}"/pothgula-*.dump | tail -n 1)"

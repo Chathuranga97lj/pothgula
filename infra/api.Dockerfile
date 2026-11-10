@@ -19,6 +19,8 @@ FROM node:24-bookworm-slim
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /out .
+# FR-LOG-11: log entries past retention are written here (the log-archive volume).
+RUN mkdir -p /archive && chown node:node /archive
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \

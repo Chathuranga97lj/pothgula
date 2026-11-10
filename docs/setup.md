@@ -105,7 +105,19 @@ On a **Windows** computer at the library (Windows 10 and 11 include `ssh` and `s
 
 On **Linux or macOS**, use `infra/backup/copy-off-server.sh` from cron in the same way.
 
-The off-server copies are never deleted by the script. Delete old ones by hand when the disk fills, and always keep at least the last eight weeks.
+The off-server copies are never deleted by the script. Delete old ones by hand when the disk fills, and always keep at least the last eight weeks. The `log-archive` folder beside them is different: keep every file in it (see below).
+
+### The activity log archive (FR-LOG-11)
+
+The activity log is never edited or deleted from inside the application. Once an entry is older than its branch's retention period (`logRetentionMonths` in branch settings: at least 24 months, and 24 by default), the API moves it to an archive file. Entries with no branch, such as a super admin's or the system's, are kept as long as the longest-keeping branch keeps its own. Each run writes `activity-log-<first>-<last>.jsonl.gz` (one entry per line, as JSON, gzipped) and a `.sha256` beside it. It reads the file back before removing anything, and writes a `log.archive` entry naming the file and what it holds. The database itself refuses to remove any entry younger than 24 months.
+
+The files are written to the `pothgula_log-archive` volume. Each nightly backup copies new ones into `infra/backups/log-archive/`, and both copy-off scripts fetch that folder too. Nothing ever deletes them, so **keep them for as long as the library keeps its records**. To check one and read it:
+
+```sh
+cd infra/backups/log-archive
+sha256sum -c activity-log-1-10000.jsonl.gz.sha256
+gunzip -c activity-log-1-10000.jsonl.gz | less
+```
 
 ### Rehearsing a restore
 
@@ -169,5 +181,6 @@ The demonstration data is invented: branches, categories and books in Sinhala, T
 | Database files | Docker volume `pothgula_db-data` |
 | HTTPS certificates | Docker volume `pothgula_caddy-data` |
 | Nightly backups | `infra/backups/` |
+| Activity log archive files | Docker volume `pothgula_log-archive`, copied to `infra/backups/log-archive/` |
 | Backup and restore scripts | `infra/backup/` |
 | Logs | `docker compose logs api` (or `web`, `db`, `backup`) |

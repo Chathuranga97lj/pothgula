@@ -94,11 +94,14 @@ export class PdfService {
     content: object[];
     producedBy: string;
     producedAt: string;
+    /** Wide tables (the activity log) print across the page. */
+    landscape?: boolean;
   }): Promise<Buffer> {
     configure();
     const { branding } = opts;
     const doc = {
       pageSize: 'A4',
+      pageOrientation: opts.landscape ? 'landscape' : 'portrait',
       pageMargins: [40, 90, 40, 50],
       defaultStyle: { font: 'NotoSans', fontSize: 10, lineHeight: 1.25 },
       info: { title: opts.title, creator: 'Pothgula', producer: 'Pothgula' },
