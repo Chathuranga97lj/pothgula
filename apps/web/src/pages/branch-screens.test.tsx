@@ -25,6 +25,7 @@ const settings = {
   frequentLateMonths: 12,
   annualFeeCents: 50_000,
   logRetentionMonths: 24,
+  transitAlertDays: 7,
 };
 const ks = {
   id: 1,

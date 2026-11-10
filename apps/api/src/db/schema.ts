@@ -57,6 +57,20 @@ export const userStatus = pgEnum('user_status', [
 ]);
 export const copyCondition = pgEnum('copy_condition', ['useable', 'not_useable', 'missing']);
 export const paymentKind = pgEnum('payment_kind', ['fee', 'first_fee', 'waiver', 'reversal']);
+/** §8: where a request for a book from another branch stands (see shared REQUEST_STATUSES). */
+export const requestStatus = pgEnum('request_status', [
+  'requested',
+  'accepted',
+  'in_transit',
+  'held',
+  'issued',
+  'returning',
+  'completed',
+  'declined',
+  'cancelled',
+  'lapsed',
+  'lost_in_transit',
+]);
 /** FR-CIR-10 to FR-CIR-13: where a loan's one extension stands. */
 export const extensionStatus = pgEnum('extension_status', [
   'none',
@@ -130,6 +144,8 @@ export const branchSetting = pgTable(
     memberDueWarningDays: integer('member_due_warning_days').notNull().default(5),
     declineGraceDays: integer('decline_grace_days').notNull().default(3),
     holdDays: integer('hold_days').notNull().default(7),
+    /** FR-REQ-12: days on the road before a travelling copy is flagged. */
+    transitAlertDays: integer('transit_alert_days').notNull().default(7),
     applicationStaleDays: integer('application_stale_days').notNull().default(30),
     applicationAnonymiseDays: integer('application_anonymise_days').notNull().default(90),
     renewalGraceDays: integer('renewal_grace_days').notNull().default(90),
@@ -145,7 +161,7 @@ export const branchSetting = pgTable(
       sql`${t.loanDays} > 0 AND ${t.maxBooks} > 0 AND ${t.maxBooksWhileSettling} >= 0
         AND ${t.maxBooksWhileSettling} <= ${t.maxBooks} AND ${t.settlementWindowDays} > 0
         AND ${t.staffDueWarningDays} >= 0 AND ${t.memberDueWarningDays} >= 0
-        AND ${t.declineGraceDays} >= 0 AND ${t.holdDays} > 0 AND ${t.applicationStaleDays} > 0
+        AND ${t.declineGraceDays} >= 0 AND ${t.holdDays} > 0 AND ${t.transitAlertDays} > 0 AND ${t.applicationStaleDays} > 0
         AND ${t.applicationAnonymiseDays} > 0 AND ${t.renewalGraceDays} >= 0
         AND ${t.frequentLateCount} > 0 AND ${t.frequentLateMonths} > 0
         AND ${t.logRetentionMonths} >= 24`,
@@ -477,6 +493,91 @@ export const membershipPayment = pgTable(
   ],
 );
 
+// ─── Books from other branches (§8) ────────────────────────────────────────
+
+/**
+ * One request: a member asking for a title held at another branch, and then the
+ * journey of the copy chosen for it. Each step keeps its time and, with the
+ * activity log, who took it (FR-REQ-10). Whether a copy is in transit or held is
+ * worked out from here by the copy_availability view (R2).
+ */
+export const bookRequest = pgTable(
+  'book_request',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    titleId: integer('title_id')
+      .notNull()
+      .references(() => title.id),
+    /** Chosen by the holding branch on acceptance (FR-REQ-04). */
+    copyId: integer('copy_id').references(() => copy.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => appUser.id),
+    /** The owning branch, asked for the book. */
+    fromBranchId: integer('from_branch_id')
+      .notNull()
+      .references(() => branch.id),
+    /** The member's home branch, where it is held and issued. */
+    toBranchId: integer('to_branch_id')
+      .notNull()
+      .references(() => branch.id),
+    status: requestStatus('status').notNull().default('requested'),
+    requestedAt: instant('requested_at').notNull().defaultNow(),
+    decidedBy: integer('decided_by').references(() => appUser.id),
+    decidedAt: instant('decided_at'),
+    declineReason: text('decline_reason'),
+    dispatchedAt: instant('dispatched_at'),
+    arrivedAt: instant('arrived_at'),
+    /** The last day it is held for the member (FR-REQ-05). */
+    holdUntil: day('hold_until'),
+    /** The loan it became (FR-REQ-05). */
+    borrowId: integer('borrow_id').references(() => borrow.id),
+    lapsedAt: instant('lapsed_at'),
+    returnDispatchedAt: instant('return_dispatched_at'),
+    returnArrivedAt: instant('return_arrived_at'),
+    cancelledAt: instant('cancelled_at'),
+    /** FR-REQ-14: why a super admin wrote the copy off. */
+    lostReason: text('lost_reason'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check('book_request_branches', sql`${t.fromBranchId} <> ${t.toBranchId}`),
+    check(
+      'book_request_steps',
+      sql`CASE ${t.status}
+        WHEN 'requested' THEN ${t.copyId} IS NULL AND ${t.decidedAt} IS NULL
+        WHEN 'declined' THEN ${t.copyId} IS NULL AND ${t.decidedAt} IS NOT NULL
+          AND ${t.decidedBy} IS NOT NULL AND ${t.declineReason} IS NOT NULL
+        WHEN 'cancelled' THEN ${t.cancelledAt} IS NOT NULL
+        WHEN 'accepted' THEN ${t.copyId} IS NOT NULL AND ${t.decidedAt} IS NOT NULL
+          AND ${t.decidedBy} IS NOT NULL AND ${t.dispatchedAt} IS NULL
+        WHEN 'in_transit' THEN ${t.copyId} IS NOT NULL AND ${t.dispatchedAt} IS NOT NULL
+          AND ${t.arrivedAt} IS NULL
+        WHEN 'held' THEN ${t.arrivedAt} IS NOT NULL AND ${t.holdUntil} IS NOT NULL
+          AND ${t.borrowId} IS NULL
+        WHEN 'issued' THEN ${t.borrowId} IS NOT NULL
+        WHEN 'lapsed' THEN ${t.lapsedAt} IS NOT NULL AND ${t.borrowId} IS NULL
+          AND ${t.returnDispatchedAt} IS NULL
+        WHEN 'returning' THEN ${t.copyId} IS NOT NULL AND ${t.returnArrivedAt} IS NULL
+        WHEN 'completed' THEN ${t.returnArrivedAt} IS NOT NULL
+        WHEN 'lost_in_transit' THEN ${t.copyId} IS NOT NULL AND ${t.lostReason} IS NOT NULL
+      END`,
+    ),
+    /** FR-REQ-02: one request open at a time. */
+    uniqueIndex('book_request_one_open_per_member')
+      .on(t.userId)
+      .where(sql`${t.status} IN ('requested', 'accepted', 'in_transit', 'held')`),
+    /** A copy travels for one request at a time. */
+    uniqueIndex('book_request_one_per_copy')
+      .on(t.copyId)
+      .where(sql`${t.status} IN ('accepted', 'in_transit', 'held', 'lapsed', 'returning')`),
+    uniqueIndex('book_request_borrow_unique').on(t.borrowId),
+    index('book_request_from_idx').on(t.fromBranchId, t.status),
+    index('book_request_to_idx').on(t.toBranchId, t.status),
+  ],
+);
+
 // ─── Activity log (§14) ────────────────────────────────────────────────────
 
 /**
@@ -519,7 +620,11 @@ export const activityLog = pgTable(
 export const copyAvailability = pgView('copy_availability', {
   copyId: integer('copy_id').notNull(),
   state: text('state')
-    .$type<'withdrawn' | 'missing' | 'not_useable' | 'on_loan' | 'on_shelf'>()
+    .$type<
+      'withdrawn' | 'missing' | 'not_useable' | 'on_loan' | 'held' | 'in_transit' | 'on_shelf'
+    >()
     .notNull(),
   openBorrowId: integer('open_borrow_id'),
+  /** The request the copy is set apart for (§8). */
+  openRequestId: integer('open_request_id'),
 }).existing();

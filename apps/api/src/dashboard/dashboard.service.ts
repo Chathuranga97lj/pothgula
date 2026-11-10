@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   addDays,
   EXTENSION_URGENT_DAYS,
+  HOLD_LAPSING_DAYS,
   type BranchDue,
   type BranchRef,
   callList,
@@ -23,6 +24,7 @@ import { assertBranchAccess } from '../common/scope';
 import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
 import { appUser, borrow, branch, branchSetting, copy, title } from '../db/schema';
+import { RequestsService } from '../requests/requests.service';
 import { memberPanel } from './member-panel';
 
 const memberBranch = alias(branch, 'member_branch');
@@ -40,7 +42,10 @@ const countWhere = (cond: SQL | undefined) =>
  */
 @Injectable()
 export class DashboardService {
-  constructor(@Inject(DB) private readonly db: Db) {}
+  constructor(
+    @Inject(DB) private readonly db: Db,
+    private readonly requests: RequestsService,
+  ) {}
 
   // ─── Staff (FR-NOT-03, FR-NOT-07, FR-NOT-09) ───────────────────────────────
 
@@ -108,20 +113,31 @@ export class DashboardService {
       .where(and(eq(appUser.userType, 'member'), inArray(appUser.branchId, ids)))
       .groupBy(appUser.branchId);
 
+    // FR-REQ-09: the same lists the requests page shows, counted.
+    const board = await this.requests.board(ctx, null);
+    const lapsingBy = addDays(today, HOLD_LAPSING_DAYS);
+
     return {
       today,
       monthEnd,
       branches: branches.map((b) => {
         const l = loans.find((r) => r.branchId === b.branchId);
+        const r = board.branches.find((x) => x.branchId === b.branchId);
         const p = people.find((r) => r.branchId === b.branchId);
         const counts: StaffCounts = {
           suspended: p?.suspended ?? 0,
           overdue: l?.overdue ?? 0,
           overdueMembers: l?.overdueMembers ?? 0,
+          transit_overdue: r?.transitOverdue.length ?? 0,
           extensions_urgent: l?.extensionsUrgent ?? 0,
           due_today: l?.dueToday ?? 0,
           applications_waiting: p?.pending ?? 0,
           extensions_waiting: l?.extensionsWaiting ?? 0,
+          requests_to_decide: r?.toDecide.length ?? 0,
+          requests_to_send: r?.toSend.length ?? 0,
+          holds_lapsing: r?.held.filter((h) => (h.holdUntil ?? today) <= lapsingBy).length ?? 0,
+          requests_arriving: r?.arriving.length ?? 0,
+          copies_elsewhere: r?.outElsewhere.length ?? 0,
           due_soon: l?.dueSoon ?? 0,
           returned_late_today: l?.returnedLateToday ?? 0,
           expiring_this_month: p?.expiring ?? 0,
@@ -226,6 +242,7 @@ export class DashboardService {
         status: user.status,
         expireAt: user.expireAt,
         loans: rows.map((r) => toLoan(r, today)),
+        requests: await this.requests.mine(ctx),
         rules: {
           memberDueWarningDays: home?.memberDueWarningDays ?? 5,
           frequentLateCount: home?.frequentLateCount ?? 3,

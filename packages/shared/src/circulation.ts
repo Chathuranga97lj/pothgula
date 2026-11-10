@@ -153,11 +153,13 @@ export type ExtensionRefusalCode = (typeof EXTENSION_REFUSALS)[number];
 
 /**
  * Why a copy cannot be issued to a member (FR-CIR-02). Each is also an error
- * code, translated by the web app. Phase 2 adds in transit, held for another
- * member, and the open-settlement limit.
+ * code, translated by the web app. M12 adds the open-settlement limit.
  */
 export const ISSUE_REFUSALS = [
   'copy_on_loan',
+  // FR-REQ-04, FR-REQ-05: travelling, or held for another member.
+  'copy_in_transit',
+  'copy_held',
   'copy_missing',
   'copy_not_useable',
   'copy_withdrawn',

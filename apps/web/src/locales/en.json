@@ -38,7 +38,8 @@
     "counter": "Counter",
     "due": "Due books",
     "log": "Activity log",
-    "reports": "Reports"
+    "reports": "Reports",
+    "requests": "Requests"
   },
   "signIn": {
     "title": "Sign in",
@@ -194,7 +195,18 @@
     "extension_used": "This loan has already had its one extension.",
     "no_extension_request": "There is no extension request waiting on this loan.",
     "loan_overdue": "This book is already overdue, so it can no longer be extended.",
-    "other_book_overdue": "Another book on this card is overdue; it must come back first."
+    "other_book_overdue": "Another book on this card is overdue; it must come back first.",
+    "copy_in_transit": "This copy is travelling between branches.",
+    "copy_held": "This copy is held for another member.",
+    "request_open": "There is already a request open; one at a time.",
+    "own_branch": "This is your own branch: borrow it at the counter.",
+    "none_on_shelf": "That branch has no copy of this book on the shelf now.",
+    "request_not_found": "That request does not exist.",
+    "wrong_step": "The request is not at that step any more.",
+    "copy_not_on_shelf": "That copy is not on the shelf to send.",
+    "hold_not_over": "The hold has not ended yet; the member may still collect it.",
+    "loan_from_request": "This loan is a book from another branch; its copy and member cannot change.",
+    "request_moved_on": "The copy has already been sent back to its branch."
   },
   "images": {
     "uploading": "Uploading…",
@@ -298,6 +310,10 @@
     "logRetentionMonths": {
       "label": "Keep the log online (months)",
       "hint": "At least 24; older entries are archived, never destroyed."
+    },
+    "transitAlertDays": {
+      "label": "Flag a book on the road after (days)",
+      "hint": "A book sent between branches and not recorded as arrived by then is flagged to both branches."
     }
   },
   "categories": {
@@ -462,7 +478,9 @@
     "on_loan": "On loan",
     "missing": "Missing",
     "not_useable": "Not useable",
-    "withdrawn": "Withdrawn"
+    "withdrawn": "Withdrawn",
+    "in_transit": "In transit",
+    "held": "Held for a member"
   },
   "copyCondition": {
     "useable": "Useable",
@@ -623,7 +641,19 @@
       "extensions_urgent_one": "{{count}} extension request due within two days",
       "extensions_urgent_other": "{{count}} extension requests due within two days",
       "extensions_waiting_one": "{{count}} extension request waiting",
-      "extensions_waiting_other": "{{count}} extension requests waiting"
+      "extensions_waiting_other": "{{count}} extension requests waiting",
+      "transit_overdue_one": "{{count}} book on the road too long",
+      "transit_overdue_other": "{{count}} books on the road too long",
+      "requests_to_decide_one": "{{count}} request from another branch to decide",
+      "requests_to_decide_other": "{{count}} requests from other branches to decide",
+      "requests_to_send_one": "{{count}} book to send to another branch",
+      "requests_to_send_other": "{{count}} books to send to other branches",
+      "holds_lapsing_one": "{{count}} held book not collected, hold ending soon",
+      "holds_lapsing_other": "{{count}} held books not collected, holds ending soon",
+      "requests_arriving_one": "{{count}} book on its way here",
+      "requests_arriving_other": "{{count}} books on their way here",
+      "copies_elsewhere_one": "{{count}} of our books out at another branch",
+      "copies_elsewhere_other": "{{count}} of our books out at other branches"
     }
   },
   "sheets": {
@@ -681,6 +711,19 @@
     "extensionDeclined": {
       "title": "No extension for {{title}}",
       "body": "{{reason}} Please bring it back by {{date}}."
+    },
+    "requestReady": {
+      "title": "{{title}} is ready for you",
+      "body": "Collect it at {{branch}} by {{date}}. After that it goes back to its branch."
+    },
+    "requestDeclined": {
+      "title": "No copy of {{title}} from {{branch}}",
+      "body": "{{reason}}"
+    },
+    "requestOnWay": {
+      "title": "{{title}} is coming to you",
+      "accepted": "{{branch}} has set a copy aside and will send it.",
+      "sent": "{{branch}} has sent it; you will be told when it arrives."
     }
   },
   "due": {
@@ -859,7 +902,8 @@
       "image": "Images",
       "import": "Catalogue import",
       "log": "Reading the log",
-      "job": "Scheduled jobs"
+      "job": "Scheduled jobs",
+      "request": "Books between branches"
     },
     "entities": {
       "app_user": "Person",
@@ -874,7 +918,8 @@
       "image": "Image",
       "import": "Import",
       "activity_log": "Activity log",
-      "job": "Job"
+      "job": "Job",
+      "book_request": "Request"
     },
     "hideHistory": "Hide history",
     "moreFields_one": "and {{count}} more field",
@@ -970,6 +1015,22 @@
       "read": "Read the log",
       "export": "Exported the log",
       "archive": "Old entries archived"
+    },
+    "request": {
+      "create": "Asked another branch for a book",
+      "cancel": "Withdrew a request",
+      "accept": "Accepted a request, copy set aside",
+      "decline": "Declined a request",
+      "dispatch": "Sent a book to another branch",
+      "arrive": "Recorded a book’s arrival; held for the member",
+      "issue": "Held book collected",
+      "returned": "Book from another branch taken back",
+      "lapse": "Hold ended, book not collected",
+      "lapse_skipped": "Hold check skipped",
+      "return_dispatch": "Sent a book home",
+      "return_arrive": "Book back on its own shelf",
+      "lost": "Book lost on the way",
+      "reopen": "Request put back a step"
     }
   },
   "reports": {
@@ -983,7 +1044,8 @@
       "popular": "Most and least borrowed",
       "borrowing": "Borrowing by month",
       "late": "Late returns",
-      "ages": "Members by age"
+      "ages": "Members by age",
+      "requests": "Books between branches"
     },
     "leads": {
       "summary": "Books, loans, members and this month’s fees in one view.",
@@ -992,7 +1054,8 @@
       "popular": "The titles taken out most, or least, over a period, all copies counted together.",
       "borrowing": "Loans by category and month, to see what is read and when the busy months are.",
       "late": "The members with the most late returns over a period, and how late on average.",
-      "ages": "Active members by age band, from their date of birth."
+      "ages": "Active members by age band, from their date of birth.",
+      "requests": "Requests over a period: between which branches, how many were declined and why, and how long until collection."
     },
     "branch": "Branch",
     "wholeLibrary": "Whole library",
@@ -1043,7 +1106,19 @@
       "longest": "Longest (days)",
       "ageBand": "Age",
       "members": "Members",
-      "share": "Share"
+      "share": "Share",
+      "inTransit": "In transit",
+      "held": "Held",
+      "fromBranch": "Asked of",
+      "toBranch": "For members of",
+      "requests": "Requests",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "cancelled": "Withdrawn",
+      "collected": "Collected",
+      "lapsed": "Not collected",
+      "lostInTransit": "Lost on the way",
+      "daysToCollect": "Days to collection"
     },
     "rows": {
       "titles": "Titles held",
@@ -1097,6 +1172,120 @@
       "requested": "extension asked for",
       "approved": "extended, was {{date}}",
       "declined": "extension declined"
+    }
+  },
+  "requests": {
+    "status": {
+      "requested": "Asked",
+      "accepted": "Set aside",
+      "in_transit": "On the way",
+      "held": "Ready to collect",
+      "issued": "On loan",
+      "returning": "Going home",
+      "returning_waiting": "To send home",
+      "completed": "Back home",
+      "declined": "Declined",
+      "cancelled": "Withdrawn",
+      "lapsed": "Not collected",
+      "lost_in_transit": "Lost on the way"
+    },
+    "askTitle": "From another branch",
+    "askLead": "Not on your branch’s shelf? Ask a branch that has it. A copy is sent to your branch and kept for you there.",
+    "askBranch": "Ask {{branch}} for it",
+    "asked": "Asked {{branch}}. You will see on your dashboard when it is on its way.",
+    "seeMine": "See my requests.",
+    "mine": "Books asked from other branches",
+    "fromBranch": "from {{branch}}",
+    "collectBy": "Collect at {{branch}} by {{date}}.",
+    "cancel": "Withdraw",
+    "boardTitle": "Books between branches",
+    "boardLead": "Requests from members of other branches, books to send and to receive, and books held for members.",
+    "nothingHere": "Nothing here.",
+    "toDecide": "Asked of this branch",
+    "toSend": "To send",
+    "arriving": "On their way here",
+    "held": "Held for members",
+    "ourMembers": "Asked by our members",
+    "outElsewhere": "Our books out at other branches",
+    "decide": "Decide",
+    "toMember": "to the member",
+    "goingHome": "home",
+    "tick": "Send {{title}}",
+    "sendTicked_one": "Send {{count}} book and print the slip",
+    "sendTicked_other": "Send {{count}} books and print the slip",
+    "slipHint": "The transit slip goes in the envelope; the carrier signs it, and the receiving librarian signs and records the arrival.",
+    "sent_one": "{{count}} book sent. The transit slip is downloading.",
+    "sent_other": "{{count}} books sent. The transit slip is downloading.",
+    "arrived": "{{title}} recorded as arrived.",
+    "recordArrival": "Record arrival",
+    "recordHome": "Record it back on our shelf",
+    "heldUntil": "held until {{date}}",
+    "daysOnRoad_one": "{{count}} day on the road",
+    "daysOnRoad_other": "{{count}} days on the road",
+    "transitOverdue_one": "{{count}} book on the road too long",
+    "transitOverdue_other": "{{count}} books on the road too long",
+    "forMember": "For {{name}}",
+    "nextStep": "Next step",
+    "chooseCopy": "Copy to send",
+    "chooseCopyHint": "It leaves the shelf now, and cannot be lent to anyone else.",
+    "pickCopy_one": "{{count}} copy on the shelf: choose it",
+    "pickCopy_other": "{{count}} copies on the shelf: choose one",
+    "accept": "Accept and set it aside",
+    "decline": "Decline",
+    "declineReason": "Reason for declining",
+    "declineHint": "The member sees this on their dashboard.",
+    "confirmDecline": "Decline the request",
+    "sendNow": "Send it now and print the slip",
+    "sendHome": "Send it home and print the slip",
+    "issueAtCounter": "Held for the member until {{date}}. Issue it at the counter like any other book.",
+    "lostLead": "If it never arrived: write the copy off as missing. No member is charged; the loss is the library’s.",
+    "lostReason": "What happened",
+    "markLost": "Mark lost on the way",
+    "openLoan": "Open the loan",
+    "done": {
+      "accepted": "{{title}} set aside.",
+      "declined": "Request declined.",
+      "in_transit": "{{title}} sent. The transit slip is downloading.",
+      "held": "{{title}} is now held for the member.",
+      "returning": "{{title}} sent home. The transit slip is downloading.",
+      "completed": "{{title}} is back on the shelf.",
+      "lost_in_transit": "{{title}} written off as lost on the way.",
+      "requested": "Done.",
+      "issued": "Done.",
+      "cancelled": "Done.",
+      "lapsed": "Done."
+    },
+    "fields": {
+      "route": "From → to",
+      "copy": "Copy",
+      "asked": "Asked",
+      "decided": "Decided",
+      "reason": "Reason",
+      "sent": "Sent",
+      "arrived": "Arrived",
+      "holdUntil": "Held until",
+      "loan": "Loan",
+      "sentBack": "Sent home",
+      "home": "Back home",
+      "lost": "Lost"
+    },
+    "member": {
+      "title": "The member",
+      "name": "Name",
+      "whatsapp": "WhatsApp",
+      "other": "Other phone",
+      "address": "Address",
+      "born": "Born",
+      "age": "{{date}} (age {{age}})",
+      "organisation": "School or workplace",
+      "introducer": "Introduced by",
+      "home": "Home branch",
+      "expires": "Membership until",
+      "lateReturns": "Late returns",
+      "lateCount_one": "{{count}} in the last {{months}} months",
+      "lateCount_other": "{{count}} in the last {{months}} months",
+      "books": "Books out now",
+      "noBooks": "None."
     }
   }
 }

@@ -450,7 +450,8 @@ export class MembersService {
     return target;
   }
 
-  private async detailOf(q: Queryable, row: UserRow): Promise<MemberDetail> {
+  /** A member's full record; callers check who may see it (FR-REQ-03 shows it to both branches). */
+  async detailOf(q: Queryable, row: UserRow): Promise<MemberDetail> {
     const [payments, settings] = await Promise.all([
       q
         .select()

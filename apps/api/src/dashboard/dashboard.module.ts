@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PdfModule } from '../pdf/pdf.module';
+import { RequestsModule } from '../requests/requests.module';
 import { MemberDashboardController, StaffDashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 
 @Module({
-  imports: [PdfModule],
+  imports: [PdfModule, RequestsModule],
   controllers: [StaffDashboardController, MemberDashboardController],
   providers: [DashboardService],
 })

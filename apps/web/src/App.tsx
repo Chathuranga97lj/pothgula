@@ -20,6 +20,8 @@ import { MyMembershipPage } from './pages/MyMembershipPage';
 import { NewTitlePage } from './pages/NewTitlePage';
 import { RegisterMemberPage } from './pages/RegisterMemberPage';
 import { ReportPage, ReportsPage } from './pages/ReportsPage';
+import { RequestPage } from './pages/RequestPage';
+import { RequestsPage } from './pages/RequestsPage';
 import { SignInPage } from './pages/SignInPage';
 import { StaffPage } from './pages/StaffPage';
 import { TitlePage } from './pages/TitlePage';
@@ -80,6 +82,22 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <CallListPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="requests"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <RequestsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="requests/:id"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <RequestPage />
               </RequireRole>
             }
           />

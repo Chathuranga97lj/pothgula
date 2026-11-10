@@ -81,6 +81,13 @@ function itemTarget(kind: StaffAlert, branchId: number, many: boolean): string {
     case 'extensions_urgent':
     case 'extensions_waiting':
       return `/extensions${branch}`;
+    case 'transit_overdue':
+    case 'requests_to_decide':
+    case 'requests_to_send':
+    case 'holds_lapsing':
+    case 'requests_arriving':
+    case 'copies_elsewhere':
+      return `/requests${branch}`;
     case 'expiring_this_month':
       return '/members?tab=lists';
     case 'applications_waiting':
@@ -262,6 +269,29 @@ function MemberItem({ item }: { item: MemberPanelItem }) {
           }
         >
           {t('panel.dueSoon.body', { date: item.dueDate, accession: item.accessionNo })}
+        </Alert>
+      );
+    case 'request_ready':
+      return (
+        <Alert tone={tone} title={t('panel.requestReady.title', { title: item.title })}>
+          {t('panel.requestReady.body', { branch: item.branchName, date: item.holdUntil })}
+        </Alert>
+      );
+    case 'request_declined':
+      return (
+        <Alert
+          tone={tone}
+          title={t('panel.requestDeclined.title', { title: item.title, branch: item.branchName })}
+        >
+          {t('panel.requestDeclined.body', { reason: item.reason })}
+        </Alert>
+      );
+    case 'request_on_way':
+      return (
+        <Alert tone={tone} title={t('panel.requestOnWay.title', { title: item.title })}>
+          {item.dispatched
+            ? t('panel.requestOnWay.sent', { branch: item.branchName })
+            : t('panel.requestOnWay.accepted', { branch: item.branchName })}
         </Alert>
       );
     case 'extension_pending':

@@ -84,7 +84,16 @@ export const mergeTitlesRequestSchema = z.object({ intoTitleId: z.number().int()
 
 // ─── Responses ──────────────────────────────────────────────────────────────
 
-export const COPY_STATES = ['on_shelf', 'on_loan', 'missing', 'not_useable', 'withdrawn'] as const;
+/** Where a copy is, worked out from loans and requests (R2, FR-REQ-08). */
+export const COPY_STATES = [
+  'on_shelf',
+  'on_loan',
+  'in_transit',
+  'held',
+  'missing',
+  'not_useable',
+  'withdrawn',
+] as const;
 export type CopyState = (typeof COPY_STATES)[number];
 
 /** How many copies of a title one branch holds, and how many are on the shelf. */

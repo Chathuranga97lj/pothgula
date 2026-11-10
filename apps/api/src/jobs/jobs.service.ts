@@ -10,6 +10,7 @@ import { logArchiveDir } from '../config';
 import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
 import { archiveOldEntries } from '../log/archive';
+import { lapseExpiredHolds } from '../requests/lapse';
 import { anonymiseUnsuccessfulApplications } from '../members/anonymise';
 
 const EVERY_MS = 6 * 60 * 60_000;
@@ -49,6 +50,12 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     try {
       const ids = await anonymiseUnsuccessfulApplications(this.db, this.uow);
       if (ids.length > 0) this.logger.log(`Anonymised ${ids.length} unsuccessful application(s).`);
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error.stack : String(error));
+    }
+    try {
+      const lapsed = await lapseExpiredHolds(this.db, this.uow);
+      if (lapsed.length > 0) this.logger.log(`Lapsed ${lapsed.length} uncollected hold(s).`);
     } catch (error) {
       this.logger.error(error instanceof Error ? error.stack : String(error));
     }

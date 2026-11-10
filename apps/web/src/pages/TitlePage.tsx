@@ -17,6 +17,7 @@ import { errorMessage } from '../api/errors';
 import { useBranches, useCategories } from '../api/queries';
 import { useMe } from '../auth/auth';
 import { History } from '../components/log';
+import { AskAnotherBranch } from '../components/requests';
 import { Alert, Button, Card, Field, Input, PageTitle, Select } from '../components/ui';
 
 /** FR-CAT-01, FR-CAT-03, FR-CAT-04, FR-CAT-08, FR-CAT-11, FR-CAT-14, FR-CAT-18. */
@@ -62,6 +63,7 @@ export function TitlePage() {
         <div className="min-w-0 space-y-6">
           {isStaff ? <EditTitle title={d} /> : <Facts title={d} />}
           <Copies title={d} />
+          {user.userType === 'member' && user.status === 'active' && <AskAnotherBranch title={d} />}
           {isStaff && <History entity="title" entityId={d.id} />}
         </div>
         {isStaff && !d.mergedIntoId && (
@@ -238,6 +240,8 @@ function Copies({ title: d }: { title: TitleDetail }) {
 const STATE_TONE: Record<Copy['state'], string> = {
   on_shelf: 'bg-emerald-50 text-emerald-900',
   on_loan: 'bg-sky-50 text-sky-950',
+  in_transit: 'bg-sky-50 text-sky-950',
+  held: 'bg-violet-50 text-violet-950',
   missing: 'bg-red-50 text-red-900',
   not_useable: 'bg-amber-100 text-amber-950',
   withdrawn: 'bg-stone-200 text-stone-700',

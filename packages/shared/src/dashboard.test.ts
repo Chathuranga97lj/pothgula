@@ -69,10 +69,16 @@ describe('staffPanel', () => {
     suspended: 0,
     overdue: 0,
     overdueMembers: 0,
+    transit_overdue: 0,
     extensions_urgent: 0,
     due_today: 0,
     applications_waiting: 0,
     extensions_waiting: 0,
+    requests_to_decide: 0,
+    requests_to_send: 0,
+    holds_lapsing: 0,
+    requests_arriving: 0,
+    copies_elsewhere: 0,
     due_soon: 0,
     returned_late_today: 0,
     expiring_this_month: 0,
@@ -104,6 +110,26 @@ describe('staffPanel', () => {
       'extensions_waiting',
     ]);
     expect(items[1]!.tone).toBe('urgent');
+  });
+
+  it('puts a book lost on the road near the top, and the request steps after extensions', () => {
+    const items = staffPanel({
+      ...none,
+      overdue: 1,
+      transit_overdue: 1,
+      extensions_waiting: 1,
+      requests_to_decide: 1,
+      copies_elsewhere: 1,
+      due_soon: 1,
+    });
+    expect(items.map((i) => i.kind)).toEqual([
+      'overdue',
+      'transit_overdue',
+      'extensions_waiting',
+      'requests_to_decide',
+      'copies_elsewhere',
+      'due_soon',
+    ]);
   });
 
   it('is empty on a quiet day', () => {

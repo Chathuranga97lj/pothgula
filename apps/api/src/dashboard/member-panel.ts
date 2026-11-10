@@ -1,4 +1,6 @@
 import {
+  addDays,
+  type BookRequest,
   daysBetween,
   type Loan,
   loanStanding,
@@ -11,10 +13,15 @@ export interface MemberFacts {
   expireAt: string | null;
   /** The member's loans, voided ones left out. */
   loans: Loan[];
+  /** Their requests for books from other branches, the latest first (§8). */
+  requests?: BookRequest[];
   rules: { memberDueWarningDays: number; frequentLateCount: number; frequentLateMonths: number };
   branchName: string;
   feeCents: number;
 }
+
+/** A declined request stays on the member's panel this many days. */
+const DECLINE_SHOWN_DAYS = 7;
 
 /**
  * FR-NOT-01, FR-NOT-02, FR-NOT-08: what a member's panel shows today, most
@@ -54,6 +61,33 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
     items.push({ kind: 'membership_expired', tone: 'urgent', expireAt: expiry });
   }
 
+  // FR-REQ-05: a book from another branch is waiting to be collected.
+  const requests = facts.requests ?? [];
+  for (const r of requests.filter((x) => x.status === 'held' && x.holdUntil)) {
+    items.push({
+      kind: 'request_ready',
+      tone: 'warning',
+      requestId: r.id,
+      title: r.title,
+      branchName: r.to.name,
+      holdUntil: r.holdUntil!,
+    });
+  }
+  // FR-REQ-04: declined in the last week, with the reason.
+  const weekAgo = addDays(today, -DECLINE_SHOWN_DAYS);
+  for (const r of requests.filter(
+    (x) => x.status === 'declined' && (x.decidedAt ?? '').slice(0, 10) >= weekAgo,
+  )) {
+    items.push({
+      kind: 'request_declined',
+      tone: 'warning',
+      requestId: r.id,
+      title: r.title,
+      branchName: r.from.name,
+      reason: r.declineReason ?? '',
+    });
+  }
+
   // FR-CIR-12: a declined request, with the reason, ahead of the due-soon warnings.
   for (const l of open.filter((x) => x.extensionStatus === 'declined')) {
     items.push({
@@ -76,6 +110,16 @@ export function memberPanel(facts: MemberFacts, today: string): MemberPanelItem[
     items.push({ kind: 'membership_expiring', tone: 'warning', expireAt: expiry, daysLeft: left });
   }
 
+  for (const r of requests.filter((x) => x.status === 'accepted' || x.status === 'in_transit')) {
+    items.push({
+      kind: 'request_on_way',
+      tone: 'info',
+      requestId: r.id,
+      title: r.title,
+      branchName: r.from.name,
+      dispatched: r.status === 'in_transit',
+    });
+  }
   for (const l of open.filter((x) => x.extensionStatus === 'requested')) {
     items.push({ kind: 'extension_pending', tone: 'info', ...ref(l) });
   }

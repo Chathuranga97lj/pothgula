@@ -18,11 +18,12 @@ export const REPORT_KINDS = [
   'borrowing', // FR-RPT-08
   'late', // FR-RPT-15
   'ages', // FR-RPT-11
+  'requests', // FR-RPT-14
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
 /** The reports that cover a period, and so take a from and to date. */
-export const PERIOD_REPORTS: readonly ReportKind[] = ['popular', 'borrowing', 'late'];
+export const PERIOD_REPORTS: readonly ReportKind[] = ['popular', 'borrowing', 'late', 'requests'];
 
 /** How many titles the most and least borrowed lists show. */
 export const POPULAR_LIMIT = 50;
