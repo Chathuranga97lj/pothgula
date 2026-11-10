@@ -17,6 +17,7 @@ import { downloadMemberExport, MEMBERS_KEY, memberKey, useMember } from '../api/
 import { branchKey, useBranches } from '../api/queries';
 import { useMe } from '../auth/auth';
 import { LoanTable, StandingBanner } from '../components/loans';
+import { ReceiptButton } from '../components/receipts';
 import { MemberSettlements, SettlementBanner } from '../components/settlements';
 import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
@@ -527,6 +528,9 @@ function Payments({ member }: { member: MemberDetail }) {
               <th className="px-4 py-2 text-right font-medium">{t('members.amount')}</th>
               <th className="px-4 py-2 font-medium">{t('members.receiptOrReason')}</th>
               <th className="px-4 py-2 font-medium">{t('members.validUntil')}</th>
+              <th className="px-4 py-2 font-medium">
+                <span className="sr-only">{t('receipts.print')}</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
@@ -539,6 +543,9 @@ function Payments({ member }: { member: MemberDetail }) {
                 </td>
                 <td className="px-4 py-2">{p.receiptNo ?? p.reason}</td>
                 <td className="px-4 py-2 tabular-nums">{p.extendsTo}</td>
+                <td className="px-4 py-2 text-right">
+                  {p.kind !== 'waiver' && <ReceiptButton kind="membership" paymentId={p.id} />}
+                </td>
               </tr>
             ))}
           </tbody>

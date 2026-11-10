@@ -64,6 +64,9 @@ describe('the reports (§15)', () => {
       'Borrowing by month',
       'Late returns',
       'Members by age',
+      'Fee collection',
+      'Membership over time',
+      'Missing books',
     ]) {
       expect(screen.getByRole('heading', { name })).toBeInTheDocument();
     }

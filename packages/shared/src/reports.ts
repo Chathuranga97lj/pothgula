@@ -7,8 +7,7 @@ import { addDays, addMonths } from './dates.js';
  * table — columns, rows, perhaps a total — so the screen shows any of them the
  * same way and each can be taken away as .txt, .csv or PDF (FR-RPT-09).
  *
- * Phase 2 grows this list as the data arrives: M10–M12 add the reports and
- * columns that need extensions, requests and lost-book settlements.
+ * FR-RPT-12, the year-end summary, is Phase 3.
  */
 export const REPORT_KINDS = [
   'summary', // FR-RPT-06
@@ -19,11 +18,21 @@ export const REPORT_KINDS = [
   'late', // FR-RPT-15
   'ages', // FR-RPT-11
   'requests', // FR-RPT-14
+  'fees', // FR-RPT-03
+  'membership', // FR-RPT-04
+  'missing', // FR-RPT-07
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
 
 /** The reports that cover a period, and so take a from and to date. */
-export const PERIOD_REPORTS: readonly ReportKind[] = ['popular', 'borrowing', 'late', 'requests'];
+export const PERIOD_REPORTS: readonly ReportKind[] = [
+  'popular',
+  'borrowing',
+  'late',
+  'requests',
+  'fees',
+  'membership',
+];
 
 /** How many titles the most and least borrowed lists show. */
 export const POPULAR_LIMIT = 50;

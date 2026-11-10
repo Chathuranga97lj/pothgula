@@ -6,6 +6,7 @@ import { errorMessage } from '../api/errors';
 import { useCopyFound, useSettlement, useSettlementStep } from '../api/settlements';
 import { useMe } from '../auth/auth';
 import { History } from '../components/log';
+import { ReceiptButton } from '../components/receipts';
 import { rupees, SettlementLine, SettlementStatus } from '../components/settlements';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 
@@ -144,7 +145,10 @@ function Payments({
                 {p.paidOn} · {rupees(p.amountCents)}
                 {p.receiptNo && ` · ${t('settlements.receipt', { no: p.receiptNo })}`}
               </span>
-              <span className="text-stone-600">{p.collectedByName}</span>
+              <span className="flex items-center gap-2 text-stone-600">
+                {p.collectedByName}
+                <ReceiptButton kind="settlement" paymentId={p.id} />
+              </span>
             </div>
             {p.reason && <p className="text-stone-700">{p.reason}</p>}
             {user.userType === 'super_admin' &&
