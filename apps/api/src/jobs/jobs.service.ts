@@ -6,8 +6,10 @@ import {
   type OnApplicationShutdown,
 } from '@nestjs/common';
 import { UnitOfWork } from '../audit/unit-of-work';
+import { logArchiveDir } from '../config';
 import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
+import { archiveOldEntries } from '../log/archive';
 import { anonymiseUnsuccessfulApplications } from '../members/anonymise';
 
 const EVERY_MS = 6 * 60 * 60_000;
@@ -47,6 +49,15 @@ export class JobsService implements OnApplicationBootstrap, OnApplicationShutdow
     try {
       const ids = await anonymiseUnsuccessfulApplications(this.db, this.uow);
       if (ids.length > 0) this.logger.log(`Anonymised ${ids.length} unsuccessful application(s).`);
+    } catch (error) {
+      this.logger.error(error instanceof Error ? error.stack : String(error));
+    }
+    // After anonymising, so an applicant's values are blanked before any entry leaves.
+    try {
+      const run = await archiveOldEntries(this.db, this.uow, logArchiveDir());
+      if (run.entries > 0) {
+        this.logger.log(`Archived ${run.entries} log entries: ${run.files.join(', ')}`);
+      }
     } catch (error) {
       this.logger.error(error instanceof Error ? error.stack : String(error));
     }

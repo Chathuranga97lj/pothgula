@@ -1,14 +1,21 @@
 /** Runs the housekeeping jobs once: `pnpm --filter @pothgula/api jobs`. */
 import { UnitOfWork } from '../audit/unit-of-work';
-import { databaseUrl } from '../config';
+import { databaseUrl, logArchiveDir } from '../config';
 import { createDb } from '../db/client';
+import { archiveOldEntries } from '../log/archive';
 import { anonymiseUnsuccessfulApplications } from '../members/anonymise';
 
 async function main(): Promise<void> {
   const handle = createDb(databaseUrl());
   try {
-    const ids = await anonymiseUnsuccessfulApplications(handle.db, new UnitOfWork(handle.db));
+    const uow = new UnitOfWork(handle.db);
+    const ids = await anonymiseUnsuccessfulApplications(handle.db, uow);
     console.log(`Anonymised ${ids.length} unsuccessful application(s).`);
+    const dir = logArchiveDir();
+    const archived = await archiveOldEntries(handle.db, uow, dir);
+    console.log(
+      `Archived ${archived.entries} log entries to ${archived.files.length} file(s) in ${dir}.`,
+    );
   } finally {
     await handle.close();
   }

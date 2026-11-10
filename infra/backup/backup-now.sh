@@ -18,3 +18,18 @@ ls -1t /backups/pothgula-*.dump | tail -n +"$((keep + 1))" | while read -r old; 
   rm -- "${old}"
   echo "$(date -Iseconds) removed old backup ${old}"
 done
+
+# FR-LOG-11: activity log archive files, written by the API once entries pass
+# their retention period. Copied beside the backups so they leave the server
+# with them; never removed here.
+if [ -d /log-archive ]; then
+  mkdir -p /backups/log-archive
+  for f in /log-archive/activity-log-*.jsonl.gz /log-archive/activity-log-*.jsonl.gz.sha256; do
+    [ -e "${f}" ] || continue
+    target="/backups/log-archive/$(basename "${f}")"
+    if [ ! -e "${target}" ]; then
+      cp "${f}" "${target}.part" && mv "${target}.part" "${target}"
+      echo "$(date -Iseconds) log archive copied: ${target}"
+    fi
+  done
+fi

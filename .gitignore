@@ -16,3 +16,4 @@ infra/backups/
 
 # Client raw notes stay local; the requirements documents are the public record.
 docs/issues.txt
+apps/api/log-archive/

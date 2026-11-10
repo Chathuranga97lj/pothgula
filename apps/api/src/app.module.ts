@@ -12,6 +12,7 @@ import { DbModule } from './db/db.module';
 import { HealthController } from './health/health.controller';
 import { ImagesController } from './images/images.controller';
 import { JobsModule } from './jobs/jobs.module';
+import { LogModule } from './log/log.module';
 import { MembersModule } from './members/members.module';
 import { StaffModule } from './staff/staff.module';
 
@@ -28,6 +29,7 @@ import { StaffModule } from './staff/staff.module';
     CirculationModule,
     DashboardModule,
     ImportModule,
+    LogModule,
   ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],

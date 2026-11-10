@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 const DEV_DATABASE_URL = 'postgres://pothgula:pothgula-dev-only@localhost:5433/pothgula';
 
 /** The database URL. Outside production a local development default is allowed. */
@@ -17,3 +19,12 @@ export const MEMBER_IDLE_MS = 30 * 24 * 60 * 60_000;
 /** FR-AUT-06: five failed attempts lock the account for 15 minutes. */
 export const MAX_FAILED_SIGNINS = 5;
 export const LOCKOUT_MS = 15 * 60_000;
+
+/**
+ * FR-LOG-11: where log entries past retention are written. In production compose
+ * sets it to the volume the backup container copies from; in development it is
+ * `apps/api/log-archive` (git-ignored).
+ */
+export function logArchiveDir(env: NodeJS.ProcessEnv = process.env): string {
+  return env.LOG_ARCHIVE_DIR || resolve(__dirname, '../log-archive');
+}

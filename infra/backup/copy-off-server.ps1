@@ -32,5 +32,19 @@ foreach ($path in $remote) {
   $copied++
   Write-Output "Copied $name"
 }
+# FR-LOG-11: the activity log archive files kept beside the backups.
+$archiveDir = Join-Path $LocalDir 'log-archive'
+New-Item -ItemType Directory -Force -Path $archiveDir | Out-Null
+$archives = & ssh $Server "ls -1 $RemoteDir/log-archive/activity-log-* 2>/dev/null"
+foreach ($path in $archives) {
+  $name = Split-Path $path -Leaf
+  $target = Join-Path $archiveDir $name
+  if (Test-Path $target) { continue }
+  & scp "${Server}:$path" "$target.part"
+  if ($LASTEXITCODE -ne 0) { throw "Could not copy $name" }
+  Move-Item "$target.part" $target
+  Write-Output "Copied log-archive/$name"
+}
+
 $newest = Get-ChildItem $LocalDir -Filter 'pothgula-*.dump' | Sort-Object Name | Select-Object -Last 1
 Write-Output "$copied new backup(s). Newest here: $($newest.Name)"

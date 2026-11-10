@@ -33,6 +33,10 @@ services:
       # The web container is the only proxy, on the private Docker network.
       TRUST_PROXY: uniquelocal
       APP_VERSION: ${POTHGULA_VERSION:-0.1.0}
+      # FR-LOG-11: log entries past retention, as checked archive files.
+      LOG_ARCHIVE_DIR: /archive
+    volumes:
+      - log-archive:/archive
     depends_on:
       db:
         condition: service_healthy
@@ -71,11 +75,14 @@ services:
     volumes:
       - ./backup:/scripts:ro
       - ./backups:/backups
+      # Copied into backups/log-archive with each backup, so they leave the server too.
+      - log-archive:/log-archive:ro
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   db-data:
+  log-archive:
   caddy-data:
   caddy-config:
