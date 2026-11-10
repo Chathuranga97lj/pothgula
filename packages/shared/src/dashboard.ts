@@ -81,6 +81,8 @@ export function callList(overdue: DueLoan[]): CallListEntry[] {
 /** Most urgent first. */
 export const STAFF_ALERTS = [
   'suspended',
+  // FR-NOT-09, FR-REQ-14: written off on the road and not found since.
+  'lost_in_transit',
   // FR-LST-10, FR-LST-14: a lost-book window passed with the settlement still open.
   'settlements_passed',
   'overdue',
@@ -113,6 +115,7 @@ export type AlertTone = (typeof ALERT_TONES)[number];
 
 export const STAFF_ALERT_TONE: Record<StaffAlert, AlertTone> = {
   suspended: 'urgent',
+  lost_in_transit: 'urgent',
   settlements_passed: 'urgent',
   overdue: 'urgent',
   transit_overdue: 'urgent',
@@ -134,6 +137,7 @@ export const STAFF_ALERT_TONE: Record<StaffAlert, AlertTone> = {
 
 export const staffCountsSchema = z.object({
   suspended: z.number().int(),
+  lost_in_transit: z.number().int(),
   settlements_passed: z.number().int(),
   overdue: z.number().int(),
   /** Members holding an overdue book: the length of the call list. */

@@ -31,7 +31,16 @@ import { AppError } from '../common/app-error';
 import { assertBranchAccess } from '../common/scope';
 import type { Db } from '../db/client';
 import { DB } from '../db/db.module';
-import { appUser, bookSettlement, borrow, branch, branchSetting, copy, title } from '../db/schema';
+import {
+  appUser,
+  bookRequest,
+  bookSettlement,
+  borrow,
+  branch,
+  branchSetting,
+  copy,
+  title,
+} from '../db/schema';
 import { RequestsService } from '../requests/requests.service';
 import { NoticesService } from '../notices/notices.service';
 import { timetable } from '../schedule/hours.service';
@@ -144,6 +153,21 @@ export class DashboardService {
       .where(and(eq(bookSettlement.status, 'open'), inArray(bookSettlement.branchId, ids)))
       .groupBy(bookSettlement.branchId);
 
+    // FR-NOT-09, FR-REQ-14: copies written off on the road, at the branch that owns them, until found.
+    const lost = await this.db
+      .select({ branchId: copy.branchId, n: sql<number>`count(*)`.mapWith(Number) })
+      .from(bookRequest)
+      .innerJoin(copy, eq(copy.id, bookRequest.copyId))
+      .where(
+        and(
+          eq(bookRequest.status, 'lost_in_transit'),
+          eq(copy.condition, 'missing'),
+          isNull(copy.withdrawnAt),
+          inArray(copy.branchId, ids),
+        ),
+      )
+      .groupBy(copy.branchId);
+
     // FR-REQ-09: the same lists the requests page shows, counted.
     const board = await this.requests.board(ctx, null);
     const lapsingBy = addDays(today, HOLD_LAPSING_DAYS);
@@ -158,6 +182,7 @@ export class DashboardService {
         const o = owed.find((r) => r.branchId === b.branchId);
         const counts: StaffCounts = {
           suspended: p?.suspended ?? 0,
+          lost_in_transit: lost.find((x) => x.branchId === b.branchId)?.n ?? 0,
           settlements_passed: o?.passed ?? 0,
           settlements_closing: o?.closing ?? 0,
           settlements_open: o?.open ?? 0,

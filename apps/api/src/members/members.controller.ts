@@ -19,6 +19,7 @@ import {
   registerMemberRequestSchema,
   rejectRequestSchema,
   renewRequestSchema,
+  reverseFeeSchema,
   updateApplicationRequestSchema,
   updateProfileRequestSchema,
 } from '@pothgula/shared';
@@ -134,6 +135,24 @@ export class MembersController {
   @Roles('admin', 'super_admin')
   renew(@Auth() ctx: AuthContext, @Param('id') id: string, @Body() body: unknown) {
     return this.members.renew(ctx, parseId(id), parseBody(renewRequestSchema, body));
+  }
+
+  /** FR-MEM-05: a renewal reversed by a super admin (checked in the service). */
+  @Post(':id/payments/:paymentId/reverse')
+  @HttpCode(200)
+  @Roles('super_admin')
+  reverse(
+    @Auth() ctx: AuthContext,
+    @Param('id') id: string,
+    @Param('paymentId') paymentId: string,
+    @Body() body: unknown,
+  ) {
+    return this.members.reverseFee(
+      ctx,
+      parseId(id),
+      parseId(paymentId),
+      parseBody(reverseFeeSchema, body).reason,
+    );
   }
 }
 

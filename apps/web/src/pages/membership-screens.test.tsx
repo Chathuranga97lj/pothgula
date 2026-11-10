@@ -220,6 +220,7 @@ describe('a member’s record (FR-MEM-02, FR-AUT-19)', () => {
         reason: null,
         extendsTo: '2026-10-01',
         collectedBy: 2,
+        reversesPaymentId: null,
       },
     ],
   });
@@ -230,7 +231,7 @@ describe('a member’s record (FR-MEM-02, FR-AUT-19)', () => {
       'POST /members/9/renew': { body: { ...active, state: 'active', expireAt: '2027-10-01' } },
     });
     renderApp('/members/9');
-    expect(await screen.findByText('First fee')).toBeInTheDocument();
+    expect(await screen.findByText(/^First fee ·/)).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText('Annual fee (Rs)')).toHaveValue('500.00'));
     await userEvent.type(screen.getByLabelText('Receipt number'), 'R-2');
     await userEvent.click(screen.getByRole('button', { name: 'Record payment' }));
@@ -243,6 +244,74 @@ describe('a member’s record (FR-MEM-02, FR-AUT-19)', () => {
     });
   });
 
+  it('lets a super admin reverse a renewal taken by mistake (FR-MEM-05)', async () => {
+    const renewed = {
+      ...active,
+      state: 'active',
+      expireAt: '2027-10-01',
+      payments: [
+        ...active.payments,
+        {
+          id: 2,
+          kind: 'fee',
+          amountCents: 50_000,
+          paidOn: '2026-11-10',
+          receiptNo: 'R-2',
+          reason: null,
+          extendsTo: '2027-10-01',
+          collectedBy: 2,
+          reversesPaymentId: null,
+        },
+      ],
+    };
+    const reversedRecord = {
+      ...renewed,
+      expireAt: '2026-10-01',
+      payments: [
+        ...renewed.payments,
+        {
+          id: 3,
+          kind: 'reversal',
+          amountCents: -50_000,
+          paidOn: '2026-11-10',
+          receiptNo: null,
+          reason: 'Wrong member',
+          extendsTo: '2026-10-01',
+          collectedBy: 1,
+          reversesPaymentId: 2,
+        },
+      ],
+    };
+    let current: object = renewed;
+    const api = asStaff({
+      'GET /auth/me': {
+        body: { user: user({ id: 1, userType: 'super_admin', branchId: null }), warnings: [] },
+      },
+      // The record as it stands: the page reads it again after the reversal.
+      'GET /members/9': () => ({ body: current }),
+      'POST /members/9/payments/2/reverse': () => {
+        current = reversedRecord;
+        return { body: current };
+      },
+    });
+    renderApp('/members/9');
+    // Only the renewal can be reversed, not the first fee.
+    const buttons = await screen.findAllByRole('button', { name: 'Reverse' });
+    expect(buttons).toHaveLength(1);
+    await userEvent.click(buttons[0]!);
+    await userEvent.type(screen.getByLabelText('Why it is reversed'), 'Wrong member');
+    await userEvent.click(screen.getByRole('button', { name: 'Reverse' }));
+    await waitFor(() =>
+      expect(api.calls.find((c) => c.route === 'POST /members/9/payments/2/reverse')?.body).toEqual(
+        {
+          reason: 'Wrong member',
+        },
+      ),
+    );
+    expect(await screen.findByText('Wrong member')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Reverse' })).not.toBeInTheDocument();
+  });
+
   it('downloads an export with the session token', async () => {
     asStaff({ 'GET /members/9': { body: active } });
     const fetchSpy = globalThis.fetch as unknown as ReturnType<typeof vi.fn>;
@@ -252,7 +321,7 @@ describe('a member’s record (FR-MEM-02, FR-AUT-19)', () => {
       Object.assign(URL, { createObjectURL: created, revokeObjectURL: vi.fn() }),
     );
     renderApp('/members/9');
-    await screen.findByText('First fee');
+    await screen.findByText(/^First fee ·/);
     fetchSpy.mockImplementationOnce(async (input: unknown, init?: RequestInit) => {
       expect(String(input)).toBe('/api/members/9/export?format=txt');
       expect((init?.headers as Record<string, string>).authorization).toBe('Bearer tok');

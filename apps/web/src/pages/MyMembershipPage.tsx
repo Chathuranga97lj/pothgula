@@ -13,6 +13,7 @@ import { OWN_MEMBERSHIP_KEY, useOwnMembership } from '../api/members';
 import { useBranches } from '../api/queries';
 import { LoanTable } from '../components/loans';
 import { MyRequests } from '../components/requests';
+import { PaymentList } from '../components/payments';
 import { OwnSettlements } from '../components/settlements';
 import { PersonFields, personBody, type PersonForm } from '../components/PersonFields';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
@@ -141,6 +142,8 @@ export function MyMembershipPage() {
           </Button>
         </form>
       </Card>
+      {/* FR-MEM-05, FR-MEM-07: their own payments, each with its receipt. */}
+      {!pending && <PaymentList member={m} staff={false} />}
     </div>
   );
 }

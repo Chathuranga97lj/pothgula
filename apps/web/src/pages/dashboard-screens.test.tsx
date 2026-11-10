@@ -31,6 +31,7 @@ const counts = (over: Record<string, number> = {}) => ({
   copies_elsewhere: 0,
   due_soon: 0,
   returned_late_today: 0,
+  lost_in_transit: 0,
   settlements_passed: 0,
   settlements_closing: 0,
   settlements_open: 0,
@@ -39,6 +40,8 @@ const counts = (over: Record<string, number> = {}) => ({
 });
 const TONES: Record<string, string> = {
   suspended: 'urgent',
+  lost_in_transit: 'urgent',
+  transit_overdue: 'urgent',
   overdue: 'urgent',
   extensions_urgent: 'urgent',
   due_today: 'warning',
@@ -207,7 +210,7 @@ describe("staff: today's work (FR-NOT-03, FR-NOT-07, FR-NOT-09)", () => {
     renderApp('/');
 
     const top = await screen.findByRole('alert');
-    expect(top).toHaveTextContent('Suspended members');
+    expect(top).toHaveTextContent('Needs a super admin');
     expect(top).toHaveTextContent('GL — 1 suspended member');
     expect(screen.getByText('GL — Galle')).toBeInTheDocument();
     expect(screen.getByText('KS — Kesbewa')).toBeInTheDocument();
@@ -221,6 +224,38 @@ describe("staff: today's work (FR-NOT-03, FR-NOT-07, FR-NOT-09)", () => {
         name: '2 memberships end this month',
       }),
     ).toHaveAttribute('href', '/members?tab=lists');
+  });
+
+  it('also lifts books lost or stuck on the road to the top for a super admin (FR-NOT-09)', async () => {
+    signedIn(superAdmin, {
+      'GET /dashboard': {
+        body: {
+          today,
+          monthEnd: today,
+          branches: [
+            branchToday(
+              2,
+              'GL',
+              'Galle',
+              counts({ lost_in_transit: 1, transit_overdue: 2, due_today: 1 }),
+            ),
+            branchToday(1, 'KS', 'Kesbewa', counts()),
+          ],
+        },
+      },
+    });
+    renderApp('/');
+    const top = await screen.findByRole('alert');
+    expect(
+      within(top).getByRole('link', {
+        name: 'GL — 1 book lost on the way between branches, not found',
+      }),
+    ).toHaveAttribute('href', '/reports/missing?branchId=2');
+    expect(within(top).getByRole('link', { name: /GL — 2 books/ })).toHaveAttribute(
+      'href',
+      '/requests?branch=2',
+    );
+    expect(within(screen.getByTestId('panel-GL')).getAllByRole('link')).toHaveLength(1);
   });
 
   it('downloads the daily loans sheet for the branch', async () => {

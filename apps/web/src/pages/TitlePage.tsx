@@ -214,7 +214,8 @@ function Copies({ title: d }: { title: TitleDetail }) {
       {d.copies.length === 0 ? (
         <p className="p-5 text-stone-600">{t('catalogue.noCopies')}</p>
       ) : (
-        <table className="mt-3 w-full min-w-[520px] text-left text-sm">
+        // Three columns fit a phone; only staff, with the actions column, need to scroll.
+        <table className={`mt-3 w-full text-left text-sm ${isStaff ? 'min-w-[520px]' : ''}`}>
           <thead className="border-y border-stone-200 bg-stone-50 text-xs text-stone-600 uppercase">
             <tr>
               <th className="px-4 py-2 font-medium">{t('titles.accessionNo')}</th>

@@ -82,6 +82,7 @@ describe('staffPanel', () => {
     copies_elsewhere: 0,
     due_soon: 0,
     returned_late_today: 0,
+    lost_in_transit: 0,
     settlements_passed: 0,
     settlements_closing: 0,
     settlements_open: 0,

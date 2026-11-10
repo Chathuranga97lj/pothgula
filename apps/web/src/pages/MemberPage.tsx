@@ -17,7 +17,7 @@ import { downloadMemberExport, MEMBERS_KEY, memberKey, useMember } from '../api/
 import { branchKey, useBranches } from '../api/queries';
 import { useMe } from '../auth/auth';
 import { LoanTable, StandingBanner } from '../components/loans';
-import { ReceiptButton } from '../components/receipts';
+import { PaymentList } from '../components/payments';
 import { MemberSettlements, SettlementBanner } from '../components/settlements';
 import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
@@ -101,7 +101,7 @@ export function MemberPage() {
       <div className="mt-6">
         <MemberSettlements memberId={m.id} />
       </div>
-      <Payments member={m} />
+      <PaymentList member={m} staff />
       <div className="mt-6">
         <History entity="app_user" entityId={m.id} />
       </div>
@@ -508,49 +508,6 @@ function Books({
         </div>
       )}
       {loans.data && <LoanTable loans={loans.data.loans} staff />}
-    </Card>
-  );
-}
-
-function Payments({ member }: { member: MemberDetail }) {
-  const { t } = useTranslation();
-  return (
-    <Card className="mt-6 overflow-x-auto p-0">
-      <h2 className="px-5 pt-5 font-semibold">{t('members.payments')}</h2>
-      {member.payments.length === 0 ? (
-        <p className="p-5 text-stone-600">{t('members.noPayments')}</p>
-      ) : (
-        <table className="mt-3 w-full min-w-[560px] text-left text-sm">
-          <thead className="border-y border-stone-200 bg-stone-50 text-xs text-stone-600 uppercase">
-            <tr>
-              <th className="px-4 py-2 font-medium">{t('members.paidOn')}</th>
-              <th className="px-4 py-2 font-medium">{t('members.kind')}</th>
-              <th className="px-4 py-2 text-right font-medium">{t('members.amount')}</th>
-              <th className="px-4 py-2 font-medium">{t('members.receiptOrReason')}</th>
-              <th className="px-4 py-2 font-medium">{t('members.validUntil')}</th>
-              <th className="px-4 py-2 font-medium">
-                <span className="sr-only">{t('receipts.print')}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100">
-            {member.payments.map((p) => (
-              <tr key={p.id}>
-                <td className="px-4 py-2 tabular-nums">{p.paidOn}</td>
-                <td className="px-4 py-2">{t(`members.paymentKind.${p.kind}`)}</td>
-                <td className="px-4 py-2 text-right tabular-nums">
-                  Rs {formatRupees(p.amountCents)}
-                </td>
-                <td className="px-4 py-2">{p.receiptNo ?? p.reason}</td>
-                <td className="px-4 py-2 tabular-nums">{p.extendsTo}</td>
-                <td className="px-4 py-2 text-right">
-                  {p.kind !== 'waiver' && <ReceiptButton kind="membership" paymentId={p.id} />}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
     </Card>
   );
 }

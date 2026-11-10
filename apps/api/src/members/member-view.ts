@@ -50,6 +50,7 @@ export function toPayment(row: typeof membershipPayment.$inferSelect): Membershi
     reason: row.reason,
     extendsTo: row.extendsTo,
     collectedBy: row.collectedBy,
+    reversesPaymentId: row.reversesPaymentId,
   };
 }
 

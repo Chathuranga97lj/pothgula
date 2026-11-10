@@ -1,4 +1,4 @@
-import type { Loan } from '@pothgula/shared';
+import type { BookRequest, Closure, Loan, Notice, Settlement } from '@pothgula/shared';
 import { describe, expect, it } from 'vitest';
 import { type MemberFacts, memberPanel } from './member-panel';
 
@@ -87,6 +87,78 @@ describe('memberPanel (FR-NOT-01, FR-NOT-02, FR-NOT-08)', () => {
   it('gives an applicant only what to bring', () => {
     expect(memberPanel(facts({ status: 'pending', expireAt: null }), today)).toEqual([
       { kind: 'application_waiting', tone: 'info', branchName: 'Kesbewa', feeCents: 50_000 },
+    ]);
+  });
+
+  it('puts every kind it knows in one order, most urgent first (FR-NOT-07, M14)', () => {
+    const request = (status: string, extra: object = {}) =>
+      ({
+        id: nextId++,
+        status,
+        title: 'මඩොල් දූව',
+        from: { id: 2, code: 'GL', name: 'Galle' },
+        to: { id: 1, code: 'KS', name: 'Kesbewa' },
+        holdUntil: null,
+        decidedAt: null,
+        declineReason: null,
+        ...extra,
+      }) as unknown as BookRequest;
+    const settlement = {
+      id: 1,
+      status: 'open',
+      title: 'Gamperaliya',
+      accessionNo: 'KS-A1-00009',
+      amountDueCents: 150000,
+      windowEnds: '2026-12-30',
+      daysLeft: 51,
+    } as unknown as Settlement;
+    const closure: Closure = { id: 1, date: '2026-11-12', reason: 'Poya day' };
+    const notice = { id: 5, kind: 'notice', title: 'Water leak' } as unknown as Notice;
+    const declined = {
+      ...loan('2026-11-11'),
+      extensionStatus: 'declined' as const,
+      extensionReason: 'x',
+    };
+    const waiting = { ...loan('2026-11-20'), extensionStatus: 'requested' as const };
+    const approved = { ...loan('2026-11-25'), extensionStatus: 'approved' as const };
+    expect(
+      kinds(
+        facts({
+          expireAt: '2026-11-30',
+          loans: [
+            loan('2026-11-01'),
+            declined,
+            waiting,
+            approved,
+            loan('2026-10-01', '2026-10-04'),
+          ],
+          settlements: [settlement],
+          requests: [
+            request('held', { holdUntil: '2026-11-12' }),
+            request('declined', {
+              decidedAt: '2026-11-08T05:00:00.000Z',
+              declineReason: 'Damaged',
+            }),
+            request('in_transit'),
+          ],
+          closures: [closure],
+          important: [notice],
+        }),
+      ),
+    ).toEqual([
+      'settlement',
+      'loan_overdue',
+      'request_ready',
+      'request_declined',
+      'extension_declined',
+      'loan_due_soon',
+      'membership_expiring',
+      'request_on_way',
+      'extension_pending',
+      'extension_approved',
+      'closure',
+      'notice',
+      'late_returns',
     ]);
   });
 });

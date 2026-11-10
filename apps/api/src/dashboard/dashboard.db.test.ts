@@ -122,6 +122,7 @@ describe('the staff dashboard (FR-NOT-03, FR-NOT-07, FR-NOT-09)', () => {
     expect(b).toMatchObject({ branchId: ks, branchCode: 'KS', warningDays: 5 });
     expect(b.counts).toEqual({
       suspended: 1,
+      lost_in_transit: 0,
       settlements_passed: 0,
       settlements_closing: 0,
       settlements_open: 0,
