@@ -1,7 +1,7 @@
 import { addDays, todayColombo } from '@pothgula/shared';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fakeApi, type Route, user } from '../test/fake-api';
 import { renderApp } from '../test/render';
 
@@ -352,5 +352,39 @@ describe('the member’s side (FR-LST-03, FR-NOT-08)', () => {
       await screen.findByText('A lost book to settle: මඩොල් දූව — Rs. 1,500.00'),
     ).toBeInTheDocument();
     expect(screen.getByText(/40 days left/)).toBeInTheDocument();
+  });
+});
+
+describe('receipts (FR-MEM-07)', () => {
+  it('prints the receipt for a lost-book payment', async () => {
+    const createObjectURL = vi.fn(() => 'blob:receipt');
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() }));
+    const { calls } = signedIn(librarian, {
+      'GET /settlements/50': {
+        body: settlement({
+          status: 'paid',
+          settledOn: today,
+          paidCents: 150000,
+          payments: [
+            {
+              id: 7,
+              kind: 'payment',
+              amountCents: 150000,
+              paidOn: today,
+              receiptNo: 'R-1',
+              collectedByName: 'කමල්',
+              reason: null,
+              reversesPaymentId: null,
+              reversed: false,
+            },
+          ],
+        }),
+      },
+      'GET /receipts/settlement/7': { body: {} },
+    });
+    renderApp('/lost-books/50');
+    await userEvent.click(await screen.findByRole('button', { name: 'Receipt' }));
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalled());
+    expect(calls.some((c) => c.route === 'GET /receipts/settlement/7')).toBe(true);
   });
 });

@@ -221,7 +221,9 @@
     "payment_reversed": "That payment has already been reversed.",
     "copy_not_lost": "This copy is not recorded as missing.",
     "copy_lost_use_found": "This copy was declared lost. A super admin returns it to the shelf with “Found”.",
-    "super_admin_only": "Only a super admin can do this."
+    "super_admin_only": "Only a super admin can do this.",
+    "no_receipt": "No money changed hands for this, so there is no receipt.",
+    "payment_not_found": "That payment does not exist."
   },
   "images": {
     "uploading": "Uploading…",
@@ -939,7 +941,8 @@
       "job": "Scheduled jobs",
       "request": "Books between branches",
       "settlement": "Lost books",
-      "tariff": "Lost-book tariff"
+      "tariff": "Lost-book tariff",
+      "receipt": "Receipts"
     },
     "entities": {
       "app_user": "Person",
@@ -1092,6 +1095,9 @@
       "suspend_skipped": "Suspension check skipped",
       "unsuspend_skipped": "Lifting check skipped",
       "requests_end_skipped": "Request check skipped"
+    },
+    "receipt": {
+      "print": "Receipt printed"
     }
   },
   "reports": {
@@ -1106,7 +1112,10 @@
       "borrowing": "Borrowing by month",
       "late": "Late returns",
       "ages": "Members by age",
-      "requests": "Books between branches"
+      "requests": "Books between branches",
+      "fees": "Fee collection",
+      "membership": "Membership over time",
+      "missing": "Missing books"
     },
     "leads": {
       "summary": "Books, loans, members and this month’s fees in one view.",
@@ -1116,7 +1125,10 @@
       "borrowing": "Loans by category and month, to see what is read and when the busy months are.",
       "late": "The members with the most late returns over a period, and how late on average.",
       "ages": "Active members by age band, from their date of birth.",
-      "requests": "Requests over a period: between which branches, how many were declined and why, and how long until collection."
+      "requests": "Requests over a period: between which branches, how many were declined and why, and how long until collection.",
+      "fees": "Membership fees and lost-book money over a period, kept apart, with reversals and waived first fees.",
+      "membership": "Applications, approvals, rejections, renewals, suspensions and lapsed memberships, month by month.",
+      "missing": "Every copy missing or not useable now: who held it last, when it was declared, the amount and where the settlement stands."
     },
     "branch": "Branch",
     "wholeLibrary": "Whole library",
@@ -1179,7 +1191,16 @@
       "collected": "Collected",
       "lapsed": "Not collected",
       "lostInTransit": "Lost on the way",
-      "daysToCollect": "Days to collection"
+      "daysToCollect": "Days to collection",
+      "how": "What happened",
+      "declared": "Declared",
+      "amountSet": "Amount set (Rs)",
+      "settlement": "Settlement",
+      "applications": "Applications",
+      "approvals": "Approvals",
+      "rejections": "Rejections",
+      "renewals": "Renewals",
+      "suspensions": "Suspensions"
     },
     "rows": {
       "titles": "Titles held",
@@ -1198,7 +1219,19 @@
       "age26to40": "26–40",
       "age41to60": "41–60",
       "over60": "61 and over",
-      "unknown": "Not recorded"
+      "unknown": "Not recorded",
+      "unsettledLostBooks": "Unsettled lost books",
+      "annualFees": "Annual fees (Rs)",
+      "annualFeeCount": "Annual fees (number)",
+      "firstFees": "First fees (Rs)",
+      "firstFeeCount": "First fees (number)",
+      "feeReversals": "Fee reversals (Rs)",
+      "feesNet": "Fees collected, net (Rs)",
+      "firstFeeWaivers": "First fees waived (number)",
+      "lostPayments": "Lost-book payments (Rs)",
+      "lostPaymentCount": "Lost-book payments (number)",
+      "lostReversals": "Lost-book reversals (Rs)",
+      "lostNet": "Lost-book money, net (Rs)"
     }
   },
   "extensions": {
@@ -1489,5 +1522,8 @@
     "save": "Save the tariff",
     "saved": "Tariff saved.",
     "badAmount": "The amount for {{category}} is not an amount in rupees."
+  },
+  "receipts": {
+    "print": "Receipt"
   }
 }

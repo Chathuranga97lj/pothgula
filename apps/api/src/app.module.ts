@@ -16,6 +16,7 @@ import { LogModule } from './log/log.module';
 import { MembersModule } from './members/members.module';
 import { ReportsModule } from './reports/reports.module';
 import { RequestsModule } from './requests/requests.module';
+import { ReceiptsModule } from './receipts/receipts.module';
 import { SettlementsModule } from './settlements/settlements.module';
 import { StaffModule } from './staff/staff.module';
 
@@ -36,6 +37,7 @@ import { StaffModule } from './staff/staff.module';
     ReportsModule,
     RequestsModule,
     SettlementsModule,
+    ReceiptsModule,
   ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],

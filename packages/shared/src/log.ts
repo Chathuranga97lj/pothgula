@@ -23,6 +23,7 @@ export const LOG_ACTION_GROUPS = [
   'request',
   'settlement',
   'tariff',
+  'receipt',
   'title',
   'copy',
   'category',

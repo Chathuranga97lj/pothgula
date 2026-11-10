@@ -95,6 +95,12 @@ export class ReportsService {
         return this.ages(s);
       case 'requests':
         return this.requests(s);
+      case 'fees':
+        return this.fees(s);
+      case 'membership':
+        return this.membership(s);
+      case 'missing':
+        return this.missing(s);
     }
   }
 
@@ -140,7 +146,7 @@ export class ReportsService {
     type Counts = { branch_id: number | null } & Record<string, number | string | null>;
     // GROUPING SETS: one row per branch, and one (branch_id null) for the whole library.
     const sets = (column: string) => sql.raw(`GROUPING SETS ((${column}), ())`);
-    const [stock, loans, members, fees, top] = await Promise.all([
+    const [stock, loans, members, fees, top, owed] = await Promise.all([
       this.rows<Counts>(sql`
         SELECT c.branch_id, count(DISTINCT c.title_id)::int AS titles, count(*)::int AS copies
         FROM copy c WHERE c.withdrawn_at IS NULL AND ${this.inScope(s, sql`c.branch_id`)}
@@ -177,12 +183,18 @@ export class ReportsService {
             AND ${this.inScope(s, sql`b.branch_id`)}
           GROUP BY GROUPING SETS ((b.branch_id, t.id, t.title), (t.id, t.title))
         ) x ORDER BY branch_id, n DESC, title`),
+      // FR-LST-10: settlements still open, at the member's branch.
+      this.rows<Counts>(sql`
+        SELECT s.branch_id, count(*)::int AS unsettled
+        FROM book_settlement s
+        WHERE s.status = 'open' AND ${this.inScope(s, sql`s.branch_id`)}
+        GROUP BY ${sets('s.branch_id')}`),
     ]);
 
     // Without GROUPING SETS' total row the whole-library figures would double count titles.
     const keyed = <T extends { branch_id: number | null }>(list: T[]) =>
       new Map(list.map((r) => [r.branch_id, r]));
-    const maps = [keyed(stock), keyed(loans), keyed(members), keyed(fees)];
+    const maps = [keyed(stock), keyed(loans), keyed(members), keyed(fees), keyed(owed)];
     const topBy = keyed(top);
     const value = (id: number | null, field: string): ReportCell => {
       for (const m of maps) {
@@ -202,6 +214,7 @@ export class ReportsService {
       ['expiredMembers', 'Expired members', (id) => value(id, 'expired')],
       ['suspendedMembers', 'Suspended members', (id) => value(id, 'suspended')],
       ['waitingApplications', 'Waiting applications', (id) => value(id, 'waiting')],
+      ['unsettledLostBooks', 'Unsettled lost books', (id) => value(id, 'unsettled')],
       [
         'feesThisMonth',
         'Fees collected this month (Rs)',
@@ -218,7 +231,7 @@ export class ReportsService {
     ];
     return {
       title: 'Summary',
-      about: ['Unsettled lost books are added with lost-book settlements (M12).'],
+      about: ['Fees collected are annual and first fees less reversals; lost-book money is apart.'],
       columns: [
         col('measure', 'Measure'),
         ...(s.branch
@@ -589,6 +602,263 @@ export class ReportsService {
         .filter((p) => p.from_code !== null)
         .map((p) => row([p.from_code, p.to_code, ...figures(p)])),
       total: all ? ['Total', null, ...figures(all)] : null,
+    };
+  }
+
+  // ─── FR-RPT-03: fee collection ─────────────────────────────────────────────
+
+  private async fees(s: Scope): Promise<Body> {
+    type Money = { branch_id: number | null } & Record<string, string | number | null>;
+    const sets = sql.raw('GROUPING SETS ((u.branch_id), ())');
+    const lostSets = sql.raw('GROUPING SETS ((st.branch_id), ())');
+    const [fees, lost] = await Promise.all([
+      // Membership money, at the member's branch.
+      this.rows<Money>(sql`
+        SELECT u.branch_id,
+          (count(*) FILTER (WHERE p.kind = 'fee'))::int AS fee_n,
+          coalesce(sum(p.amount_cents) FILTER (WHERE p.kind = 'fee'), 0)::bigint AS fee,
+          (count(*) FILTER (WHERE p.kind = 'first_fee'))::int AS first_n,
+          coalesce(sum(p.amount_cents) FILTER (WHERE p.kind = 'first_fee'), 0)::bigint AS first,
+          (count(*) FILTER (WHERE p.kind = 'reversal'))::int AS reversal_n,
+          coalesce(sum(p.amount_cents) FILTER (WHERE p.kind = 'reversal'), 0)::bigint AS reversal,
+          (count(*) FILTER (WHERE p.kind = 'waiver'))::int AS waiver_n
+        FROM membership_payment p JOIN app_user u ON u.id = p.user_id
+        WHERE p.paid_on BETWEEN ${s.from}::date AND ${s.to}::date
+          AND ${this.inScope(s, sql`u.branch_id`)}
+        GROUP BY ${sets}`),
+      // FR-LST-08: lost-book money, kept apart, at the branch that handles the settlement.
+      this.rows<Money>(sql`
+        SELECT st.branch_id,
+          (count(*) FILTER (WHERE p.kind = 'payment'))::int AS lost_n,
+          coalesce(sum(p.amount_cents) FILTER (WHERE p.kind = 'payment'), 0)::bigint AS lost,
+          (count(*) FILTER (WHERE p.kind = 'reversal'))::int AS lost_reversal_n,
+          coalesce(sum(p.amount_cents) FILTER (WHERE p.kind = 'reversal'), 0)::bigint AS lost_reversal
+        FROM settlement_payment p JOIN book_settlement st ON st.id = p.settlement_id
+        WHERE p.paid_on BETWEEN ${s.from}::date AND ${s.to}::date
+          AND ${this.inScope(s, sql`st.branch_id`)}
+        GROUP BY ${lostSets}`),
+    ]);
+    const keyed = (list: Money[]) => new Map(list.map((r) => [r.branch_id, r]));
+    const maps = [keyed(fees), keyed(lost)];
+    const n = (id: number | null, field: string): number => {
+      for (const m of maps) {
+        const r = m.get(id);
+        if (r && field in r) return Number(r[field]);
+      }
+      return 0;
+    };
+    const rs = (cents: number) => formatRupees(cents);
+    const ids: (number | null)[] = s.branch ? [null] : [...s.branches.map((b) => b.branchId), null];
+    const measures: [string, string, (id: number | null) => ReportCell][] = [
+      ['annualFees', 'Annual fees (Rs)', (id) => rs(n(id, 'fee'))],
+      ['annualFeeCount', 'Annual fees (number)', (id) => n(id, 'fee_n')],
+      ['firstFees', 'First fees (Rs)', (id) => rs(n(id, 'first'))],
+      ['firstFeeCount', 'First fees (number)', (id) => n(id, 'first_n')],
+      ['feeReversals', 'Fee reversals (Rs)', (id) => rs(n(id, 'reversal'))],
+      [
+        'feesNet',
+        'Fees collected, net (Rs)',
+        (id) => rs(n(id, 'fee') + n(id, 'first') + n(id, 'reversal')),
+      ],
+      ['firstFeeWaivers', 'First fees waived (number)', (id) => n(id, 'waiver_n')],
+      ['lostPayments', 'Lost-book payments (Rs)', (id) => rs(n(id, 'lost'))],
+      ['lostPaymentCount', 'Lost-book payments (number)', (id) => n(id, 'lost_n')],
+      ['lostReversals', 'Lost-book reversals (Rs)', (id) => rs(n(id, 'lost_reversal'))],
+      ['lostNet', 'Lost-book money, net (Rs)', (id) => rs(n(id, 'lost') + n(id, 'lost_reversal'))],
+    ];
+    return {
+      title: 'Fee collection',
+      about: [
+        'Membership fees by the member’s home branch, and lost-book money by the branch handling the settlement, kept apart (FR-LST-08).',
+        'Reversals are shown as negative amounts; net figures are after them. A waived first fee brings in nothing and is counted, not summed.',
+      ],
+      columns: [
+        col('measure', 'Measure'),
+        ...(s.branch
+          ? [col('value', 'Value', true)]
+          : [
+              ...s.branches.map((b) => col(`branch:${b.branchCode}`, b.branchCode, true)),
+              col('total', 'Whole library', true),
+            ]),
+      ],
+      rows: measures.map(([key, label, get]) => row([label, ...ids.map(get)], { key })),
+      total: null,
+    };
+  }
+
+  // ─── FR-RPT-04: membership over time ───────────────────────────────────────
+
+  private async membership(s: Scope): Promise<Body> {
+    const colombo = (column: SQL) => sql`to_char(${column} AT TIME ZONE 'Asia/Colombo', 'YYYY-MM')`;
+    const between = (column: SQL) =>
+      sql`(${column} AT TIME ZONE 'Asia/Colombo')::date BETWEEN ${s.from}::date AND ${s.to}::date`;
+    type Monthly = { month: string; n: number };
+    const [applied, approved, rejected, renewed, suspended, lapsed] = await Promise.all([
+      this.rows<Monthly>(sql`
+        SELECT ${colombo(sql`u.applied_at`)} AS month, count(*)::int AS n
+        FROM app_user u
+        WHERE u.user_type = 'member' AND u.applied_at IS NOT NULL AND ${between(sql`u.applied_at`)}
+          AND ${this.inScope(s, sql`u.branch_id`)}
+        GROUP BY 1`),
+      this.rows<Monthly>(sql`
+        SELECT ${colombo(sql`u.approved_at`)} AS month, count(*)::int AS n
+        FROM app_user u
+        WHERE u.user_type = 'member' AND u.approved_at IS NOT NULL AND ${between(sql`u.approved_at`)}
+          AND ${this.inScope(s, sql`u.branch_id`)}
+        GROUP BY 1`),
+      // Rejections and suspensions are events: the activity log is where they are kept.
+      this.rows<Monthly>(sql`
+        SELECT ${colombo(sql`l.at`)} AS month, count(*)::int AS n
+        FROM activity_log l
+        WHERE l.action = 'application.reject' AND ${between(sql`l.at`)}
+          AND ${this.inScope(s, sql`l.branch_id`)}
+        GROUP BY 1`),
+      // Renewals not reversed.
+      this.rows<Monthly>(sql`
+        SELECT to_char(p.paid_on, 'YYYY-MM') AS month, count(*)::int AS n
+        FROM membership_payment p JOIN app_user u ON u.id = p.user_id
+        WHERE p.kind = 'fee' AND p.paid_on BETWEEN ${s.from}::date AND ${s.to}::date
+          AND NOT EXISTS (SELECT 1 FROM membership_payment r WHERE r.reverses_payment_id = p.id)
+          AND ${this.inScope(s, sql`u.branch_id`)}
+        GROUP BY 1`),
+      this.rows<Monthly>(sql`
+        SELECT ${colombo(sql`l.at`)} AS month, count(*)::int AS n
+        FROM activity_log l
+        WHERE l.action = 'member.suspend' AND ${between(sql`l.at`)}
+          AND ${this.inScope(s, sql`l.branch_id`)}
+        GROUP BY 1`),
+      // Memberships that ran out in the month and have not been renewed since.
+      this.rows<Monthly>(sql`
+        SELECT to_char(u.expire_at, 'YYYY-MM') AS month, count(*)::int AS n
+        FROM app_user u
+        WHERE u.user_type = 'member' AND u.status IN ('active', 'suspended')
+          AND u.expire_at BETWEEN ${s.from}::date AND ${s.to}::date
+          AND u.expire_at < ${s.today}::date
+          AND ${this.inScope(s, sql`u.branch_id`)}
+        GROUP BY 1`),
+    ]);
+    const lists = [applied, approved, rejected, renewed, suspended, lapsed];
+    const months = monthsBetween(s.from!, s.to!);
+    const get = (list: Monthly[], month: string) => list.find((r) => r.month === month)?.n ?? 0;
+    return {
+      title: 'Membership over time',
+      about: [
+        'Applications made, approved and rejected; renewals paid (not reversed); suspensions; and memberships that ran out that month and have not been renewed since.',
+      ],
+      columns: [
+        col('month', 'Month'),
+        col('applications', 'Applications', true),
+        col('approvals', 'Approvals', true),
+        col('rejections', 'Rejections', true),
+        col('renewals', 'Renewals', true),
+        col('suspensions', 'Suspensions', true),
+        col('lapsed', 'Lapsed', true),
+      ],
+      rows: months.map((m) => row([m, ...lists.map((l) => get(l, m))])),
+      total: ['Total', ...lists.map((l) => l.reduce((sum, r) => sum + r.n, 0))],
+    };
+  }
+
+  // ─── FR-RPT-07: missing books ──────────────────────────────────────────────
+
+  private async missing(s: Scope): Promise<Body> {
+    const list = await this.rows<{
+      id: number;
+      settlement_id: number | null;
+      accession_no: string;
+      title: string;
+      category_code: string;
+      branch_code: string;
+      condition: string;
+      kind: string | null;
+      status: string | null;
+      window_ends: string | null;
+      declared_on: string | null;
+      set_amount: string | null;
+      settlement_member: string | null;
+      last_member: string | null;
+      lost_on_road: string | null;
+    }>(sql`
+      SELECT c.id, st.id AS settlement_id, c.accession_no, t.title, t.category_code, br.branch_code,
+        c.condition, st.kind, st.status, st.window_ends::text, st.declared_on::text,
+        st.set_amount_cents::text AS set_amount, sm.full_name AS settlement_member,
+        lb.full_name AS last_member, lt.lost_on::text AS lost_on_road
+      FROM copy c
+      JOIN title t ON t.id = c.title_id
+      JOIN branch br ON br.id = c.branch_id
+      LEFT JOIN LATERAL (
+        SELECT * FROM book_settlement x WHERE x.copy_id = c.id ORDER BY x.id DESC LIMIT 1
+      ) st ON true
+      LEFT JOIN app_user sm ON sm.id = st.user_id
+      LEFT JOIN LATERAL (
+        SELECT (r.updated_at AT TIME ZONE 'Asia/Colombo')::date AS lost_on FROM book_request r
+        WHERE r.copy_id = c.id AND r.status = 'lost_in_transit' ORDER BY r.id DESC LIMIT 1
+      ) lt ON true
+      LEFT JOIN LATERAL (
+        SELECT u.full_name FROM borrow b JOIN app_user u ON u.id = b.user_id
+        WHERE b.copy_id = c.id AND b.voided_at IS NULL ORDER BY b.borrow_date DESC, b.id DESC LIMIT 1
+      ) lb ON true
+      WHERE c.withdrawn_at IS NULL AND c.condition IN ('missing', 'not_useable')
+        AND ${this.inScope(s, sql`c.branch_id`)}
+      ORDER BY coalesce(st.declared_on, lt.lost_on) DESC NULLS LAST, c.accession_no`);
+    const how = (r: (typeof list)[number]) =>
+      r.lost_on_road && !r.kind
+        ? 'Lost on the way between branches'
+        : r.kind === 'lost'
+          ? 'Lost by a member'
+          : r.kind === 'damaged'
+            ? 'Ruined by a member'
+            : r.condition === 'missing'
+              ? 'Missing'
+              : 'Not useable';
+    const standing = (r: (typeof list)[number]) => {
+      if (!r.status) return null;
+      if (r.status === 'open') return r.window_ends! < s.today ? 'Past its window' : 'Open';
+      return (
+        {
+          paid: 'Cleared — paid',
+          replaced: 'Cleared — replaced',
+          waived: 'Waived',
+          found: 'Found',
+        }[r.status] ?? r.status
+      );
+    };
+    const many = s.branch === null;
+    return {
+      title: 'Missing books',
+      about: [
+        `${plural(list.length, 'copy', 'copies')} missing or not useable now, the most recent first.`,
+        'The member is who held it last; none for a copy lost on the way between branches.',
+        'Personal data — keep it safe (Personal Data Protection Act No. 9 of 2022).',
+      ],
+      columns: [
+        col('accessionNo', 'Book number'),
+        col('title', 'Title'),
+        col('category', 'Category'),
+        ...(many ? [col('branch', 'Branch')] : []),
+        col('how', 'What happened'),
+        col('member', 'Member'),
+        col('declared', 'Declared'),
+        col('amountSet', 'Amount set (Rs)', true),
+        col('settlement', 'Settlement'),
+      ],
+      rows: list.map((r) =>
+        row(
+          [
+            r.accession_no,
+            r.title,
+            r.category_code,
+            ...(many ? [r.branch_code] : []),
+            how(r),
+            r.lost_on_road && !r.kind ? null : (r.settlement_member ?? r.last_member),
+            r.declared_on ?? r.lost_on_road,
+            r.set_amount === null ? null : formatRupees(Number(r.set_amount)),
+            standing(r),
+          ],
+          r.settlement_id ? { link: `/lost-books/${r.settlement_id}` } : {},
+        ),
+      ),
+      total: null,
     };
   }
 
