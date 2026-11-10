@@ -70,3 +70,38 @@ describe('who may borrow what (FR-CIR-02)', () => {
     ).toEqual(['copy_on_loan', 'copy_other_branch', 'member_expired']);
   });
 });
+
+describe('copies travelling for other-branch requests (FR-REQ-04, FR-REQ-05)', () => {
+  it('refuses a copy in transit, or held for someone else', () => {
+    expect(codes(facts({ copy: { state: 'in_transit', branchId: 1 } }))).toEqual([
+      'copy_in_transit',
+    ]);
+    expect(codes(facts({ copy: { state: 'held', branchId: 1, heldFor: 99 } }))).toEqual([
+      'copy_held',
+    ]);
+  });
+
+  it('lets the member collect the copy held for them, though another branch owns it', () => {
+    const f = facts({
+      copy: { state: 'held', branchId: 2, heldFor: 7 },
+      member: { id: 7, status: 'active', expireAt: '2027-01-01', branchId: 1 },
+    });
+    expect(issueRefusals(f)).toEqual([]);
+  });
+
+  it('counts open requests towards the limit (FR-CIR-06)', () => {
+    const one = { ...facts().standing, openLoans: 1 };
+    expect(codes(facts({ standing: one, openRequests: 1 }))).toEqual(['member_at_limit']);
+    expect(codes(facts({ standing: one, openRequests: 0 }))).toEqual([]);
+  });
+
+  it('allows one book while a lost-book settlement is open (FR-LST-04)', () => {
+    const none = facts({ settlingMaxBooks: 1 });
+    expect(codes(none)).toEqual([]);
+    const one = facts({ standing: { ...facts().standing, openLoans: 1 }, settlingMaxBooks: 1 });
+    expect(issueRefusals(one)).toEqual([{ code: 'member_settling', params: { max: 1 } }]);
+    // A setting no lower than the normal limit changes nothing.
+    const same = facts({ standing: { ...facts().standing, openLoans: 2 }, settlingMaxBooks: 2 });
+    expect(codes(same)).toEqual(['member_at_limit']);
+  });
+});

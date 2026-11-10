@@ -11,9 +11,10 @@ import {
   type LoanStanding,
   type MemberLoans,
   normalizeAccession,
+  OPEN_REQUEST_STATUSES,
   todayColombo,
 } from '@pothgula/shared';
-import { desc, eq, type SQL, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, ne, type SQL, sql } from 'drizzle-orm';
 import type { AuthContext } from '../auth/auth-context';
 import { type Log, UnitOfWork } from '../audit/unit-of-work';
 import type { UserRow } from '../auth/users';
@@ -22,7 +23,8 @@ import { isPgError, PG } from '../common/pg-error';
 import { assertBranchAccess } from '../common/scope';
 import type { Db, Queryable, Tx } from '../db/client';
 import { DB } from '../db/db.module';
-import { appUser, borrow, branchSetting, copy, title } from '../db/schema';
+import { appUser, bookRequest, borrow, branchSetting, copy, title } from '../db/schema';
+import { effectiveStatus, isSettling, settlementStanding } from '../settlements/suspension';
 import { issueRefusals, REFUSAL_MESSAGES } from './issue-rules';
 import { loanQuery, type LoanRow, toLoan } from './loan-view';
 
@@ -32,6 +34,7 @@ type CopyRow = typeof copy.$inferSelect;
 interface Rules {
   loanDays: number;
   maxBooks: number;
+  maxBooksWhileSettling: number;
   frequentLateCount: number;
   frequentLateMonths: number;
 }
@@ -39,6 +42,16 @@ interface Rules {
 const memberNotFound = () => AppError.notFound('member_not_found', 'No such member.');
 const copyNotFound = () => AppError.notFound('copy_not_found', 'No copy has that number.');
 const loanNotFound = () => AppError.notFound('loan_not_found', 'No such loan.');
+const lostLoanFixed = () =>
+  AppError.conflict(
+    'loan_lost',
+    'This loan ended with the book declared lost; its settlement deals with it now.',
+  );
+const requestLoanFixed = () =>
+  AppError.conflict(
+    'loan_from_request',
+    'This loan is a book from another branch; its copy and member cannot change.',
+  );
 
 /**
  * Circulation (§7): issuing and taking back at the counter, corrections, voids
@@ -97,6 +110,28 @@ export class CirculationService {
         }
         throw err;
       }
+      // FR-REQ-05: a copy held for this member is collected; its request becomes this loan.
+      const [collected] = await tx
+        .update(bookRequest)
+        .set({ status: 'issued', borrowId: row!.id })
+        .where(
+          and(
+            eq(bookRequest.copyId, check.copy.id),
+            eq(bookRequest.userId, check.member.id),
+            eq(bookRequest.status, 'held'),
+          ),
+        )
+        .returning();
+      if (collected) {
+        await log({
+          action: 'request.issue',
+          entity: 'book_request',
+          entityId: collected.id,
+          branchId: collected.toBranchId,
+          before: { status: 'held' },
+          after: { status: 'issued', borrowId: row!.id },
+        });
+      }
       await log({
         action: check.isBackdated ? 'borrow.issue_backdated' : 'borrow.issue',
         entity: 'borrow',
@@ -140,6 +175,7 @@ export class CirculationService {
       const loan = await this.lockLoan(tx, id);
       assertBranchAccess(ctx.user, loan.branchId);
       if (loan.voidedAt) throw AppError.conflict('loan_void', 'This loan has been voided.');
+      if (loan.lostDeclaredAt) throw lostLoanFixed();
       if (loan.returnedOn) {
         throw AppError.conflict('already_returned', 'This book has already been taken back.');
       }
@@ -173,6 +209,22 @@ export class CirculationService {
         },
       });
       if (body.notUseable) await this.setAside(tx, log, loan.copyId);
+      // FR-REQ-07: a copy from another branch is at once on its way home.
+      const [travelling] = await tx
+        .update(bookRequest)
+        .set({ status: 'returning' })
+        .where(and(eq(bookRequest.borrowId, id), eq(bookRequest.status, 'issued')))
+        .returning();
+      if (travelling) {
+        await log({
+          action: 'request.returned',
+          entity: 'book_request',
+          entityId: travelling.id,
+          branchId: travelling.toBranchId,
+          before: { status: 'issued' },
+          after: { status: 'returning' },
+        });
+      }
       return this.loan(tx, id);
     });
   }
@@ -194,12 +246,19 @@ export class CirculationService {
       const loan = await this.lockLoan(tx, id);
       assertBranchAccess(ctx.user, loan.branchId);
       if (loan.voidedAt) throw AppError.conflict('loan_void', 'A voided loan is not corrected.');
+      if (loan.lostDeclaredAt) throw lostLoanFixed();
       const today = todayColombo();
       const changes: Partial<BorrowRow> = {};
+      const [request] = await tx
+        .select()
+        .from(bookRequest)
+        .where(eq(bookRequest.borrowId, id))
+        .for('update');
 
       if (body.accessionNo !== undefined) {
         const c = await this.copyByAccession(tx, body.accessionNo, true);
         if (c.id !== loan.copyId) {
+          if (request) throw requestLoanFixed();
           if (c.branchId !== loan.branchId) {
             throw AppError.unprocessable('copy_other_branch', REFUSAL_MESSAGES.copy_other_branch);
           }
@@ -209,6 +268,8 @@ export class CirculationService {
             const code = (
               {
                 on_loan: 'copy_on_loan',
+                in_transit: 'copy_in_transit',
+                held: 'copy_held',
                 missing: 'copy_missing',
                 not_useable: 'copy_not_useable',
                 withdrawn: 'copy_withdrawn',
@@ -221,6 +282,7 @@ export class CirculationService {
       }
 
       if (body.memberId !== undefined && body.memberId !== loan.userId) {
+        if (request) throw requestLoanFixed();
         const m = await this.memberRow(tx, body.memberId, true);
         if (m.branchId !== loan.branchId) {
           throw AppError.unprocessable(
@@ -244,7 +306,9 @@ export class CirculationService {
 
       if (body.returnedOn !== undefined && body.returnedOn !== loan.returnedOn) {
         if (body.returnedOn === null) {
-          // A take-back recorded by mistake: the loan is open again.
+          // A take-back recorded by mistake: the loan is open again, and a copy
+          // from another branch not yet sent home is back with its member.
+          if (request) await this.reopenRequest(tx, log, request, 'issued', id);
           changes.returnedOn = null;
           changes.receivedBy = null;
           changes.returnBackdated = false;
@@ -297,6 +361,14 @@ export class CirculationService {
     return this.uow.run(ctx.actor, async (tx, log) => {
       const loan = await this.lockLoan(tx, id);
       if (loan.voidedAt) throw AppError.conflict('loan_void', 'This loan is already void.');
+      if (loan.lostDeclaredAt) throw lostLoanFixed();
+      // A loan entered by mistake never collected its held copy: it is held again.
+      const [request] = await tx
+        .select()
+        .from(bookRequest)
+        .where(eq(bookRequest.borrowId, id))
+        .for('update');
+      if (request) await this.reopenRequest(tx, log, request, 'held', null);
       const voidedAt = new Date();
       await tx
         .update(borrow)
@@ -356,6 +428,23 @@ export class CirculationService {
     const t = await q.select().from(title).where(eq(title.id, c.titleId));
     const today = todayColombo();
     const standing = standingOf(loans, today, rules);
+    // FR-LST-04, FR-LST-15: an open settlement lowers the limit; a passed window suspends.
+    const settling = await settlementStanding(q, member.id, today);
+    // FR-REQ-05, FR-CIR-06: who a held copy waits for, and the member's other open requests.
+    const [held] = await q
+      .select({ id: bookRequest.id, userId: bookRequest.userId })
+      .from(bookRequest)
+      .where(and(eq(bookRequest.copyId, c.id), eq(bookRequest.status, 'held')));
+    const open = await q
+      .select({ id: bookRequest.id })
+      .from(bookRequest)
+      .where(
+        and(
+          eq(bookRequest.userId, member.id),
+          inArray(bookRequest.status, [...OPEN_REQUEST_STATUSES]),
+          held && held.userId === member.id ? ne(bookRequest.id, held.id) : undefined,
+        ),
+      );
     return {
       member: { id: member.id, fullName: member.fullName, branchId: member.branchId },
       copy: {
@@ -372,10 +461,12 @@ export class CirculationService {
       isBackdated: backdated,
       standing,
       refusals: issueRefusals({
-        copy: { state, branchId: c.branchId },
-        member,
+        copy: { state, branchId: c.branchId, heldFor: held?.userId ?? null },
+        member: { ...member, status: effectiveStatus(member.status, settling) },
         borrowDate,
         standing,
+        openRequests: open.length,
+        ...(isSettling(settling) ? { settlingMaxBooks: rules.maxBooksWhileSettling } : {}),
       }),
     };
   }
@@ -423,13 +514,57 @@ export class CirculationService {
       .select({
         loanDays: branchSetting.loanDays,
         maxBooks: branchSetting.maxBooks,
+        maxBooksWhileSettling: branchSetting.maxBooksWhileSettling,
         frequentLateCount: branchSetting.frequentLateCount,
         frequentLateMonths: branchSetting.frequentLateMonths,
       })
       .from(branchSetting)
       .where(eq(branchSetting.branchId, branchId));
     // Every branch is created with its settings row; these are the v3.1 defaults.
-    return row ?? { loanDays: 14, maxBooks: 2, frequentLateCount: 3, frequentLateMonths: 12 };
+    return (
+      row ?? {
+        loanDays: 14,
+        maxBooks: 2,
+        maxBooksWhileSettling: 1,
+        frequentLateCount: 3,
+        frequentLateMonths: 12,
+      }
+    );
+  }
+
+  /**
+   * Puts a request back a step when its loan is undone (a void, or a take-back
+   * recorded by mistake), only while the copy is still at the member's branch.
+   */
+  private async reopenRequest(
+    tx: Tx,
+    log: Log,
+    request: typeof bookRequest.$inferSelect,
+    to: 'held' | 'issued',
+    borrowId: number | null,
+  ): Promise<void> {
+    const stillHere =
+      request.status === 'issued' ||
+      (request.status === 'returning' && request.returnDispatchedAt === null);
+    if (!stillHere) {
+      throw AppError.conflict(
+        'request_moved_on',
+        'The copy has already been sent back to its branch.',
+      );
+    }
+    if (request.status === to && request.borrowId === borrowId) return;
+    await tx
+      .update(bookRequest)
+      .set({ status: to, borrowId })
+      .where(eq(bookRequest.id, request.id));
+    await log({
+      action: 'request.reopen',
+      entity: 'book_request',
+      entityId: request.id,
+      branchId: request.toBranchId,
+      before: { status: request.status, borrowId: request.borrowId },
+      after: { status: to, borrowId },
+    });
   }
 
   private async lockLoan(tx: Tx, id: number): Promise<BorrowRow> {
@@ -471,6 +606,7 @@ function standingOf(rows: LoanRow[], today: string, rules: Rules): LoanStanding 
       returnedOn: r.borrow.returnedOn,
       voided: r.borrow.voidedAt !== null,
       extensionStatus: r.borrow.extensionStatus,
+      lost: r.borrow.lostDeclaredAt !== null,
     })),
     today,
     rules,

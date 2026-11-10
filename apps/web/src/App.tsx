@@ -20,8 +20,13 @@ import { MyMembershipPage } from './pages/MyMembershipPage';
 import { NewTitlePage } from './pages/NewTitlePage';
 import { RegisterMemberPage } from './pages/RegisterMemberPage';
 import { ReportPage, ReportsPage } from './pages/ReportsPage';
+import { RequestPage } from './pages/RequestPage';
+import { RequestsPage } from './pages/RequestsPage';
+import { SettlementPage } from './pages/SettlementPage';
+import { SettlementsPage } from './pages/SettlementsPage';
 import { SignInPage } from './pages/SignInPage';
 import { StaffPage } from './pages/StaffPage';
+import { TariffPage } from './pages/TariffPage';
 import { TitlePage } from './pages/TitlePage';
 
 export function App() {
@@ -80,6 +85,46 @@ export function App() {
             element={
               <RequireRole roles={['admin', 'super_admin']}>
                 <CallListPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="requests"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <RequestsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="requests/:id"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <RequestPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="lost-books"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <SettlementsPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="lost-books/tariff/:branchId"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <TariffPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="lost-books/:id"
+            element={
+              <RequireRole roles={['admin', 'super_admin']}>
+                <SettlementPage />
               </RequireRole>
             }
           />

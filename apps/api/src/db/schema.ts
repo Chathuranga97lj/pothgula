@@ -57,6 +57,20 @@ export const userStatus = pgEnum('user_status', [
 ]);
 export const copyCondition = pgEnum('copy_condition', ['useable', 'not_useable', 'missing']);
 export const paymentKind = pgEnum('payment_kind', ['fee', 'first_fee', 'waiver', 'reversal']);
+/** §8: where a request for a book from another branch stands (see shared REQUEST_STATUSES). */
+export const requestStatus = pgEnum('request_status', [
+  'requested',
+  'accepted',
+  'in_transit',
+  'held',
+  'issued',
+  'returning',
+  'completed',
+  'declined',
+  'cancelled',
+  'lapsed',
+  'lost_in_transit',
+]);
 /** FR-CIR-10 to FR-CIR-13: where a loan's one extension stands. */
 export const extensionStatus = pgEnum('extension_status', [
   'none',
@@ -64,6 +78,16 @@ export const extensionStatus = pgEnum('extension_status', [
   'approved',
   'declined',
 ]);
+/** §9: where a lost-book settlement stands (see shared SETTLEMENT_STATUSES). */
+export const settlementStatus = pgEnum('settlement_status', [
+  'open',
+  'replaced',
+  'paid',
+  'waived',
+  'found',
+]);
+export const lossKind = pgEnum('loss_kind', ['lost', 'damaged']);
+export const settlementPaymentKind = pgEnum('settlement_payment_kind', ['payment', 'reversal']);
 export const imageMime = pgEnum('image_mime', ['image/png', 'image/jpeg', 'image/webp']);
 
 // ─── The library, branches and categories (§5) ─────────────────────────────
@@ -130,6 +154,8 @@ export const branchSetting = pgTable(
     memberDueWarningDays: integer('member_due_warning_days').notNull().default(5),
     declineGraceDays: integer('decline_grace_days').notNull().default(3),
     holdDays: integer('hold_days').notNull().default(7),
+    /** FR-REQ-12: days on the road before a travelling copy is flagged. */
+    transitAlertDays: integer('transit_alert_days').notNull().default(7),
     applicationStaleDays: integer('application_stale_days').notNull().default(30),
     applicationAnonymiseDays: integer('application_anonymise_days').notNull().default(90),
     renewalGraceDays: integer('renewal_grace_days').notNull().default(90),
@@ -145,7 +171,7 @@ export const branchSetting = pgTable(
       sql`${t.loanDays} > 0 AND ${t.maxBooks} > 0 AND ${t.maxBooksWhileSettling} >= 0
         AND ${t.maxBooksWhileSettling} <= ${t.maxBooks} AND ${t.settlementWindowDays} > 0
         AND ${t.staffDueWarningDays} >= 0 AND ${t.memberDueWarningDays} >= 0
-        AND ${t.declineGraceDays} >= 0 AND ${t.holdDays} > 0 AND ${t.applicationStaleDays} > 0
+        AND ${t.declineGraceDays} >= 0 AND ${t.holdDays} > 0 AND ${t.transitAlertDays} > 0 AND ${t.applicationStaleDays} > 0
         AND ${t.applicationAnonymiseDays} > 0 AND ${t.renewalGraceDays} >= 0
         AND ${t.frequentLateCount} > 0 AND ${t.frequentLateMonths} > 0
         AND ${t.logRetentionMonths} >= 24`,
@@ -381,6 +407,12 @@ export const borrow = pgTable(
     extensionDecidedBy: integer('extension_decided_by').references(() => appUser.id),
     /** Why it was declined; the member sees it (FR-CIR-12). */
     extensionReason: text('extension_reason'),
+    /**
+     * FR-LST-01: declared lost. The loan ends that day — `returned_on` holds the
+     * date, with nobody receiving it — and the settlement takes over.
+     */
+    lostDeclaredAt: instant('lost_declared_at'),
+    lostDeclaredBy: integer('lost_declared_by').references(() => appUser.id),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -405,9 +437,12 @@ export const borrow = pgTable(
         AND ${t.dueDate} >= ${t.originalDueDate}
         AND (${t.returnedOn} IS NULL OR ${t.returnedOn} >= ${t.borrowDate})`,
     ),
+    /** Ended either by a take-back (someone received it) or by a lost declaration, never both. */
     check(
       'borrow_received_when_returned',
-      sql`(${t.returnedOn} IS NULL) = (${t.receivedBy} IS NULL)`,
+      sql`(${t.returnedOn} IS NULL) = (${t.receivedBy} IS NULL AND ${t.lostDeclaredAt} IS NULL)
+        AND (${t.receivedBy} IS NULL OR ${t.lostDeclaredAt} IS NULL)
+        AND (${t.lostDeclaredAt} IS NULL) = (${t.lostDeclaredBy} IS NULL)`,
     ),
     check(
       'borrow_return_backdated_when_returned',
@@ -477,6 +512,249 @@ export const membershipPayment = pgTable(
   ],
 );
 
+// ─── Books from other branches (§8) ────────────────────────────────────────
+
+/**
+ * One request: a member asking for a title held at another branch, and then the
+ * journey of the copy chosen for it. Each step keeps its time and, with the
+ * activity log, who took it (FR-REQ-10). Whether a copy is in transit or held is
+ * worked out from here by the copy_availability view (R2).
+ */
+export const bookRequest = pgTable(
+  'book_request',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    titleId: integer('title_id')
+      .notNull()
+      .references(() => title.id),
+    /** Chosen by the holding branch on acceptance (FR-REQ-04). */
+    copyId: integer('copy_id').references(() => copy.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => appUser.id),
+    /** The owning branch, asked for the book. */
+    fromBranchId: integer('from_branch_id')
+      .notNull()
+      .references(() => branch.id),
+    /** The member's home branch, where it is held and issued. */
+    toBranchId: integer('to_branch_id')
+      .notNull()
+      .references(() => branch.id),
+    status: requestStatus('status').notNull().default('requested'),
+    requestedAt: instant('requested_at').notNull().defaultNow(),
+    decidedBy: integer('decided_by').references(() => appUser.id),
+    decidedAt: instant('decided_at'),
+    declineReason: text('decline_reason'),
+    dispatchedAt: instant('dispatched_at'),
+    arrivedAt: instant('arrived_at'),
+    /** The last day it is held for the member (FR-REQ-05). */
+    holdUntil: day('hold_until'),
+    /** The loan it became (FR-REQ-05). */
+    borrowId: integer('borrow_id').references(() => borrow.id),
+    lapsedAt: instant('lapsed_at'),
+    returnDispatchedAt: instant('return_dispatched_at'),
+    returnArrivedAt: instant('return_arrived_at'),
+    cancelledAt: instant('cancelled_at'),
+    /** FR-REQ-14: why a super admin wrote the copy off. */
+    lostReason: text('lost_reason'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check('book_request_branches', sql`${t.fromBranchId} <> ${t.toBranchId}`),
+    check(
+      'book_request_steps',
+      sql`CASE ${t.status}
+        WHEN 'requested' THEN ${t.copyId} IS NULL AND ${t.decidedAt} IS NULL
+        WHEN 'declined' THEN ${t.copyId} IS NULL AND ${t.decidedAt} IS NOT NULL
+          AND ${t.decidedBy} IS NOT NULL AND ${t.declineReason} IS NOT NULL
+        WHEN 'cancelled' THEN ${t.cancelledAt} IS NOT NULL
+        WHEN 'accepted' THEN ${t.copyId} IS NOT NULL AND ${t.decidedAt} IS NOT NULL
+          AND ${t.decidedBy} IS NOT NULL AND ${t.dispatchedAt} IS NULL
+        WHEN 'in_transit' THEN ${t.copyId} IS NOT NULL AND ${t.dispatchedAt} IS NOT NULL
+          AND ${t.arrivedAt} IS NULL
+        WHEN 'held' THEN ${t.arrivedAt} IS NOT NULL AND ${t.holdUntil} IS NOT NULL
+          AND ${t.borrowId} IS NULL
+        WHEN 'issued' THEN ${t.borrowId} IS NOT NULL
+        WHEN 'lapsed' THEN ${t.lapsedAt} IS NOT NULL AND ${t.borrowId} IS NULL
+          AND ${t.returnDispatchedAt} IS NULL
+        WHEN 'returning' THEN ${t.copyId} IS NOT NULL AND ${t.returnArrivedAt} IS NULL
+        WHEN 'completed' THEN ${t.returnArrivedAt} IS NOT NULL
+        WHEN 'lost_in_transit' THEN ${t.copyId} IS NOT NULL AND ${t.lostReason} IS NOT NULL
+      END`,
+    ),
+    /** FR-REQ-02: one request open at a time. */
+    uniqueIndex('book_request_one_open_per_member')
+      .on(t.userId)
+      .where(sql`${t.status} IN ('requested', 'accepted', 'in_transit', 'held')`),
+    /** A copy travels for one request at a time. */
+    uniqueIndex('book_request_one_per_copy')
+      .on(t.copyId)
+      .where(sql`${t.status} IN ('accepted', 'in_transit', 'held', 'lapsed', 'returning')`),
+    uniqueIndex('book_request_borrow_unique').on(t.borrowId),
+    index('book_request_from_idx').on(t.fromBranchId, t.status),
+    index('book_request_to_idx').on(t.toBranchId, t.status),
+  ],
+);
+
+// ─── Lost and damaged books (§9) ────────────────────────────────────────────
+
+/** FR-LST-16: each branch's amount per category. No row, or a null amount, leaves it to staff. */
+export const lostTariff = pgTable(
+  'lost_tariff',
+  {
+    branchId: integer('branch_id')
+      .notNull()
+      .references(() => branch.id),
+    categoryCode: text('category_code')
+      .notNull()
+      .references(() => category.code),
+    amountCents: cents('amount_cents'),
+    updatedBy: integer('updated_by')
+      .notNull()
+      .references(() => appUser.id),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.branchId, t.categoryCode] }),
+    check('lost_tariff_amount', sql`${t.amountCents} IS NULL OR ${t.amountCents} >= 0`),
+  ],
+);
+
+/**
+ * FR-LST-02: what a member owes for a copy lost (or damaged beyond use) while on
+ * loan to them, one per loan. Cleared by a replacement or a payment; waived,
+ * reduced or extended only by a super admin (FR-LST-09). Payments are their own
+ * rows in `settlement_payment` and are never changed (FR-LST-07).
+ */
+export const bookSettlement = pgTable(
+  'book_settlement',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    borrowId: integer('borrow_id')
+      .notNull()
+      .references(() => borrow.id),
+    copyId: integer('copy_id')
+      .notNull()
+      .references(() => copy.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => appUser.id),
+    /** The member's home branch, where the loan was issued (its window setting). */
+    branchId: integer('branch_id')
+      .notNull()
+      .references(() => branch.id),
+    /** The branch that owned the copy (its tariff, and the replacement's number). */
+    copyBranchId: integer('copy_branch_id')
+      .notNull()
+      .references(() => branch.id),
+    kind: lossKind('kind').notNull(),
+    reason: text('reason').notNull(),
+    declaredOn: day('declared_on').notNull(),
+    declaredBy: integer('declared_by')
+      .notNull()
+      .references(() => appUser.id),
+    /** The tariff amount at the time, if the category had one. */
+    tariffCents: cents('tariff_cents'),
+    /** The amount set when declared; differs from the tariff only with a reason. */
+    setAmountCents: cents('set_amount_cents').notNull(),
+    amountReason: text('amount_reason'),
+    amountSetBy: integer('amount_set_by')
+      .notNull()
+      .references(() => appUser.id),
+    /** What is owed now (FR-LST-09: a super admin may reduce it, with a reason). */
+    amountDueCents: cents('amount_due_cents').notNull(),
+    reductionReason: text('reduction_reason'),
+    /** Declared + the window (FR-LST-14), + any extension. */
+    windowEnds: day('window_ends').notNull(),
+    windowExtendedDays: integer('window_extended_days'),
+    windowExtensionReason: text('window_extension_reason'),
+    status: settlementStatus('status').notNull().default('open'),
+    settledOn: day('settled_on'),
+    handledBy: integer('handled_by').references(() => appUser.id),
+    replacementCopyId: integer('replacement_copy_id').references(() => copy.id),
+    waiverReason: text('waiver_reason'),
+    /** FR-LST-12: the lost copy turned up and went back on the shelf. */
+    foundOn: day('found_on'),
+    foundReason: text('found_reason'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check(
+      'book_settlement_amounts',
+      sql`${t.setAmountCents} > 0 AND ${t.amountDueCents} > 0
+        AND ${t.amountDueCents} <= ${t.setAmountCents}
+        AND (${t.tariffCents} IS NULL OR ${t.tariffCents} >= 0)
+        AND (${t.tariffCents} IS NULL OR ${t.tariffCents} = ${t.setAmountCents}
+          OR ${t.amountReason} IS NOT NULL)
+        AND (${t.amountDueCents} = ${t.setAmountCents} OR ${t.reductionReason} IS NOT NULL)`,
+    ),
+    check(
+      'book_settlement_window',
+      sql`${t.windowEnds} > ${t.declaredOn}
+        AND (${t.windowExtendedDays} IS NULL) = (${t.windowExtensionReason} IS NULL)
+        AND (${t.windowExtendedDays} IS NULL OR ${t.windowExtendedDays} > 0)`,
+    ),
+    check(
+      'book_settlement_outcome',
+      sql`CASE ${t.status}
+        WHEN 'open' THEN ${t.settledOn} IS NULL AND ${t.replacementCopyId} IS NULL
+          AND ${t.waiverReason} IS NULL
+        WHEN 'replaced' THEN ${t.settledOn} IS NOT NULL AND ${t.replacementCopyId} IS NOT NULL
+        WHEN 'paid' THEN ${t.settledOn} IS NOT NULL
+        WHEN 'waived' THEN ${t.settledOn} IS NOT NULL AND ${t.waiverReason} IS NOT NULL
+        WHEN 'found' THEN ${t.settledOn} IS NOT NULL AND ${t.foundOn} IS NOT NULL
+      END
+      AND (${t.foundOn} IS NULL) = (${t.foundReason} IS NULL)`,
+    ),
+    uniqueIndex('book_settlement_one_per_loan').on(t.borrowId),
+    index('book_settlement_user_idx').on(t.userId, t.status),
+    index('book_settlement_open_idx')
+      .on(t.branchId, t.windowEnds)
+      .where(sql`${t.status} = 'open'`),
+  ],
+);
+
+/**
+ * FR-LST-07, FR-LST-08: lost-book money, kept apart from membership fees. Never
+ * updated or deleted (triggers); a mistake or a refund is a reversing entry.
+ */
+export const settlementPayment = pgTable(
+  'settlement_payment',
+  {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    settlementId: integer('settlement_id')
+      .notNull()
+      .references(() => bookSettlement.id),
+    kind: settlementPaymentKind('kind').notNull(),
+    amountCents: cents('amount_cents').notNull(),
+    paidOn: day('paid_on').notNull(),
+    receiptNo: text('receipt_no'),
+    collectedBy: integer('collected_by')
+      .notNull()
+      .references(() => appUser.id),
+    reason: text('reason'),
+    reversesPaymentId: integer('reverses_payment_id').references(
+      (): AnyPgColumn => settlementPayment.id,
+    ),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    check(
+      'settlement_payment_by_kind',
+      sql`CASE ${t.kind}
+        WHEN 'payment' THEN ${t.amountCents} > 0 AND ${t.receiptNo} IS NOT NULL
+          AND ${t.reversesPaymentId} IS NULL
+        WHEN 'reversal' THEN ${t.amountCents} < 0 AND ${t.reason} IS NOT NULL
+          AND ${t.reversesPaymentId} IS NOT NULL
+      END`,
+    ),
+    uniqueIndex('settlement_payment_reversed_once').on(t.reversesPaymentId),
+    index('settlement_payment_settlement_idx').on(t.settlementId),
+  ],
+);
+
 // ─── Activity log (§14) ────────────────────────────────────────────────────
 
 /**
@@ -519,7 +797,11 @@ export const activityLog = pgTable(
 export const copyAvailability = pgView('copy_availability', {
   copyId: integer('copy_id').notNull(),
   state: text('state')
-    .$type<'withdrawn' | 'missing' | 'not_useable' | 'on_loan' | 'on_shelf'>()
+    .$type<
+      'withdrawn' | 'missing' | 'not_useable' | 'on_loan' | 'held' | 'in_transit' | 'on_shelf'
+    >()
     .notNull(),
   openBorrowId: integer('open_borrow_id'),
+  /** The request the copy is set apart for (§8). */
+  openRequestId: integer('open_request_id'),
 }).existing();

@@ -60,6 +60,7 @@ const loan = (over: Record<string, unknown> = {}) => ({
   extensionRequestedAt: null,
   extensionDecidedAt: null,
   extensionReason: null,
+  settlementId: null,
   ...over,
 });
 const asked = (over: Record<string, unknown> = {}) =>
@@ -263,12 +264,21 @@ describe('staff decide (FR-CIR-10 to FR-CIR-13)', () => {
       suspended: 0,
       overdue: 0,
       overdueMembers: 0,
+      transit_overdue: 0,
       extensions_urgent: 1,
       due_today: 0,
       applications_waiting: 0,
       extensions_waiting: 2,
+      requests_to_decide: 0,
+      requests_to_send: 0,
+      holds_lapsing: 0,
+      requests_arriving: 0,
+      copies_elsewhere: 0,
       due_soon: 0,
       returned_late_today: 0,
+      settlements_passed: 0,
+      settlements_closing: 0,
+      settlements_open: 0,
       expiring_this_month: 0,
     };
     signedIn(librarian, {

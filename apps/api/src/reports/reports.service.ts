@@ -93,6 +93,8 @@ export class ReportsService {
         return this.late(s);
       case 'ages':
         return this.ages(s);
+      case 'requests':
+        return this.requests(s);
     }
   }
 
@@ -244,6 +246,8 @@ export class ReportsService {
         count(*)::int AS copies,
         (count(*) FILTER (WHERE a.state = 'on_shelf'))::int AS on_shelf,
         (count(*) FILTER (WHERE a.state = 'on_loan'))::int AS on_loan,
+        (count(*) FILTER (WHERE a.state = 'in_transit'))::int AS in_transit,
+        (count(*) FILTER (WHERE a.state = 'held'))::int AS held,
         (count(*) FILTER (WHERE a.state = 'missing'))::int AS missing,
         (count(*) FILTER (WHERE a.state = 'not_useable'))::int AS not_useable,
         (count(*) FILTER (WHERE a.state = 'withdrawn'))::int AS withdrawn
@@ -260,6 +264,8 @@ export class ReportsService {
       'copies',
       'on_shelf',
       'on_loan',
+      'in_transit',
+      'held',
       'missing',
       'not_useable',
       'withdrawn',
@@ -270,7 +276,7 @@ export class ReportsService {
       title: 'Stock',
       about: [
         byBranch ? 'Copies at each branch.' : 'Copies by category.',
-        'Titles counts each title with at least one copy not withdrawn. In transit and held are added with other-branch requests (M11).',
+        "Titles counts each title with at least one copy not withdrawn. A copy away for another branch's member counts at its owning branch, as in transit or held.",
       ],
       columns: [
         byBranch ? col('branch', 'Branch') : col('category', 'Category'),
@@ -279,6 +285,8 @@ export class ReportsService {
         col('copies', 'All copies', true),
         col('onShelf', 'On the shelf', true),
         col('onLoan', 'On loan', true),
+        col('inTransit', 'In transit', true),
+        col('held', 'Held', true),
         col('missing', 'Missing', true),
         col('notUseable', 'Not useable', true),
         col('withdrawn', 'Withdrawn', true),
@@ -447,6 +455,7 @@ export class ReportsService {
   private async late(s: Scope): Promise<Body> {
     const returnedLate = sql`
       b.voided_at IS NULL AND b.returned_on > b.due_date AND b.extension_status <> 'requested'
+      AND b.lost_declared_at IS NULL
       AND b.returned_on BETWEEN ${s.from}::date AND ${s.to}::date
       AND ${this.inScope(s, sql`b.branch_id`)}`;
     const [people, branches] = await Promise.all([
@@ -500,6 +509,86 @@ export class ReportsService {
       ),
       // Every late return in scope, not only the members listed.
       total: all ? ['All late returns', null, all.n, Number(all.avg), all.longest] : null,
+    };
+  }
+
+  // ─── FR-RPT-14: books from other branches ──────────────────────────────────
+
+  private async requests(s: Scope): Promise<Body> {
+    const inPeriod = sql`(r.requested_at AT TIME ZONE 'Asia/Colombo')::date
+      BETWEEN ${s.from}::date AND ${s.to}::date
+      AND (${this.inScope(s, sql`r.from_branch_id`)} OR ${this.inScope(s, sql`r.to_branch_id`)})`;
+    const [pairs, reasons] = await Promise.all([
+      this.rows<{
+        from_code: string | null;
+        to_code: string | null;
+        n: number;
+        accepted: number;
+        declined: number;
+        cancelled: number;
+        collected: number;
+        lapsed: number;
+        lost: number;
+        days: string | null;
+      }>(sql`
+        SELECT f.branch_code AS from_code, t.branch_code AS to_code,
+          count(*)::int AS n,
+          (count(*) FILTER (WHERE r.copy_id IS NOT NULL))::int AS accepted,
+          (count(*) FILTER (WHERE r.status = 'declined'))::int AS declined,
+          (count(*) FILTER (WHERE r.status = 'cancelled'))::int AS cancelled,
+          (count(*) FILTER (WHERE r.borrow_id IS NOT NULL))::int AS collected,
+          (count(*) FILTER (WHERE r.lapsed_at IS NOT NULL))::int AS lapsed,
+          (count(*) FILTER (WHERE r.status = 'lost_in_transit'))::int AS lost,
+          round(avg(b.borrow_date - (r.requested_at AT TIME ZONE 'Asia/Colombo')::date), 1)::text AS days
+        FROM book_request r
+        JOIN branch f ON f.id = r.from_branch_id
+        JOIN branch t ON t.id = r.to_branch_id
+        LEFT JOIN borrow b ON b.id = r.borrow_id
+        WHERE ${inPeriod}
+        GROUP BY GROUPING SETS ((f.branch_code, t.branch_code), ())
+        ORDER BY 1 NULLS LAST, 2`),
+      this.rows<{ reason: string; n: number }>(sql`
+        SELECT r.decline_reason AS reason, count(*)::int AS n
+        FROM book_request r
+        WHERE r.status = 'declined' AND ${inPeriod}
+        GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 10`),
+    ]);
+    const figures = (p: (typeof pairs)[number]) => [
+      p.n,
+      p.accepted,
+      p.declined,
+      p.cancelled,
+      p.collected,
+      p.lapsed,
+      p.lost,
+      p.days === null ? null : Number(p.days),
+    ];
+    const all = pairs.find((p) => p.from_code === null);
+    return {
+      title: 'Books from other branches',
+      about: [
+        "Requests made in the period, by the branch asked and the member's branch.",
+        'Days to collection runs from the request to the day the member took the book.',
+        ...(reasons.length === 0
+          ? []
+          : ['Declined because:', ...reasons.map((r) => `  ${r.reason} (${r.n})`)]),
+      ],
+      columns: [
+        col('fromBranch', 'Asked of'),
+        col('toBranch', 'For members of'),
+        col('requests', 'Requests', true),
+        col('accepted', 'Accepted', true),
+        col('declined', 'Declined', true),
+        col('cancelled', 'Cancelled', true),
+        col('collected', 'Collected', true),
+        col('lapsed', 'Not collected', true),
+        col('lostInTransit', 'Lost on the way', true),
+        col('daysToCollect', 'Days to collection', true),
+      ],
+      rows: pairs
+        .filter((p) => p.from_code !== null)
+        .map((p) => row([p.from_code, p.to_code, ...figures(p)])),
+      total: all ? ['Total', null, ...figures(all)] : null,
     };
   }
 

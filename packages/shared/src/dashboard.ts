@@ -78,17 +78,31 @@ export function callList(overdue: DueLoan[]): CallListEntry[] {
 
 // ─── The staff panel (FR-NOT-03, FR-NOT-07, FR-NOT-09) ───────────────────────
 
-/** Most urgent first. Extension, request and lost-book items arrive with M10–M12. */
+/** Most urgent first. */
 export const STAFF_ALERTS = [
   'suspended',
+  // FR-LST-10, FR-LST-14: a lost-book window passed with the settlement still open.
+  'settlements_passed',
   'overdue',
+  // FR-REQ-12: a copy on the road longer than the branch allows.
+  'transit_overdue',
   // FR-CIR-13: undecided within two days of the due date.
   'extensions_urgent',
   'due_today',
+  // FR-LST-14: windows closing within SETTLEMENT_CLOSING_DAYS.
+  'settlements_closing',
   'applications_waiting',
   // FR-CIR-12: every extension request waiting for a decision.
   'extensions_waiting',
+  // FR-REQ-09: other-branch requests at each step.
+  'requests_to_decide',
+  'requests_to_send',
+  'holds_lapsing',
+  'requests_arriving',
+  'copies_elsewhere',
   'due_soon',
+  // FR-LST-10: every unsettled lost book.
+  'settlements_open',
   'returned_late_today',
   'expiring_this_month',
 ] as const;
@@ -99,27 +113,45 @@ export type AlertTone = (typeof ALERT_TONES)[number];
 
 export const STAFF_ALERT_TONE: Record<StaffAlert, AlertTone> = {
   suspended: 'urgent',
+  settlements_passed: 'urgent',
   overdue: 'urgent',
+  transit_overdue: 'urgent',
   extensions_urgent: 'urgent',
   due_today: 'warning',
+  settlements_closing: 'warning',
   applications_waiting: 'warning',
   extensions_waiting: 'warning',
+  requests_to_decide: 'warning',
+  requests_to_send: 'warning',
+  holds_lapsing: 'warning',
+  requests_arriving: 'info',
+  copies_elsewhere: 'info',
   due_soon: 'info',
+  settlements_open: 'info',
   returned_late_today: 'info',
   expiring_this_month: 'info',
 };
 
 export const staffCountsSchema = z.object({
   suspended: z.number().int(),
+  settlements_passed: z.number().int(),
   overdue: z.number().int(),
   /** Members holding an overdue book: the length of the call list. */
   overdueMembers: z.number().int(),
+  transit_overdue: z.number().int(),
   extensions_urgent: z.number().int(),
   due_today: z.number().int(),
+  settlements_closing: z.number().int(),
   applications_waiting: z.number().int(),
   extensions_waiting: z.number().int(),
+  requests_to_decide: z.number().int(),
+  requests_to_send: z.number().int(),
+  holds_lapsing: z.number().int(),
+  requests_arriving: z.number().int(),
+  copies_elsewhere: z.number().int(),
   /** Due from today to today + warningDays (includes today's). */
   due_soon: z.number().int(),
+  settlements_open: z.number().int(),
   returned_late_today: z.number().int(),
   expiring_this_month: z.number().int(),
 });
@@ -164,9 +196,21 @@ const loanRef = {
   dueDate: isoDate,
 };
 
-/** Most urgent first. Request, settlement and closure items arrive with M11–M13. */
+/** Most urgent first. Closure items arrive with M13. */
 export const memberPanelItemSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('suspended'), tone: z.literal('urgent') }),
+  // FR-LST-03, FR-LST-14: an open lost-book settlement, the amount and the days left.
+  z.object({
+    kind: z.literal('settlement'),
+    tone: z.enum(['urgent', 'warning']),
+    settlementId: z.number().int(),
+    title: z.string(),
+    accessionNo: z.string(),
+    amountDueCents: z.number().int(),
+    windowEnds: isoDate,
+    /** Negative once the window has passed. */
+    daysLeft: z.number().int(),
+  }),
   z.object({
     kind: z.literal('loan_overdue'),
     tone: z.literal('urgent'),
@@ -179,6 +223,33 @@ export const memberPanelItemSchema = z.discriminatedUnion('kind', [
     tone: z.literal('warning'),
     ...loanRef,
     daysLeft: z.number().int().nonnegative(),
+  }),
+  // FR-REQ-05: a book from another branch is waiting for them.
+  z.object({
+    kind: z.literal('request_ready'),
+    tone: z.literal('warning'),
+    requestId: z.number().int(),
+    title: z.string(),
+    branchName: z.string(),
+    holdUntil: isoDate,
+  }),
+  // FR-REQ-04: declined, with the reason, for a week after the decision.
+  z.object({
+    kind: z.literal('request_declined'),
+    tone: z.literal('warning'),
+    requestId: z.number().int(),
+    title: z.string(),
+    branchName: z.string(),
+    reason: z.string(),
+  }),
+  // FR-REQ-04: accepted, and on its way.
+  z.object({
+    kind: z.literal('request_on_way'),
+    tone: z.literal('info'),
+    requestId: z.number().int(),
+    title: z.string(),
+    branchName: z.string(),
+    dispatched: z.boolean(),
   }),
   // FR-CIR-12: the member's extension request, waiting or decided, while the book is out.
   z.object({

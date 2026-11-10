@@ -15,6 +15,8 @@ import { JobsModule } from './jobs/jobs.module';
 import { LogModule } from './log/log.module';
 import { MembersModule } from './members/members.module';
 import { ReportsModule } from './reports/reports.module';
+import { RequestsModule } from './requests/requests.module';
+import { SettlementsModule } from './settlements/settlements.module';
 import { StaffModule } from './staff/staff.module';
 
 @Module({
@@ -32,6 +34,8 @@ import { StaffModule } from './staff/staff.module';
     ImportModule,
     LogModule,
     ReportsModule,
+    RequestsModule,
+    SettlementsModule,
   ],
   controllers: [HealthController, ImagesController],
   providers: [{ provide: APP_FILTER, useClass: ErrorFilter }],

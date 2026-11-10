@@ -9,6 +9,12 @@ import { appUser, borrow, copy, title } from '../db/schema';
  */
 export const notProtectedByRequest = sql`${borrow.extensionStatus} <> 'requested'`;
 
+/**
+ * A loan ended by a lost declaration has `returned_on` set, but it was never
+ * taken back and is not a late return (FR-LST-01). Add it wherever SQL counts late returns.
+ */
+export const notLost = sql`${borrow.lostDeclaredAt} IS NULL`;
+
 /** A loan with its copy, title and member, ready for `toLoan`; add `.where()`. */
 export function loanQuery(q: Queryable) {
   return q
@@ -27,6 +33,9 @@ export const loanColumns = {
   writer: title.writer,
   memberName: appUser.fullName,
   memberPhone: appUser.whatsappPhone,
+  settlementId: sql<
+    number | null
+  >`(SELECT s.id FROM book_settlement s WHERE s.borrow_id = ${borrow.id})`,
 };
 
 export interface LoanRow {
@@ -37,17 +46,20 @@ export interface LoanRow {
   writer: string | null;
   memberName: string;
   memberPhone: string | null;
+  settlementId: number | null;
 }
 
 /** Days late and overdue are worked out here from the dates, never stored (R2). */
 export function toLoan(r: LoanRow, today: string): Loan {
   const b = r.borrow;
   const voided = b.voidedAt !== null;
+  const lost = b.lostDeclaredAt !== null;
   const dates = {
     dueDate: b.dueDate,
     returnedOn: b.returnedOn,
     voided,
     extensionStatus: b.extensionStatus,
+    lost,
   };
   return {
     id: b.id,
@@ -64,7 +76,7 @@ export function toLoan(r: LoanRow, today: string): Loan {
     dueDate: b.dueDate,
     originalDueDate: b.originalDueDate,
     returnedOn: b.returnedOn,
-    status: voided ? 'void' : b.returnedOn ? 'returned' : 'open',
+    status: voided ? 'void' : lost ? 'lost' : b.returnedOn ? 'returned' : 'open',
     overdue: isOverdue(dates, today),
     daysLate: daysLate(dates, today),
     isBackdated: b.isBackdated,
@@ -75,5 +87,6 @@ export function toLoan(r: LoanRow, today: string): Loan {
     extensionRequestedAt: b.extensionRequestedAt?.toISOString() ?? null,
     extensionDecidedAt: b.extensionDecidedAt?.toISOString() ?? null,
     extensionReason: b.extensionReason,
+    settlementId: r.settlementId,
   };
 }

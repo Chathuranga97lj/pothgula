@@ -60,6 +60,7 @@ const branchDetail = {
     frequentLateMonths: 12,
     annualFeeCents: 50_000,
     logRetentionMonths: 24,
+    transitAlertDays: 7,
   },
 };
 

@@ -215,10 +215,10 @@ describe('stock (FR-RPT-01)', () => {
   it('counts copies by category and where they are, with a total', async () => {
     const r = await report(ksLibrarian, 'stock');
     expect(r.rows.map((x) => x.cells)).toEqual([
-      ['A1', 'Sinhala novels', 2, 4, 0, 3, 0, 0, 1],
-      ['B1', 'English', 1, 2, 1, 0, 1, 0, 0],
+      ['A1', 'Sinhala novels', 2, 4, 0, 3, 0, 0, 0, 0, 1],
+      ['B1', 'English', 1, 2, 1, 0, 0, 0, 1, 0, 0],
     ]);
-    expect(r.total).toEqual(['Total', null, 3, 6, 1, 3, 1, 0, 1]);
+    expect(r.total).toEqual(['Total', null, 3, 6, 1, 3, 0, 0, 1, 0, 1]);
   });
 
   it('compares branches for the whole library', async () => {
@@ -332,9 +332,9 @@ describe('taking a report away (FR-RPT-09)', () => {
     const lines = csv.text.slice(1).split('\r\n');
     expect(csv.text.charCodeAt(0)).toBe(0xfeff);
     expect(lines[0]).toBe(
-      'Category,Name,Titles,All copies,On the shelf,On loan,Missing,Not useable,Withdrawn',
+      'Category,Name,Titles,All copies,On the shelf,On loan,In transit,Held,Missing,Not useable,Withdrawn',
     );
-    expect(lines).toContain('Total,,3,6,1,3,1,0,1');
+    expect(lines).toContain('Total,,3,6,1,3,0,0,1,0,1');
 
     const txt = await exp('txt');
     expect(txt.text).toContain('Stock');

@@ -16,6 +16,7 @@ import { errorMessage } from '../api/errors';
 import { LOANS_KEY, useMemberLoans } from '../api/loans';
 import { useMember } from '../api/members';
 import { MemberPicker, PaperDate, RefusalList, StandingBanner } from '../components/loans';
+import { SettlementBanner } from '../components/settlements';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 import { StateBadge } from './MembersPage';
 
@@ -146,6 +147,9 @@ function IssuePanel({ initialMember }: { initialMember: number | null }) {
             {standing && (
               <>
                 <StandingBanner standing={standing} state={m.state} />
+                <div className="mt-3">
+                  <SettlementBanner memberId={m.id} />
+                </div>
                 <p className="mt-3 text-sm font-medium" data-testid="holding">
                   {t('counter.holding', { count: standing.openLoans, max: standing.maxBooks })}
                 </p>

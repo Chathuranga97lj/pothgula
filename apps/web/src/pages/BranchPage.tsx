@@ -202,7 +202,10 @@ type NumberSetting = Exclude<keyof BranchSettings, 'annualFeeCents'>;
 
 /** The settings, grouped as a librarian would think of them. */
 const GROUPS: { title: string; keys: (NumberSetting | 'annualFeeCents')[] }[] = [
-  { title: 'lending', keys: ['loanDays', 'maxBooks', 'maxBooksWhileSettling', 'holdDays'] },
+  {
+    title: 'lending',
+    keys: ['loanDays', 'maxBooks', 'maxBooksWhileSettling', 'holdDays', 'transitAlertDays'],
+  },
   { title: 'reminders', keys: ['staffDueWarningDays', 'memberDueWarningDays', 'declineGraceDays'] },
   {
     title: 'membership',

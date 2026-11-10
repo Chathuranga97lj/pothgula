@@ -14,9 +14,11 @@ import { Link, useParams } from 'react-router';
 import { CATALOGUE_KEY, titleKey, useCatalogue, useDebounced, useTitle } from '../api/catalogue';
 import { api } from '../api/client';
 import { errorMessage } from '../api/errors';
+import { useCopyFound } from '../api/settlements';
 import { useBranches, useCategories } from '../api/queries';
 import { useMe } from '../auth/auth';
 import { History } from '../components/log';
+import { AskAnotherBranch } from '../components/requests';
 import { Alert, Button, Card, Field, Input, PageTitle, Select } from '../components/ui';
 
 /** FR-CAT-01, FR-CAT-03, FR-CAT-04, FR-CAT-08, FR-CAT-11, FR-CAT-14, FR-CAT-18. */
@@ -62,6 +64,7 @@ export function TitlePage() {
         <div className="min-w-0 space-y-6">
           {isStaff ? <EditTitle title={d} /> : <Facts title={d} />}
           <Copies title={d} />
+          {user.userType === 'member' && user.status === 'active' && <AskAnotherBranch title={d} />}
           {isStaff && <History entity="title" entityId={d.id} />}
         </div>
         {isStaff && !d.mergedIntoId && (
@@ -238,6 +241,8 @@ function Copies({ title: d }: { title: TitleDetail }) {
 const STATE_TONE: Record<Copy['state'], string> = {
   on_shelf: 'bg-emerald-50 text-emerald-900',
   on_loan: 'bg-sky-50 text-sky-950',
+  in_transit: 'bg-sky-50 text-sky-950',
+  held: 'bg-violet-50 text-violet-950',
   missing: 'bg-red-50 text-red-900',
   not_useable: 'bg-amber-100 text-amber-950',
   withdrawn: 'bg-stone-200 text-stone-700',
@@ -259,11 +264,16 @@ function CopyRow({
   const isStaff = user.userType !== 'member';
   const isSuper = user.userType === 'super_admin';
   const mine = isSuper || c.branchId === user.branchId;
-  const [action, setAction] = useState<'withdraw' | 'move' | 'history' | null>(null);
+  const [action, setAction] = useState<'withdraw' | 'move' | 'history' | 'found' | null>(null);
   const [reason, setReason] = useState('');
   const [target, setTarget] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  // FR-LST-12: a missing copy turned up; a super admin puts it back on the shelf.
+  const { found } = useCopyFound(() => {
+    setAction(null);
+    setReason('');
+  });
   const run = useMutation({
     mutationFn: ({
       path,
@@ -334,6 +344,11 @@ function CopyRow({
                   {t('log.history')}
                 </Button>
               )}
+              {isSuper && c.state === 'missing' && action === null && (
+                <Button variant="secondary" onClick={() => setAction('found')}>
+                  {t('titles.found')}
+                </Button>
+              )}
               {isSuper && c.state === 'withdrawn' && (
                 <Button
                   variant="secondary"
@@ -357,6 +372,39 @@ function CopyRow({
                   {t('log.hideHistory')}
                 </Button>
               </div>
+            )}
+            {action === 'found' && (
+              <form
+                className="mt-2 flex flex-wrap items-end gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (reason.trim()) {
+                    found.mutate(
+                      { copyId: c.id, reason: reason.trim() },
+                      { onError: (err) => setError(errorMessage(t, err)) },
+                    );
+                  }
+                }}
+              >
+                <div className="min-w-60 flex-1">
+                  <Field label={t('titles.foundReason', { no: c.accessionNo })}>
+                    {({ id }) => (
+                      <Input
+                        id={id}
+                        autoFocus
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                      />
+                    )}
+                  </Field>
+                </div>
+                <Button type="submit" disabled={!reason.trim() || found.isPending}>
+                  {t('titles.confirmFound')}
+                </Button>
+                <Button variant="ghost" onClick={() => setAction(null)}>
+                  {t('common.cancel')}
+                </Button>
+              </form>
             )}
             {action === 'withdraw' && (
               <form

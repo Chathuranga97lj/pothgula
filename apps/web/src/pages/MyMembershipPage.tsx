@@ -12,6 +12,8 @@ import { useOwnLoans } from '../api/loans';
 import { OWN_MEMBERSHIP_KEY, useOwnMembership } from '../api/members';
 import { useBranches } from '../api/queries';
 import { LoanTable } from '../components/loans';
+import { MyRequests } from '../components/requests';
+import { OwnSettlements } from '../components/settlements';
 import { PersonFields, personBody, type PersonForm } from '../components/PersonFields';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 import { StateBadge } from './MembersPage';
@@ -86,6 +88,8 @@ export function MyMembershipPage() {
       </PageTitle>
       {m.expireAt && <p className="mb-4 text-stone-700">{t('my.expires', { date: m.expireAt })}</p>}
       {!pending && <MyBooks />}
+      {!pending && <OwnSettlements />}
+      {!pending && <MyRequests />}
       <Card>
         <form onSubmit={submit} className="space-y-5" noValidate>
           {error && <Alert tone="error">{error}</Alert>}

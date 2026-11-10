@@ -35,6 +35,8 @@ const branchSettingsBase = z.object({
   memberDueWarningDays: z.number().int().min(0).max(30),
   declineGraceDays: z.number().int().min(0).max(14),
   holdDays: z.number().int().min(1).max(30),
+  /** FR-REQ-12: a copy on the road longer than this is flagged. */
+  transitAlertDays: z.number().int().min(1).max(60),
   applicationStaleDays: z.number().int().min(1).max(365),
   applicationAnonymiseDays: z.number().int().min(1).max(365),
   renewalGraceDays: z.number().int().min(0).max(365),

@@ -28,6 +28,8 @@ export interface LoanDates {
   returnedOn: string | null;
   voided?: boolean;
   extensionStatus?: ExtensionStatus;
+  /** Declared lost (FR-LST-01): the loan ended that day, and it is not a late return. */
+  lost?: boolean;
 }
 
 /**
@@ -41,7 +43,7 @@ const protectedByRequest = (loan: LoanDates) => loan.extensionStatus === 'reques
  * still out. A book returned on its due date is not late. A voided loan is never late.
  */
 export function daysLate(loan: LoanDates, today: string): number {
-  if (loan.voided || protectedByRequest(loan)) return 0;
+  if (loan.voided || loan.lost || protectedByRequest(loan)) return 0;
   return Math.max(0, daysBetween(loan.dueDate, loan.returnedOn ?? today));
 }
 
@@ -153,11 +155,13 @@ export type ExtensionRefusalCode = (typeof EXTENSION_REFUSALS)[number];
 
 /**
  * Why a copy cannot be issued to a member (FR-CIR-02). Each is also an error
- * code, translated by the web app. Phase 2 adds in transit, held for another
- * member, and the open-settlement limit.
+ * code, translated by the web app.
  */
 export const ISSUE_REFUSALS = [
   'copy_on_loan',
+  // FR-REQ-04, FR-REQ-05: travelling, or held for another member.
+  'copy_in_transit',
+  'copy_held',
   'copy_missing',
   'copy_not_useable',
   'copy_withdrawn',
@@ -169,6 +173,8 @@ export const ISSUE_REFUSALS = [
   'member_expired',
   'member_overdue',
   'member_at_limit',
+  // FR-LST-04: one book while a lost-book settlement is open.
+  'member_settling',
 ] as const;
 export type IssueRefusalCode = (typeof ISSUE_REFUSALS)[number];
 
@@ -179,7 +185,8 @@ export const issueRefusalSchema = z.object({
 });
 export type IssueRefusal = z.infer<typeof issueRefusalSchema>;
 
-export const LOAN_STATUSES = ['open', 'returned', 'void'] as const;
+/** `lost`: declared lost or damaged beyond use, which ended the loan (FR-LST-01). */
+export const LOAN_STATUSES = ['open', 'returned', 'lost', 'void'] as const;
 export type LoanStatus = (typeof LOAN_STATUSES)[number];
 
 export const loanSchema = z.object({
@@ -214,6 +221,8 @@ export const loanSchema = z.object({
   extensionDecidedAt: z.iso.datetime().nullable(),
   /** Why it was declined. */
   extensionReason: z.string().nullable(),
+  /** FR-LST-02: the settlement opened when it was declared lost. */
+  settlementId: z.number().int().nullable(),
 });
 export type Loan = z.infer<typeof loanSchema>;
 
