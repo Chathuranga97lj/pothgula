@@ -17,6 +17,7 @@ import { downloadMemberExport, MEMBERS_KEY, memberKey, useMember } from '../api/
 import { branchKey, useBranches } from '../api/queries';
 import { useMe } from '../auth/auth';
 import { LoanTable, StandingBanner } from '../components/loans';
+import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle } from '../components/ui';
 import { StateBadge } from './MembersPage';
 
@@ -95,6 +96,9 @@ export function MemberPage() {
 
       <Books member={m} loans={loans} />
       <Payments member={m} />
+      <div className="mt-6">
+        <History entity="app_user" entityId={m.id} />
+      </div>
     </>
   );
 }

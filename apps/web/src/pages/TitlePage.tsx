@@ -16,6 +16,7 @@ import { api } from '../api/client';
 import { errorMessage } from '../api/errors';
 import { useBranches, useCategories } from '../api/queries';
 import { useMe } from '../auth/auth';
+import { History } from '../components/log';
 import { Alert, Button, Card, Field, Input, PageTitle, Select } from '../components/ui';
 
 /** FR-CAT-01, FR-CAT-03, FR-CAT-04, FR-CAT-08, FR-CAT-11, FR-CAT-14, FR-CAT-18. */
@@ -58,12 +59,13 @@ export function TitlePage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {isStaff ? <EditTitle title={d} /> : <Facts title={d} />}
           <Copies title={d} />
+          {isStaff && <History entity="title" entityId={d.id} />}
         </div>
         {isStaff && !d.mergedIntoId && (
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <AddCopies
               title={d}
               onAdded={(numbers) =>
@@ -257,7 +259,7 @@ function CopyRow({
   const isStaff = user.userType !== 'member';
   const isSuper = user.userType === 'super_admin';
   const mine = isSuper || c.branchId === user.branchId;
-  const [action, setAction] = useState<'withdraw' | 'move' | null>(null);
+  const [action, setAction] = useState<'withdraw' | 'move' | 'history' | null>(null);
   const [reason, setReason] = useState('');
   const [target, setTarget] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -327,6 +329,11 @@ function CopyRow({
                   {t('titles.move')}
                 </Button>
               )}
+              {action === null && (
+                <Button variant="ghost" onClick={() => setAction('history')}>
+                  {t('log.history')}
+                </Button>
+              )}
               {isSuper && c.state === 'withdrawn' && (
                 <Button
                   variant="secondary"
@@ -343,6 +350,14 @@ function CopyRow({
         <tr>
           <td colSpan={4} className="bg-stone-50 px-4 py-3">
             {error && <Alert tone="error">{error}</Alert>}
+            {action === 'history' && (
+              <div className="space-y-2">
+                <History entity="copy" entityId={c.id} open />
+                <Button variant="ghost" onClick={() => setAction(null)}>
+                  {t('log.hideHistory')}
+                </Button>
+              </div>
+            )}
             {action === 'withdraw' && (
               <form
                 className="mt-2 flex flex-wrap items-end gap-3"

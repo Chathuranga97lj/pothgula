@@ -12,7 +12,12 @@ export function errorMessage(t: TFunction, error: unknown): string {
   // A refused issue (FR-CIR-02) carries the values its message needs, such as the limit.
   const refusals = (error.details as { refusals?: { code: string; params?: object }[] } | undefined)
     ?.refusals;
-  const params = refusals?.find((r) => r.code === error.code)?.params ?? {};
+  // Otherwise the details are the values, such as an export's count and limit.
+  const details =
+    typeof error.details === 'object' && error.details !== null && !Array.isArray(error.details)
+      ? error.details
+      : {};
+  const params = refusals ? (refusals.find((r) => r.code === error.code)?.params ?? {}) : details;
   const key = `errors.${error.code}`;
   return t(key, { ...params, defaultValue: error.message });
 }
