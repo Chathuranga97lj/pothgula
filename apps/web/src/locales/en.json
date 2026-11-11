@@ -41,7 +41,13 @@
     "reports": "Reports",
     "requests": "Requests",
     "lostBooks": "Lost books",
-    "notices": "Hours and notices"
+    "notices": "Hours and notices",
+    "more": "More",
+    "groups": {
+      "library": "Library",
+      "setup": "Set-up",
+      "account": "Your account"
+    }
   },
   "signIn": {
     "title": "Sign in",
