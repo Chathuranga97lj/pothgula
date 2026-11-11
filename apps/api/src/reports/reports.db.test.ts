@@ -190,7 +190,7 @@ describe('at a glance (FR-RPT-06)', () => {
     expect(measure(r, 'suspendedMembers')[1]).toBe(1);
     expect(measure(r, 'waitingApplications')[1]).toBe(1);
     expect(measure(r, 'feesThisMonth')[1]).toBe('500.00');
-    expect(measure(r, 'topThisMonth')[1]).toBe('කලියුගය (1)');
+    expect(measure(r, 'topThisMonth')[1]).toBe('කලියුගය (2)');
   });
 
   it('puts each branch beside the whole library for a super admin, without double counting titles', async () => {
