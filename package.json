@@ -18,6 +18,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "e2e": "pnpm build && pnpm --filter @pothgula/e2e e2e",
+    "screenshots": "pnpm build && pnpm --filter @pothgula/e2e screenshots",
     "db:up": "docker compose -f infra/compose.dev.yml up -d",
     "db:down": "docker compose -f infra/compose.dev.yml down"
   },
