@@ -85,7 +85,8 @@ describe('the activity log screen (FR-LOG-06, FR-LOG-07)', () => {
     expect(screen.getByText('Showing 3 entries.')).toBeInTheDocument();
     // Admins read their own branch only, so there is no branch to choose.
     expect(screen.queryByLabelText('Branch')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Activity log' })).toBeInTheDocument();
+    // The log sits in the More menu, which shows it is where the person is.
+    expect(screen.getByRole('button', { name: /More/ })).toHaveClass('bg-emerald-50');
   });
 
   it('fetches older entries a page at a time', async () => {
